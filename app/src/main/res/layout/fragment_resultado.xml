@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1. Contenedor Base con el fondo temático de la pantalla de resultados -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_resultado"
+    android:fitsSystemWindows="true">
+
+    <!-- 2. Contenedor principal para los márgenes (24dp) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- TARJETA MORADA DEL TÍTULO -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="3dp"
+                    android:backgroundTint="@color/purple_primary"
+                    android:layout_marginBottom="24dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="24dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Cotización"
+                            android:textSize="32sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Esto es lo que te deben de pagar por tu gran trabajo :]"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- TARJETA BLANCA DEL RESULTADO Y DESGLOSE -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="@color/purple_light"
+                    app:strokeWidth="1dp"
+                    android:backgroundTint="@color/white"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Precio Sugerido"
+                            android:textAlignment="center"
+                            android:textColor="@color/gray_text"
+                            android:textStyle="bold"
+                            android:textSize="18sp"/>
+
+                        <TextView
+                            android:id="@+id/tvPrecioFinal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="$0.00"
+                            android:textAlignment="center"
+                            android:textSize="48sp"
+                            android:textColor="@color/purple_primary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="24dp"
+                            android:layout_marginTop="8dp"/>
+
+                        <!-- Línea divisoria elegante -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/gray_hint"
+                            android:alpha="0.5"
+                            android:layout_marginBottom="20dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Desglose del Costo:"
+                            android:textColor="@color/purple_primary"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:layout_marginBottom="16dp"/>
+
+                        <!-- Elementos del desglose con más respiro y estilo de recibo -->
+                        <!-- Desglose Completo -->
+                        <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
+                        <TextView android:id="@+id/tvDesglosePatron" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
+                        <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
+                        <TextView android:id="@+id/tvDesgloseEmpaque" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_hint" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:alpha="0.5"/>
+
+                        <TextView android:id="@+id/tvDesgloseSubtotal" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text" android:textStyle="bold"/>
+                        <TextView android:id="@+id/tvDesgloseGanancia" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/purple_primary" android:textStyle="bold"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Botón Principal Flotante Redondeado -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:text="Guardar Proyecto"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/purple_primary"
+            app:cornerRadius="32dp"
+            android:elevation="8dp"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

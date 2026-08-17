@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1. El ConstraintLayout es la base y lleva el patrón de fondo. NO lleva fitsSystemWindows -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_empaque">
+
+    <!-- 2. Contenedor Maestro: ESTE es el que respeta la batería y los botones del sistema -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true">
+
+        <!-- 3. Contenedor Interno: Aquí recuperamos tus márgenes de 24dp sanos y salvos -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fillViewport="true"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- TARJETA MORADA DEL TÍTULO -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        android:backgroundTint="@color/purple_primary"
+                        android:layout_marginBottom="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="24dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Empaque y Ganancia"
+                                android:textColor="@color/white"
+                                android:textSize="28sp"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:drawableStart="@drawable/ic_empaque"
+                                android:drawablePadding="12dp"
+                                app:drawableTint="@color/white" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Ahora sí lo bueno jejeje"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- TARJETA BLANCA DEL CONTENIDO -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="3dp"
+                        app:strokeColor="@color/purple_light"
+                        app:strokeWidth="1dp"
+                        android:backgroundTint="@color/white"
+                        android:layout_marginBottom="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <!-- Costo de empaque con ID para validaciones -->
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilCostoCaja"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Costo de caja, etiquetas, etc. ($)"
+                                android:textColorHint="@color/gray_text"
+                                app:hintTextColor="@color/purple_primary"
+                                app:boxStrokeColor="@color/purple_primary"
+                                app:startIconDrawable="@drawable/ic_dinero"
+                                app:startIconTint="@color/purple_primary"
+                                android:layout_marginBottom="16dp">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etCostoCaja"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/gray_text"
+                                    android:textColorHint="@color/gray_hint"
+                                    android:inputType="numberDecimal"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <!-- Margen de ganancia con ID para validaciones -->
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilMargen"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Margen de ganancia extra (%)"
+                                android:textColorHint="@color/gray_text"
+                                app:hintTextColor="@color/purple_primary"
+                                app:boxStrokeColor="@color/purple_primary"
+                                app:startIconDrawable="@drawable/ic_ganancia"
+                                app:startIconTint="@color/purple_primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etMargen"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/gray_text"
+                                    android:textColorHint="@color/gray_hint"
+                                    android:inputType="numberDecimal"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </ScrollView>
+
+            <!-- Botón Principal Flotante Redondeado -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSiguienteEmpaque"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="10dp"
+                android:text="Calcular Precio :D"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:backgroundTint="@color/purple_primary"
+                app:cornerRadius="32dp"
+                android:elevation="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

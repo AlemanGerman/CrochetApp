@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="8dp"
+    android:backgroundTint="@color/white"
+    android:layout_margin="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
+
+        <!-- Icono decorativo del modal -->
+        <ImageView
+            android:id="@+id/ivDialogIcon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@android:drawable/ic_menu_delete"
+            app:tint="@color/purple_primary"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <!-- Título del Modal -->
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Estás segura?"
+            android:textSize="22sp"
+            android:textColor="@color/purple_primary"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Mensaje / Descripción -->
+        <TextView
+            android:id="@+id/tvDialogMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Esta acción no se puede deshacer."
+            android:textColor="@color/gray_text"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Contenedor de Botones (Mitad y Mitad) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <!-- Botón Cancelar (Bordeado) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDialogCancel"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Cancelar"
+                android:textColor="@color/purple_primary"
+                app:strokeColor="@color/purple_primary"
+                app:cornerRadius="28dp"/>
+
+            <!-- Botón Confirmar (Sólido Morado) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDialogConfirm"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Eliminar"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/purple_primary"
+                app:cornerRadius="28dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
