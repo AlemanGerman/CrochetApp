@@ -24,7 +24,6 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Imagen de previsualización -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivFotoPreview"
             android:layout_width="120dp"

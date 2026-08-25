@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Imagen del Proyecto (Aquí entra Coil para el caché) -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivImagenProyecto"
             android:layout_width="80dp"
@@ -26,7 +25,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Título -->
         <TextView
             android:id="@+id/tvNombreProyecto"
             android:layout_width="0dp"
@@ -40,7 +38,6 @@
             app:layout_constraintTop_toTopOf="@id/ivImagenProyecto"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Fecha -->
         <TextView
             android:id="@+id/tvFecha"
             android:layout_width="0dp"
@@ -53,7 +50,6 @@
             app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
             app:layout_constraintTop_toBottomOf="@id/tvNombreProyecto"/>
 
-        <!-- Precio -->
         <TextView
             android:id="@+id/tvPrecioProyecto"
             android:layout_width="wrap_content"

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 1. Contenedor Base con el fondo temático de la pantalla de resultados -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,7 +6,6 @@
     android:background="@drawable/bg_resultado"
     android:fitsSystemWindows="true">
 
-    <!-- 2. Contenedor principal para los márgenes (24dp) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,8 +23,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <!-- TARJETA MORADA DEL TÍTULO -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -62,8 +58,6 @@
                             android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- TARJETA BLANCA DEL RESULTADO Y DESGLOSE -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -100,8 +94,6 @@
                             android:textStyle="bold"
                             android:layout_marginBottom="24dp"
                             android:layout_marginTop="8dp"/>
-
-                        <!-- Línea divisoria elegante -->
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
@@ -117,9 +109,6 @@
                             android:textStyle="bold"
                             android:textSize="16sp"
                             android:layout_marginBottom="16dp"/>
-
-                        <!-- Elementos del desglose con más respiro y estilo de recibo -->
-                        <!-- Desglose Completo -->
                         <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
                         <TextView android:id="@+id/tvDesglosePatron" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
                         <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
@@ -136,7 +125,6 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Botón Principal Flotante Redondeado -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGuardar"
             android:layout_width="match_parent"

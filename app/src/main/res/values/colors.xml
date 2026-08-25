@@ -1,5 +1,4 @@
 <resources>
-    <!-- Paleta Mina Crochett -->
     <color name="purple_primary">#bf82ce</color>
     <color name="purple_light">#E1BEE7</color>
     <color name="white">#FFFFFF</color>
@@ -7,7 +6,6 @@
     <color name="gray_text">#495057</color>
     <color name="gray_hint">#ADB5BD</color>
 
-    <!-- Colores base que Android Studio requiere internamente por defecto -->
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#6200EE</color>
     <color name="purple_700">#3700B3</color>

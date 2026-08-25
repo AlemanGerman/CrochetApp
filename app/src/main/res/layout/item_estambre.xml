@@ -42,7 +42,6 @@
                     android:inputType="textCapSentences"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- El botón eliminar ya tiene su ripple incorporado -->
             <ImageButton
                 android:id="@+id/btnEliminarEstambre"
                 android:layout_width="48dp"

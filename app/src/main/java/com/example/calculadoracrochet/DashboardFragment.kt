@@ -16,7 +16,7 @@ import com.google.android.material.button.MaterialButton
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
-    private lateinit var adapter: ProyectosAdapter // Asume que tienes tu adapter
+    private lateinit var adapter: ProyectosAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -24,7 +24,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Configuras tu adapter y le pasas la función de clic
         adapter = ProyectosAdapter(viewModel.historialProyectos) { proyectoClickeado ->
             mostrarDetalleProyecto(proyectoClickeado)
         }
@@ -44,7 +43,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        // Llenar datos COMPLETOS en el modal del Dashboard
         dialogView.findViewById<TextView>(R.id.tvDetalleNombre).text = proyecto.nombre
         dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = String.format("Total: $%.2f", proyecto.precioFinal)
 
@@ -53,7 +51,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         dialogView.findViewById<TextView>(R.id.tvDetalleManoObra).text = String.format("Mano de Obra: $%.2f", proyecto.costoManoObra)
         dialogView.findViewById<TextView>(R.id.tvDetalleEmpaque).text = String.format("Empaque: $%.2f", proyecto.costoEmpaque)
 
-        // Calcular la ganancia exacta que tuvo este proyecto guardado
         val subtotalProyecto = proyecto.costoMateriales + proyecto.costoDiseno + proyecto.costoManoObra + proyecto.costoEmpaque
         val gananciaProyecto = subtotalProyecto * (proyecto.margenGanancia / 100)
         dialogView.findViewById<TextView>(R.id.tvDetalleGanancia).text = String.format("Ganancia Extra (%d%%): $%.2f", proyecto.margenGanancia.toInt(), gananciaProyecto)
@@ -65,7 +62,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         btnCerrar.setOnClickListener { dialog.dismiss() }
 
         btnEliminar.setOnClickListener {
-            // Reutilizamos tu DialogUtils (o un AlertDialog simple) para confirmar la eliminación
             DialogUtils.mostrarModal(
                 requireContext(),
                 "Eliminar Proyecto",
@@ -73,13 +69,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 "Eliminar"
             ) {
                 viewModel.eliminarProyecto(proyecto)
-                adapter.notifyDataSetChanged() // Refresca la lista
+                adapter.notifyDataSetChanged()
                 dialog.dismiss()
             }
         }
 
         btnDuplicar.setOnClickListener {
-            // Magia de copiar: Cargamos los valores al ViewModel como si fuera un proyecto en curso
             viewModel.costoMateriales = proyecto.costoMateriales
             viewModel.costoDiseno = proyecto.costoDiseno
             viewModel.costoManoObra = proyecto.costoManoObra
@@ -88,7 +83,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
             dialog.dismiss()
 
-            // Mandamos a la usuaria al Paso 1 (o al paso que desees) para que modifique factores
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, MaterialesFragment())
                 .addToBackStack(null)

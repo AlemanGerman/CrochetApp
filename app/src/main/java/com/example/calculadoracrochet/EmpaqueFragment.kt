@@ -13,7 +13,6 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Enlazamos los contenedores de texto para poder mostrar errores
         val tilCostoCaja = view.findViewById<TextInputLayout>(R.id.tilCostoCaja)
         val tilMargen = view.findViewById<TextInputLayout>(R.id.tilMargen)
 
@@ -26,7 +25,6 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
 
             var todoCorrecto = true
 
-            // Validamos que el costo no sea negativo
             if (costoCaja < 0.0) {
                 tilCostoCaja.error = "El costo no puede ser negativo"
                 todoCorrecto = false
@@ -34,7 +32,6 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
                 tilCostoCaja.error = null
             }
 
-            // Validamos que el margen no sea negativo
             if (margen < 0.0) {
                 tilMargen.error = "El margen no puede ser negativo"
                 todoCorrecto = false
@@ -42,12 +39,10 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
                 tilMargen.error = null
             }
 
-            // Si pasa todas las validaciones lógicas, avanzamos
             if (todoCorrecto) {
                 viewModel.costoEmpaque = costoCaja
                 viewModel.margenGanancia = margen
 
-                // Navegamos a Resultados
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, ResultadoFragment())
                     .addToBackStack(null)

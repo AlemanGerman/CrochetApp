@@ -24,7 +24,6 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Desglose Completo en el Modal -->
         <TextView android:id="@+id/tvDetalleMateriales" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text" android:layout_marginBottom="4dp"/>
         <TextView android:id="@+id/tvDetallePatron" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text" android:layout_marginBottom="4dp"/>
         <TextView android:id="@+id/tvDetalleManoObra" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text" android:layout_marginBottom="4dp"/>
@@ -42,7 +41,6 @@
             android:gravity="center"
             android:layout_marginBottom="24dp"/>
 
-        <!-- Botones de Acción -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDetalleDuplicar"
             android:layout_width="match_parent"

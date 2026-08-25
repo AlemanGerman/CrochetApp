@@ -3,11 +3,10 @@ package com.example.calculadoracrochet
 import androidx.lifecycle.ViewModel
 import java.util.UUID
 
-// Ahora guarda toda la información y la ruta de la foto
 data class ProyectoCrochet(
     val id: String = UUID.randomUUID().toString(),
     val nombre: String,
-    val fotoUri: String?, // Opcional
+    val fotoUri: String?,
     val costoMateriales: Double,
     val costoDiseno: Double,
     val costoManoObra: Double,
@@ -31,7 +30,6 @@ class CalculadoraViewModel : ViewModel() {
 
     val listaAccesoriosGuardados = mutableListOf<AccesorioGuardado>()
 
-    // Lista mutable
     val historialProyectos = mutableListOf<ProyectoCrochet>()
 
     fun calcularTotal() {
@@ -40,7 +38,7 @@ class CalculadoraViewModel : ViewModel() {
         precioFinalSugerdio = subtotal + gananciaExtra
     }
 
-    // Actualizamos la función para recibir el nombre y la foto
+
     fun guardarProyecto(nombre: String, fotoUri: String?) {
         val nuevoProyecto = ProyectoCrochet(
             nombre = nombre,

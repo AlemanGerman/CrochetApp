@@ -20,26 +20,22 @@ import com.google.android.material.textfield.TextInputLayout
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
 
-    // Variables temporales para el modal
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
 
-    // API moderna de Android para elegir fotos de la galería sin pedir permisos extra
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             uriFotoSeleccionada = uri.toString()
             ivPreviewModal?.setImageURI(uri)
-            ivPreviewModal?.imageTintList = null // Quitar el tinte gris del icono
+            ivPreviewModal?.imageTintList = null
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Ejecutar la matemática final
         viewModel.calcularTotal()
 
-        // Asignar TODO el desglose a la pantalla
         val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
         val ganancia = subtotal * (viewModel.margenGanancia / 100)
 
@@ -58,7 +54,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     }
 
     private fun mostrarModalGuardar() {
-        uriFotoSeleccionada = null // Reiniciar por si acaso
+        uriFotoSeleccionada = null
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_guardar_proyecto, null)
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -75,7 +71,6 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         val btnConfirmar = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarGuardar)
 
         btnElegirFoto.setOnClickListener {
-            // Abre la galería
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
@@ -88,11 +83,9 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 return@setOnClickListener
             }
 
-            // Guardamos con foto y nombre
             viewModel.guardarProyecto(nombre, uriFotoSeleccionada)
             dialog.dismiss()
 
-            // Regresamos al inicio
             parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, DashboardFragment())
