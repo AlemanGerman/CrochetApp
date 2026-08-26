@@ -32,9 +32,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             }
         }
 
-        if (viewModel.listaAccesoriosGuardados.isEmpty()) {
-            agregarFilaMaterial(llContenedorExtra, "", "")
-        } else {
+        if (!viewModel.listaAccesoriosGuardados.isEmpty()) {
             viewModel.listaAccesoriosGuardados.forEach {
                 agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
             }

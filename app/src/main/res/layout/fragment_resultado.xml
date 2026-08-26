@@ -3,139 +3,210 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_resultado"
+    android:background="@color/gray_background"
     android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:paddingBottom="100dp">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
-            android:scrollbars="none">
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="16dp"
+            android:orientation="vertical">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <com.google.android.material.card.MaterialCardView
+                app:cardCornerRadius="0dp"
+                app:cardElevation="12dp"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginVertical="16dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
-                    android:backgroundTint="@color/purple_primary"
-                    android:layout_marginBottom="24dp">
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_papel_arrugado"
+                    android:padding="24dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="24dp">
+                        android:text="M I N A   C R O C H E T"
+                        android:textAlignment="center"
+                        android:fontFamily="monospace"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:textColor="@color/black"/>
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Cotización"
-                            android:textSize="32sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"
-                            android:fontFamily="sans-serif-medium"
-                            android:gravity="center"
-                            android:layout_marginBottom="8dp"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Esto es lo que te deben de pagar por tu gran trabajo :]"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:gravity="center"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="6dp"
-                    app:strokeColor="@color/purple_light"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@color/white"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="24dp">
+                        android:text="COTIZACIÓN DE PROYECTO"
+                        android:textAlignment="center"
+                        android:fontFamily="monospace"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="16dp"
+                        android:textColor="@color/black"/>
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Precio Sugerido"
-                            android:textAlignment="center"
-                            android:textColor="@color/gray_text"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ORDEN #0001 PARA CAMILITA"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"/>
 
-                        <TextView
-                            android:id="@+id/tvPrecioFinal"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="$0.00"
-                            android:textAlignment="center"
-                            android:textSize="48sp"
-                            android:textColor="@color/purple_primary"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="24dp"
-                            android:layout_marginTop="8dp"/>
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="@color/gray_hint"
-                            android:alpha="0.5"
-                            android:layout_marginBottom="20dp"/>
+                    <TextView
+                        android:id="@+id/tvFechaTicket"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="JUEVES, 27 AGOSTO, 2026"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="12dp"
+                        android:textColor="@color/black"/>
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Desglose del Costo:"
-                            android:textColor="@color/purple_primary"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:layout_marginBottom="16dp"/>
-                        <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
-                        <TextView android:id="@+id/tvDesglosePatron" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
-                        <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
-                        <TextView android:id="@+id/tvDesgloseEmpaque" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="--------------------------------"
+                        android:fontFamily="monospace"
+                        android:textAlignment="center"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/black"/>
 
-                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_hint" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:alpha="0.5"/>
-
-                        <TextView android:id="@+id/tvDesgloseSubtotal" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/gray_text" android:textStyle="bold"/>
-                        <TextView android:id="@+id/tvDesgloseGanancia" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/purple_primary" android:textStyle="bold"/>
-
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="ID" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="CONCEPTO" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="MONTO" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
-            </LinearLayout>
-        </ScrollView>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="--------------------------------"
+                        android:fontFamily="monospace"
+                        android:textAlignment="center"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/black"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGuardar"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginTop="16dp"
-            android:text="Guardar Proyecto"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/purple_primary"
-            app:cornerRadius="32dp"
-            android:elevation="8dp"/>
-    </LinearLayout>
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="01" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MATERIALES" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="02" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="DISEÑO/PATRÓN" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesglosePatron" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="03" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MANO DE OBRA" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="04" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="EMPAQUE" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesgloseEmpaque" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="--------------------------------"
+                        android:fontFamily="monospace"
+                        android:textAlignment="center"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/black"/>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="SUBTOTAL COSTO:" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesgloseSubtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="GANANCIA EXTRA:" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvDesgloseGanancia" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="================================"
+                        android:fontFamily="monospace"
+                        android:textAlignment="center"
+                        android:layout_marginBottom="12dp"
+                        android:textColor="@color/black"/>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="TOTAL:" android:fontFamily="monospace" android:textStyle="bold" android:textSize="20sp" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvPrecioFinal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textStyle="bold" android:textSize="28sp" android:textColor="@color/black"/>
+                    </LinearLayout>
+
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="CLIENTE: QUIÉN SABE" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="METODO: CON MUCHO ESFUERZO" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="VALOR: INVALUABLE" android:fontFamily="monospace" android:textColor="@color/black" android:layout_marginBottom="24dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="¡Haz que tu tiempo valga!"
+                        android:textAlignment="center"
+                        android:fontFamily="monospace"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"
+                        android:layout_marginBottom="12dp"/>
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:src="@drawable/codigo_barras"
+                        android:scaleType="fitCenter"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="www.instagram.com/mina_crochett/"
+                        android:textAlignment="center"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGuardar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_margin="24dp"
+        android:text="Guardar Proyecto"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="@color/purple_primary"
+        app:cornerRadius="32dp"
+        android:elevation="8dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

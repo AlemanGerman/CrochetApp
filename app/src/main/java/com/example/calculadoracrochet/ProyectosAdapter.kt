@@ -7,19 +7,25 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ProyectosAdapter(
-    private val listaProyectos: List<ProyectoCrochet>,
-
+    private var listaProyectos: List<ProyectoCrochet>,
     private val onItemClick: (ProyectoCrochet) -> Unit
 ) : RecyclerView.Adapter<ProyectosAdapter.ProyectoViewHolder>() {
 
     class ProyectoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
         val tvNombre: TextView = view.findViewById(R.id.tvNombreProyecto)
         val tvPrecio: TextView = view.findViewById(R.id.tvPrecioProyecto)
         val tvFecha: TextView = view.findViewById(R.id.tvFecha)
         val ivImagen: ShapeableImageView = view.findViewById(R.id.ivImagenProyecto)
+    }
+
+    fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
+        listaProyectos = nuevaLista
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProyectoViewHolder {
@@ -33,12 +39,12 @@ class ProyectosAdapter(
 
         holder.tvNombre.text = proyecto.nombre
         holder.tvPrecio.text = String.format("$%.2f", proyecto.precioFinal)
-        holder.tvFecha.text = "Guardado"
+
+        val formatoFecha = SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
+        holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
         if (!proyecto.fotoUri.isNullOrEmpty()) {
-            holder.ivImagen.load(proyecto.fotoUri) {
-                crossfade(true)
-            }
+            holder.ivImagen.load(proyecto.fotoUri) { crossfade(true) }
             holder.ivImagen.imageTintList = null
         } else {
             holder.ivImagen.load(null)

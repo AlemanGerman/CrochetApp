@@ -19,6 +19,14 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
         val etCostoCaja = view.findViewById<EditText>(R.id.etCostoCaja)
         val etMargen = view.findViewById<EditText>(R.id.etMargen)
 
+        if (viewModel.costoEmpaque > 0.0) {
+            etCostoCaja.setText(viewModel.costoEmpaque.toString())
+        }
+
+        if (viewModel.margenGanancia > 0.0) {
+            etMargen.setText(viewModel.margenGanancia.toString())
+        }
+
         view.findViewById<View>(R.id.btnSiguienteEmpaque).setOnClickListener {
             val costoCaja = etCostoCaja.text.toString().toDoubleOrNull() ?: 0.0
             val margen = etMargen.text.toString().toDoubleOrNull() ?: 0.0

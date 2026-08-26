@@ -17,9 +17,19 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
 
         val tilPagoHora = view.findViewById<TextInputLayout>(R.id.tilPagoHora)
         val etPagoHora = view.findViewById<EditText>(R.id.etPagoHora)
-
         val timePickerHoras = view.findViewById<TimePicker>(R.id.timePickerHoras)
         timePickerHoras.setIs24HourView(true)
+
+        if (viewModel.pagoPorHoraTemp > 0.0) {
+            etPagoHora.setText(viewModel.pagoPorHoraTemp.toString())
+        }
+
+        if (viewModel.horasTrabajadasTemp > 0.0) {
+            val horas = viewModel.horasTrabajadasTemp.toInt()
+            val minutos = ((viewModel.horasTrabajadasTemp - horas) * 60).toInt()
+            timePickerHoras.hour = horas
+            timePickerHoras.minute = minutos
+        }
 
         view.findViewById<View>(R.id.btnSiguienteManoObra).setOnClickListener {
             var todoCorrecto = true
@@ -29,7 +39,6 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
 
             val horas = timePickerHoras.hour
             val minutos = timePickerHoras.minute
-
             val horasTotales = horas + (minutos / 60.0)
 
             if (pagoPorHora < 39.38) {
@@ -47,6 +56,8 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
             }
 
             if (todoCorrecto) {
+                viewModel.pagoPorHoraTemp = pagoPorHora
+                viewModel.horasTrabajadasTemp = horasTotales
                 viewModel.costoManoObra = pagoPorHora * horasTotales
 
                 parentFragmentManager.beginTransaction()
