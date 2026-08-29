@@ -3,6 +3,9 @@ package com.example.calculadoracrochet
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.app.AlertDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -43,11 +46,10 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
 
         btnAnadirMaterial.setOnClickListener {
-            agregarFilaMaterial(llContenedorExtra, "", "")
+            mostrarModalTipoAccesorio(llContenedorExtra)
         }
 
         view.findViewById<View>(R.id.btnSiguienteMateriales).setOnClickListener {
-
             var todoCorrecto = true
             var costoTotalEstambres = 0.0
             var costoTotalAccesorios = 0.0
@@ -98,21 +100,53 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             for (i in 0 until llContenedorExtra.childCount) {
                 val fila = llContenedorExtra.getChildAt(i)
 
-                val tilNombreMaterial = fila.findViewById<TextInputLayout>(R.id.tilNombreMaterial)
-                val tilCostoMaterial = fila.findViewById<TextInputLayout>(R.id.tilCostoMaterialExtra)
+                val etCostoDirecto = fila.findViewById<EditText>(R.id.etCostoMaterialExtra)
 
-                val strNombreMat = fila.findViewById<EditText>(R.id.etNombreMaterial).text.toString().trim()
-                val strCostoMat = fila.findViewById<EditText>(R.id.etCostoMaterialExtra).text.toString()
+                if (etCostoDirecto != null) {
+                    val tilNombreMaterial = fila.findViewById<TextInputLayout>(R.id.tilNombreMaterial)
+                    val tilCostoMaterial = fila.findViewById<TextInputLayout>(R.id.tilCostoMaterialExtra)
 
-                accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat))
+                    val strNombreMat = fila.findViewById<EditText>(R.id.etNombreMaterial).text.toString().trim()
+                    val strCostoMat = etCostoDirecto.text.toString()
 
-                val costoMaterial = strCostoMat.toDoubleOrNull() ?: -1.0
+                    accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat))
 
-                if (strNombreMat.isEmpty()) { tilNombreMaterial?.error = "Ingresa un nombre"; todoCorrecto = false } else { tilNombreMaterial?.error = null }
-                if (costoMaterial <= 0.0) { tilCostoMaterial?.error = "Debe ser mayor a $0"; todoCorrecto = false } else { tilCostoMaterial?.error = null }
+                    val costoMaterial = strCostoMat.toDoubleOrNull() ?: -1.0
 
-                if (costoMaterial > 0.0) {
-                    costoTotalAccesorios += costoMaterial
+                    if (strNombreMat.isEmpty()) { tilNombreMaterial?.error = "Ingresa un nombre"; todoCorrecto = false } else { tilNombreMaterial?.error = null }
+                    if (costoMaterial <= 0.0) { tilCostoMaterial?.error = "Debe ser mayor a $0"; todoCorrecto = false } else { tilCostoMaterial?.error = null }
+
+                    if (costoMaterial > 0.0) {
+                        costoTotalAccesorios += costoMaterial
+                    }
+
+                } else {
+                    val tilNombre = fila.findViewById<TextInputLayout>(R.id.tilNombreAccCalc)
+                    val tilCostoTotal = fila.findViewById<TextInputLayout>(R.id.tilCostoTotalAcc)
+                    val tilTotalCant = fila.findViewById<TextInputLayout>(R.id.tilCantidadTotalAcc)
+                    val tilUsadaCant = fila.findViewById<TextInputLayout>(R.id.tilCantidadUsadaAcc)
+
+                    val strNombre = fila.findViewById<EditText>(R.id.etNombreAccCalc).text.toString().trim()
+                    val strCosto = fila.findViewById<EditText>(R.id.etCostoTotalAcc).text.toString()
+                    val strTotales = fila.findViewById<EditText>(R.id.etCantidadTotalAcc).text.toString()
+                    val strUsados = fila.findViewById<EditText>(R.id.etCantidadUsadaAcc).text.toString()
+
+                    val costoTotal = strCosto.toDoubleOrNull() ?: -1.0
+                    val cantTotal = strTotales.toDoubleOrNull() ?: -1.0
+                    val cantUsada = strUsados.toDoubleOrNull() ?: -1.0
+
+                    if (strNombre.isEmpty()) { tilNombre?.error = "Falta nombre"; todoCorrecto = false } else { tilNombre?.error = null }
+                    if (costoTotal <= 0.0) { tilCostoTotal?.error = "Debe ser > $0"; todoCorrecto = false } else { tilCostoTotal?.error = null }
+                    if (cantTotal <= 0.0) { tilTotalCant?.error = "Debe ser > 0"; todoCorrecto = false } else { tilTotalCant?.error = null }
+                    if (cantUsada <= 0.0) { tilUsadaCant?.error = "Debe ser > 0"; todoCorrecto = false } else { tilUsadaCant?.error = null }
+                    if (cantUsada > cantTotal && cantTotal > 0) { tilUsadaCant?.error = "Excede el total"; todoCorrecto = false }
+
+                    if (costoTotal > 0 && cantTotal > 0 && cantUsada > 0) {
+                        val costoFinal = (costoTotal / cantTotal) * cantUsada
+                        costoTotalAccesorios += costoFinal
+
+                        accesoriosTemp.add(AccesorioGuardado(strNombre, costoFinal.toString()))
+                    }
                 }
             }
 
@@ -133,9 +167,52 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
     }
 
+    private fun mostrarModalTipoAccesorio(contenedor: LinearLayout) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_tipo_accesorio, null)
+        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        dialogView.findViewById<View>(R.id.btnPrecioDirecto).setOnClickListener {
+            agregarFilaMaterial(contenedor, "", "")
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<View>(R.id.btnPrecioCalculado).setOnClickListener {
+            agregarFilaAccesorioCalculado(contenedor, "")
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<View>(R.id.btnCancelarTipo).setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun agregarFilaAccesorioCalculado(contenedor: LinearLayout, nombreSugerido: String) {
+        val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_accesorio_calculado, contenedor, false)
+        val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreAccCalc)
+        val btnEliminar = vistaFila.findViewById<ImageButton>(R.id.btnEliminarAccCalc)
+
+        if (nombreSugerido.isNotEmpty()) etNombre.setText(nombreSugerido)
+
+        btnEliminar.setOnClickListener {
+            val nombreActual = etNombre.text.toString().trim()
+            val nombreAMostrar = if (nombreActual.isNotEmpty()) nombreActual else "sin nombre"
+
+            DialogUtils.mostrarModal(
+                context = requireContext(),
+                titulo = "Eliminar Accesorio",
+                mensaje = "¿Estás segura de que quieres eliminar '$nombreAMostrar'?",
+                textoConfirmar = "Sí, eliminar",
+                iconoResId = R.drawable.ic_eliminar
+            ) {
+                contenedor.removeView(vistaFila)
+            }
+        }
+        contenedor.addView(vistaFila)
+    }
+
     private fun agregarFilaEstambre(contenedor: LinearLayout, nombre: String, costo: String, totales: String, usados: String) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_estambre, contenedor, false)
-
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreEstambre)
         val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoMadeja)
         val etTotales = vistaFila.findViewById<EditText>(R.id.etGramosTotales)
@@ -158,7 +235,6 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 textoConfirmar = "Sí, eliminar",
                 iconoResId = R.drawable.ic_eliminar
             ) {
-
                 contenedor.removeView(vistaFila)
             }
         }
@@ -167,7 +243,6 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
     private fun agregarFilaMaterial(contenedor: LinearLayout, nombre: String, costo: String) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_material_extra, contenedor, false)
-
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreMaterial)
         val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoMaterialExtra)
         val btnEliminar = vistaFila.findViewById<ImageButton>(R.id.btnEliminarMaterial)
@@ -181,11 +256,10 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
             DialogUtils.mostrarModal(
                 context = requireContext(),
-                titulo = "Eliminar estambre",
-                mensaje = "¿Estás segura de que quieres eliminar el estambre '$nombreAMostrar'?",
+                titulo = "Eliminar accesorio",
+                mensaje = "¿Estás segura de que quieres eliminar '$nombreAMostrar'?",
                 textoConfirmar = "Sí, eliminar",
                 iconoResId = R.drawable.ic_eliminar
-
             ) {
                 contenedor.removeView(vistaFila)
             }

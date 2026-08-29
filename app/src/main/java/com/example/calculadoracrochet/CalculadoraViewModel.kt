@@ -1,9 +1,11 @@
 package com.example.calculadoracrochet
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
 data class EstambreGuardado(var nombre: String = "", var costo: String = "", var totales: String = "", var usados: String = "")
@@ -29,7 +31,10 @@ data class ProyectoCrochet(
 )
 
 class CalculadoraViewModel : ViewModel() {
+
     private val db = FirebaseFirestore.getInstance()
+    private val storage = FirebaseStorage.getInstance()
+
     var costoMateriales: Double = 0.0
     var costoDiseno: Double = 0.0
     var costoManoObra: Double = 0.0
@@ -41,7 +46,6 @@ class CalculadoraViewModel : ViewModel() {
     var pagoPorHoraTemp: Double = 0.0
 
     var nombreTemp: String = ""
-
     var fotoUriTemp: String? = null
 
     val listaEstambresGuardados = mutableListOf<EstambreGuardado>()
@@ -76,10 +80,14 @@ class CalculadoraViewModel : ViewModel() {
         precioFinalSugerdio = subtotal + gananciaExtra
     }
 
-    fun guardarProyecto(nombre: String, fotoUri: String?) {
+
+    fun guardarProyecto(nombre: String, fotoUriLocal: String?, onComplete: (Boolean) -> Unit) {
+        val idNuevo = UUID.randomUUID().toString()
+
         val nuevoProyecto = ProyectoCrochet(
+            id = idNuevo,
             nombre = nombre,
-            fotoUri = fotoUri,
+            fotoUri = fotoUriLocal,
             fechaGuardado = System.currentTimeMillis(),
             costoMateriales = costoMateriales,
             costoDiseno = costoDiseno,
@@ -93,18 +101,37 @@ class CalculadoraViewModel : ViewModel() {
             listaAccesorios = listaAccesoriosGuardados.toList()
         )
 
-        db.collection("proyectos_mina")
-            .document(nuevoProyecto.id)
-            .set(nuevoProyecto)
-            .addOnSuccessListener { Log.d("Firebase", "Proyecto guardado") }
-            .addOnFailureListener { e -> Log.e("Firebase", "Error al guardar", e) }
+        db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
+
         limpiarCalculoActual()
+        onComplete(true)
+
+        if (fotoUriLocal != null && !fotoUriLocal.startsWith("http")) {
+            val storageRef = storage.reference.child("fotos_proyectos/${idNuevo}.jpg")
+            val uri = Uri.parse(fotoUriLocal)
+
+            storageRef.putFile(uri).addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
+                    db.collection("proyectos_mina").document(idNuevo)
+                        .update("fotoUri", uriDescarga.toString())
+                }
+            }.addOnFailureListener { e ->
+                Log.e("Firebase", "La foto se quedará guardada de manera local por ahora", e)
+            }
+        }
     }
 
     fun eliminarProyecto(proyecto: ProyectoCrochet) {
-        db.collection("proyectos_mina")
-            .document(proyecto.id)
-            .delete()
+        db.collection("proyectos_mina").document(proyecto.id).delete()
+
+        if (proyecto.fotoUri != null && proyecto.fotoUri!!.startsWith("http")) {
+            try {
+                val fotoRef = storage.getReferenceFromUrl(proyecto.fotoUri!!)
+                fotoRef.delete()
+            } catch (e: Exception) {
+                Log.e("Firebase", "Error al borrar foto", e)
+            }
+        }
     }
 
     fun limpiarCalculoActual() {

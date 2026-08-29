@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_background"
+    android:background="@drawable/bg_resultado"
     android:fitsSystemWindows="true">
 
     <ScrollView
@@ -23,8 +23,44 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                android:backgroundTint="@color/purple_primary"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Cotización"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Esto es lo que te deben de pagar por tu gran trabajo :]"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:gravity="center"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 app:cardCornerRadius="0dp"
-                app:cardElevation="12dp"
+                app:cardElevation="5dp"
                 android:layout_marginHorizontal="8dp"
                 android:layout_marginVertical="16dp">
 
@@ -98,23 +134,61 @@
                         android:layout_marginBottom="8dp"
                         android:textColor="@color/black"/>
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
+                    <LinearLayout
+                        android:id="@+id/llFilaMateriales"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
                         <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="01" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MATERIALES" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MATERIALES ▼" android:fontFamily="monospace" android:textColor="@color/black"/>
                         <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
                     </LinearLayout>
 
+                    <TextView
+                        android:id="@+id/tvDetalleMaterialesDesc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:textColor="#555555"
+                        android:paddingStart="40dp"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp"/>
+
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
                         <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="02" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="DISEÑO/PATRÓN" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="PATRÓN" android:fontFamily="monospace" android:textColor="@color/black"/>
                         <TextView android:id="@+id/tvDesglosePatron" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
                     </LinearLayout>
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
+                    <LinearLayout
+                        android:id="@+id/llFilaManoObra"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
                         <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="03" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MANO DE OBRA" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MANO DE OBRA ▼" android:fontFamily="monospace" android:textColor="@color/black"/>
                         <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
                     </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvDetalleManoObraDesc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:textColor="#555555"
+                        android:paddingStart="40dp"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp"/>
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
                         <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="04" android:fontFamily="monospace" android:textColor="@color/black"/>
@@ -137,7 +211,7 @@
                     </LinearLayout>
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="GANANCIA EXTRA:" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView android:id="@+id/tvLabelGanancia" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="GANANCIA EXTRA:" android:fontFamily="monospace" android:textColor="@color/black"/>
                         <TextView android:id="@+id/tvDesgloseGanancia" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
                     </LinearLayout>
 
@@ -172,9 +246,10 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="80dp"
+                        android:layout_marginHorizontal="40dp"
                         android:src="@drawable/codigo_barras"
-                        android:scaleType="fitCenter"
+                        android:scaleType="fitXY"
                         android:layout_marginBottom="8dp"/>
 
                     <TextView

@@ -86,6 +86,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:text="Guardar"
+                android:textColor="@color/white"
                 android:backgroundTint="@color/purple_primary"
                 app:cornerRadius="28dp"/>
         </LinearLayout>

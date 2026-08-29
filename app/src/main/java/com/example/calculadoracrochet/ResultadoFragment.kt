@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,11 +24,18 @@ import java.util.Locale
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
 
+    private val storage = com.google.firebase.storage.FirebaseStorage.getInstance()
+
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
+            requireContext().contentResolver.takePersistableUriPermission(
+                uri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+
             uriFotoSeleccionada = uri.toString()
             try {
                 ivPreviewModal?.setImageURI(uri)
@@ -46,7 +54,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
         val ganancia = subtotal * (viewModel.margenGanancia / 100)
 
-        val dateFormato = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale("es", "MX"))
+        val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", Locale("es", "MX"))
         view.findViewById<TextView>(R.id.tvFechaTicket).text = dateFormato.format(Date()).uppercase()
 
         view.findViewById<TextView>(R.id.tvPrecioFinal).text = String.format("$%.2f", viewModel.precioFinalSugerdio)
@@ -56,6 +64,38 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = String.format("$%.2f", viewModel.costoEmpaque)
         view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = String.format("$%.2f", subtotal)
         view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = String.format("$%.2f", ganancia)
+
+        val tvLabelGanancia = view.findViewById<TextView>(R.id.tvLabelGanancia)
+        tvLabelGanancia.text = String.format("GANANCIA EXTRA (%d%%):", viewModel.margenGanancia.toInt())
+
+        val llFilaMateriales = view.findViewById<LinearLayout>(R.id.llFilaMateriales)
+        val tvDetalleMaterialesDesc = view.findViewById<TextView>(R.id.tvDetalleMaterialesDesc)
+
+        tvDetalleMaterialesDesc.text = buildString {
+            if (viewModel.listaEstambresGuardados.isEmpty() && viewModel.listaAccesoriosGuardados.isEmpty()) {
+                append("- Sin detalles agregados")
+            } else {
+                viewModel.listaEstambresGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
+                viewModel.listaAccesoriosGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
+            }
+        }.trimEnd()
+
+        var matExpandido = false
+        llFilaMateriales.setOnClickListener {
+            matExpandido = !matExpandido
+            tvDetalleMaterialesDesc.visibility = if (matExpandido) View.VISIBLE else View.GONE
+        }
+
+        val llFilaManoObra = view.findViewById<LinearLayout>(R.id.llFilaManoObra)
+        val tvDetalleManoObraDesc = view.findViewById<TextView>(R.id.tvDetalleManoObraDesc)
+
+        tvDetalleManoObraDesc.text = String.format("- Tiempo: %.2f hrs\n- Pago: $%.2f/hr", viewModel.horasTrabajadasTemp, viewModel.pagoPorHoraTemp)
+
+        var manoExpandida = false
+        llFilaManoObra.setOnClickListener {
+            manoExpandida = !manoExpandida
+            tvDetalleManoObraDesc.visibility = if (manoExpandida) View.VISIBLE else View.GONE
+        }
 
         view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
             mostrarModalGuardar()
@@ -107,13 +147,23 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 return@setOnClickListener
             }
 
-            viewModel.guardarProyecto(nombre, uriFotoSeleccionada)
-            dialog.dismiss()
+            btnConfirmar.isEnabled = false
+            btnCancelar?.isEnabled = false
+            btnConfirmar.text = "Subiendo a la nube..."
 
-            parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, DashboardFragment())
-                .commit()
+            viewModel.guardarProyecto(nombre, uriFotoSeleccionada) { exito ->
+                if (exito) {
+                    dialog.dismiss()
+                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainer, DashboardFragment())
+                        .commit()
+                } else {
+                    btnConfirmar.isEnabled = true
+                    btnCancelar?.isEnabled = true
+                    btnConfirmar.text = "Reintentar"
+                }
+            }
         }
 
         dialog.show()

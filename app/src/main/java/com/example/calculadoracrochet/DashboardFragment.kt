@@ -9,12 +9,14 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,10 +55,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val btnOrdenar = view.findViewById<MaterialButton>(R.id.btnOrdenarFechas)
         btnOrdenar.setOnClickListener {
             ordenMasReciente = !ordenMasReciente
-
             val iconRes = if (ordenMasReciente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
             btnOrdenar.setIconResource(iconRes)
-
             filtrarYOrdenarLista()
         }
 
@@ -89,6 +89,19 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_detalle_proyecto, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
+        val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
+
+        if (!proyecto.fotoUri.isNullOrEmpty()) {
+            cvFotoContenedor.visibility = View.VISIBLE
+            ivFoto.load(proyecto.fotoUri) {
+                crossfade(true)
+                error(android.R.drawable.ic_menu_camera)
+            }
+        } else {
+            cvFotoContenedor.visibility = View.GONE
+        }
 
         dialogView.findViewById<TextView>(R.id.tvDetalleNombre).text = proyecto.nombre
 
@@ -137,6 +150,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener { dialog.dismiss() }
+
+
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
             DialogUtils.mostrarModal(requireContext(), "Eliminar Proyecto", "¿Segura que deseas eliminar '${proyecto.nombre}'?", "Eliminar") {

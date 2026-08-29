@@ -89,39 +89,45 @@
                                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginBottom="16dp"
                                 android:hint="Pago deseado por hora ($)"
                                 android:textColorHint="@color/gray_text"
-                                app:hintTextColor="@color/purple_primary"
                                 app:boxStrokeColor="@color/purple_primary"
+                                app:hintTextColor="@color/purple_primary"
                                 app:startIconDrawable="@drawable/ic_monetization"
-                                app:startIconTint="@color/purple_primary"
-                                android:layout_marginBottom="16dp">
+                                app:startIconTint="@color/purple_primary">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etPagoHora"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:inputType="numberDecimal"
                                     android:textColor="@color/gray_text"
-                                    android:textColorHint="@color/gray_hint"
-                                    android:inputType="numberDecimal"/>
+                                    android:textColorHint="@color/gray_hint" />
                             </com.google.android.material.textfield.TextInputLayout>
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginBottom="8dp"
                                 android:text="Selecciona el tiempo invertido:"
                                 android:textColor="@color/purple_primary"
-                                android:textStyle="bold"
                                 android:textSize="14sp"
-                                android:layout_marginBottom="8dp"
-                                android:layout_marginTop="8dp"/>
+                                android:textStyle="bold" />
 
-                            <TimePicker
-                                android:id="@+id/timePickerHoras"
+                            <com.example.calculadoracrochet.RelojScrollWrapper
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:timePickerMode="clock"
-                                android:theme="@style/RelojMinaCrochett" />
+                                android:layout_height="wrap_content">
+
+                                <TimePicker
+                                    android:id="@+id/timePickerHoras"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:timePickerMode="clock"
+                                    android:theme="@style/RelojMinaCrochett" />
+
+                            </com.example.calculadoracrochet.RelojScrollWrapper>
 
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>

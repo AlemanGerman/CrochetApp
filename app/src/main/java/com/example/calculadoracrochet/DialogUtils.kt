@@ -15,7 +15,7 @@ object DialogUtils {
         titulo: String,
         mensaje: String,
         textoConfirmar: String = "Confirmar",
-        iconoResId: Int = android.R.drawable.ic_menu_delete,
+        iconoResId: Int = R.drawable.ic_eliminar,
         accionConfirmar: () -> Unit
     ) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_personalizado, null)
