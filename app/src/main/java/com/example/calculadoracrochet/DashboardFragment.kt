@@ -151,8 +151,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener { dialog.dismiss() }
 
-
-
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
             DialogUtils.mostrarModal(requireContext(), "Eliminar Proyecto", "¿Segura que deseas eliminar '${proyecto.nombre}'?", "Eliminar") {
                 viewModel.eliminarProyecto(proyecto)
@@ -161,15 +159,41 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener {
+            viewModel.idProyectoEnEdicion = null
+
             viewModel.costoMateriales = proyecto.costoMateriales
             viewModel.costoDiseno = proyecto.costoDiseno
             viewModel.costoManoObra = proyecto.costoManoObra
             viewModel.costoEmpaque = proyecto.costoEmpaque
             viewModel.margenGanancia = proyecto.margenGanancia
-
             viewModel.horasTrabajadasTemp = proyecto.horasTrabajadas
             viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
+            viewModel.nombreTemp = proyecto.nombre
+            viewModel.fotoUriTemp = proyecto.fotoUri
 
+            viewModel.listaEstambresGuardados.clear()
+            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
+            viewModel.listaAccesoriosGuardados.clear()
+            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
+
+            dialog.dismiss()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, MaterialesFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        val btnOpciones = dialogView.findViewById<ImageView>(R.id.btnOpcionesDetalle)
+        btnOpciones.setOnClickListener {
+            viewModel.idProyectoEnEdicion = proyecto.id
+
+            viewModel.costoMateriales = proyecto.costoMateriales
+            viewModel.costoDiseno = proyecto.costoDiseno
+            viewModel.costoManoObra = proyecto.costoManoObra
+            viewModel.costoEmpaque = proyecto.costoEmpaque
+            viewModel.margenGanancia = proyecto.margenGanancia
+            viewModel.horasTrabajadasTemp = proyecto.horasTrabajadas
+            viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
             viewModel.nombreTemp = proyecto.nombre
             viewModel.fotoUriTemp = proyecto.fotoUri
 

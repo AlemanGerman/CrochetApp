@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -18,13 +19,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
-
-    private val storage = com.google.firebase.storage.FirebaseStorage.getInstance()
 
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
@@ -35,7 +35,6 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 uri,
                 android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-
             uriFotoSeleccionada = uri.toString()
             try {
                 ivPreviewModal?.setImageURI(uri)
@@ -54,8 +53,26 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
         val ganancia = subtotal * (viewModel.margenGanancia / 100)
 
+        val tvFechaTicket = view.findViewById<TextView>(R.id.tvFechaTicket)
         val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", Locale("es", "MX"))
-        view.findViewById<TextView>(R.id.tvFechaTicket).text = dateFormato.format(Date()).uppercase()
+
+        fun actualizarTextoFecha() {
+            val fechaAUsar = viewModel.fechaEnEdicion ?: System.currentTimeMillis()
+            tvFechaTicket.text = dateFormato.format(Date(fechaAUsar)).uppercase()
+        }
+
+        actualizarTextoFecha()
+
+        val btnCambiarFecha = view.findViewById<MaterialButton>(R.id.btnCambiarFecha)
+
+        if (viewModel.idProyectoEnEdicion != null) {
+            btnCambiarFecha.visibility = View.VISIBLE
+            btnCambiarFecha.setOnClickListener {
+                mostrarModalFecha { actualizarTextoFecha() }
+            }
+        } else {
+            btnCambiarFecha.visibility = View.GONE
+        }
 
         view.findViewById<TextView>(R.id.tvPrecioFinal).text = String.format("$%.2f", viewModel.precioFinalSugerdio)
         view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = String.format("$%.2f", viewModel.costoMateriales)
@@ -100,6 +117,40 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
             mostrarModalGuardar()
         }
+    }
+
+    private fun mostrarModalFecha(onFechaActualizada: () -> Unit) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_seleccionar_fecha, null)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        val datePicker = dialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
+        val calendario = Calendar.getInstance()
+
+        viewModel.fechaEnEdicion?.let { calendario.timeInMillis = it }
+
+        datePicker.updateDate(
+            calendario.get(Calendar.YEAR),
+            calendario.get(Calendar.MONTH),
+            calendario.get(Calendar.DAY_OF_MONTH)
+        )
+
+        dialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+            val nuevaFecha = Calendar.getInstance()
+            nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
+            viewModel.fechaEnEdicion = nuevaFecha.timeInMillis
+            onFechaActualizada()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun mostrarModalGuardar() {
@@ -151,7 +202,19 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             btnCancelar?.isEnabled = false
             btnConfirmar.text = "Subiendo a la nube..."
 
-            viewModel.guardarProyecto(nombre, uriFotoSeleccionada) { exito ->
+            var fotoBytes: ByteArray? = null
+            if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {
+                try {
+                    val uri = android.net.Uri.parse(uriFotoSeleccionada)
+                    val inputStream = requireContext().contentResolver.openInputStream(uri)
+                    fotoBytes = inputStream?.readBytes()
+                    inputStream?.close()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            viewModel.guardarProyecto(nombre, uriFotoSeleccionada, fotoBytes) { exito ->
                 if (exito) {
                     dialog.dismiss()
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)

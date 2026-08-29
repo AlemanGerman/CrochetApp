@@ -267,6 +267,24 @@
     </ScrollView>
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCambiarFecha"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:paddingHorizontal="24dp"
+        android:text="Modificar fecha"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:backgroundTint="@color/purple_primary"
+        app:cornerRadius="32dp"
+        android:elevation="8dp"
+        app:icon="@drawable/ic_editar"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/btnGuardar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGuardar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
