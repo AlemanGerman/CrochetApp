@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,15 +29,24 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private lateinit var adapter: ProyectosAdapter
     private var ordenMasReciente = true
 
+    private var carpetaSeleccionada = "Todos"
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = ProyectosAdapter(emptyList()) { proyectoClickeado ->
-            mostrarDetalleProyecto(proyectoClickeado)
-        }
+        adapter = ProyectosAdapter(
+            listaProyectos = emptyList<ProyectoCrochet>(),
+            onItemClick = { proyectoClickeado ->
+                mostrarDetalleProyecto(proyectoClickeado)
+            },
+            onEditCarpetaClick = { proyectoParaEditar ->
+                mostrarModalCarpetas(proyectoParaEditar)
+            }
+        )
+
         recyclerView.adapter = adapter
 
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
@@ -67,6 +77,76 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 .addToBackStack(null)
                 .commit()
         }
+
+        configurarBotonesCarpetas(view)
+    }
+
+    private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_carpetas, null)
+        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        val cbAmigurumi = dialogView.findViewById<MaterialCheckBox>(R.id.cbAmigurumi)
+        val cbLlaveros = dialogView.findViewById<MaterialCheckBox>(R.id.cbLlaveros)
+        val cbRamos = dialogView.findViewById<MaterialCheckBox>(R.id.cbRamos)
+        val cbPeluches = dialogView.findViewById<MaterialCheckBox>(R.id.cbPeluches)
+        val cbAccesorios = dialogView.findViewById<MaterialCheckBox>(R.id.cbAccesorios)
+        val cbExtras = dialogView.findViewById<MaterialCheckBox>(R.id.cbExtras)
+
+        cbAmigurumi.isChecked = proyecto.carpetas.contains("Amigurumi")
+        cbLlaveros.isChecked = proyecto.carpetas.contains("Llaveros")
+        cbRamos.isChecked = proyecto.carpetas.contains("Ramos")
+        cbPeluches.isChecked = proyecto.carpetas.contains("Peluches")
+        cbAccesorios.isChecked = proyecto.carpetas.contains("Accesorios")
+        cbExtras.isChecked = proyecto.carpetas.contains("Extras")
+
+        dialogView.findViewById<MaterialButton>(R.id.btnCancelarCarpetas).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<MaterialButton>(R.id.btnGuardarCarpetas).setOnClickListener {
+            val nuevasCarpetas = mutableListOf<String>()
+            if (cbAmigurumi.isChecked) nuevasCarpetas.add("Amigurumi")
+            if (cbLlaveros.isChecked) nuevasCarpetas.add("Llaveros")
+            if (cbRamos.isChecked) nuevasCarpetas.add("Ramos")
+            if (cbPeluches.isChecked) nuevasCarpetas.add("Peluches")
+            if (cbAccesorios.isChecked) nuevasCarpetas.add("Accesorios")
+            if (cbExtras.isChecked) nuevasCarpetas.add("Extras")
+
+            proyecto.carpetas = nuevasCarpetas
+
+            viewModel.actualizarCarpetasProyecto(proyecto)
+
+            filtrarYOrdenarLista()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun configurarBotonesCarpetas(view: View) {
+        val carpetasIds = listOf(
+            "Todos" to R.id.folderTodos,
+            "Amigurumi" to R.id.folderAmigurumi,
+            "Llaveros" to R.id.folderLlaveros,
+            "Ramos" to R.id.folderRamos,
+            "Peluches" to R.id.folderPeluches,
+            "Accesorios" to R.id.folderAccesorios,
+            "Extras" to R.id.folderExtras
+        )
+
+        carpetasIds.forEach { (nombreCarpeta, idLayout) ->
+            view.findViewById<LinearLayout>(idLayout).setOnClickListener {
+                carpetaSeleccionada = nombreCarpeta
+
+                carpetasIds.forEach { (_, id) ->
+                    val layout = view.findViewById<LinearLayout>(id)
+                    layout.alpha = if (id == idLayout) 1.0f else 0.5f
+                }
+
+                filtrarYOrdenarLista()
+            }
+        }
     }
 
     private fun filtrarYOrdenarLista() {
@@ -74,6 +154,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         var listaResultante = viewModel.historialProyectos.filter { proyecto ->
             proyecto.nombre.lowercase().contains(textoBusqueda)
+        }
+
+        if (carpetaSeleccionada != "Todos") {
+            listaResultante = listaResultante.filter { proyecto ->
+                proyecto.carpetas.contains(carpetaSeleccionada)
+            }
         }
 
         listaResultante = if (ordenMasReciente) {
@@ -158,8 +244,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         }
 
-        dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener {
-            viewModel.idProyectoEnEdicion = null
+        fun prepararProyectoParaEdicion(esDuplicado: Boolean) {
+            viewModel.idProyectoEnEdicion = if (esDuplicado) null else proyecto.id
 
             viewModel.costoMateriales = proyecto.costoMateriales
             viewModel.costoDiseno = proyecto.costoDiseno
@@ -170,6 +256,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
             viewModel.nombreTemp = proyecto.nombre
             viewModel.fotoUriTemp = proyecto.fotoUri
+
+            viewModel.carpetasTemp.clear()
+            viewModel.carpetasTemp.addAll(proyecto.carpetas)
 
             viewModel.listaEstambresGuardados.clear()
             viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
@@ -183,30 +272,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 .commit()
         }
 
-        val btnOpciones = dialogView.findViewById<ImageView>(R.id.btnOpcionesDetalle)
-        btnOpciones.setOnClickListener {
-            viewModel.idProyectoEnEdicion = proyecto.id
+        dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener {
+            prepararProyectoParaEdicion(esDuplicado = true)
+        }
 
-            viewModel.costoMateriales = proyecto.costoMateriales
-            viewModel.costoDiseno = proyecto.costoDiseno
-            viewModel.costoManoObra = proyecto.costoManoObra
-            viewModel.costoEmpaque = proyecto.costoEmpaque
-            viewModel.margenGanancia = proyecto.margenGanancia
-            viewModel.horasTrabajadasTemp = proyecto.horasTrabajadas
-            viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
-            viewModel.nombreTemp = proyecto.nombre
-            viewModel.fotoUriTemp = proyecto.fotoUri
-
-            viewModel.listaEstambresGuardados.clear()
-            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
-            viewModel.listaAccesoriosGuardados.clear()
-            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
-
-            dialog.dismiss()
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, MaterialesFragment())
-                .addToBackStack(null)
-                .commit()
+        val btnOpciones = dialogView.findViewById<View>(R.id.btnOpcionesDetalle)
+        btnOpciones?.setOnClickListener {
+            prepararProyectoParaEdicion(esDuplicado = false)
         }
 
         dialog.show()

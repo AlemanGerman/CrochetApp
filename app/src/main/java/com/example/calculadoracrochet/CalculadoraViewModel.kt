@@ -24,7 +24,8 @@ data class ProyectoCrochet(
     var horasTrabajadas: Double = 0.0,
     var pagoPorHora: Double = 0.0,
     var listaEstambres: List<EstambreGuardado> = emptyList(),
-    var listaAccesorios: List<AccesorioGuardado> = emptyList()
+    var listaAccesorios: List<AccesorioGuardado> = emptyList(),
+    var carpetas: List<String> = emptyList()
 )
 
 class CalculadoraViewModel : ViewModel() {
@@ -41,6 +42,7 @@ class CalculadoraViewModel : ViewModel() {
 
     var horasTrabajadasTemp: Double = 0.0
     var pagoPorHoraTemp: Double = 0.0
+    var carpetasTemp = mutableListOf<String>()
 
     var nombreTemp: String = ""
     var fotoUriTemp: String? = null
@@ -98,7 +100,8 @@ class CalculadoraViewModel : ViewModel() {
                 horasTrabajadas = horasTrabajadasTemp,
                 pagoPorHora = pagoPorHoraTemp,
                 listaEstambres = listaEstambresGuardados.toList(),
-                listaAccesorios = listaAccesoriosGuardados.toList()
+                listaAccesorios = listaAccesoriosGuardados.toList(),
+                carpetas = carpetasTemp.toList()
             )
 
             db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
@@ -148,6 +151,13 @@ class CalculadoraViewModel : ViewModel() {
         }
     }
 
+    fun actualizarCarpetasProyecto(proyecto: ProyectoCrochet) {
+        db.collection("proyectos_mina")
+            .document(proyecto.id)
+            .update("carpetas", proyecto.carpetas)
+            .addOnSuccessListener { Log.d("Firebase", "Carpetas actualizadas") }
+    }
+
     fun limpiarCalculoActual() {
         costoMateriales = 0.0
         costoDiseno = 0.0
@@ -163,5 +173,6 @@ class CalculadoraViewModel : ViewModel() {
         fechaEnEdicion = null
         listaEstambresGuardados.clear()
         listaAccesoriosGuardados.clear()
+        carpetasTemp.clear()
     }
 }

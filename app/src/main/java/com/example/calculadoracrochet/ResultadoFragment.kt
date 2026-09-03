@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -171,9 +172,25 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         val btnCancelar = dialogView.findViewById<MaterialButton>(R.id.btnCancelarGuardar)
         val btnConfirmar = dialogView.findViewById<MaterialButton>(R.id.btnConfirmarGuardar)
 
+        // Inicializar Chips
+        val chipAmigurumi = dialogView.findViewById<Chip>(R.id.chipAmigurumi)
+        val chipLlaveros = dialogView.findViewById<Chip>(R.id.chipLlaveros)
+        val chipRamos = dialogView.findViewById<Chip>(R.id.chipRamos)
+        val chipPeluches = dialogView.findViewById<Chip>(R.id.chipPeluches)
+        val chipAccesorios = dialogView.findViewById<Chip>(R.id.chipAccesorios)
+        val chipExtras = dialogView.findViewById<Chip>(R.id.chipExtras)
+
         if (viewModel.nombreTemp.isNotEmpty()) {
             etNombre?.setText(viewModel.nombreTemp)
         }
+
+        // Pre-seleccionar carpetas (si estamos editando o duplicando)
+        if (viewModel.carpetasTemp.contains("Amigurumi")) chipAmigurumi?.isChecked = true
+        if (viewModel.carpetasTemp.contains("Llaveros")) chipLlaveros?.isChecked = true
+        if (viewModel.carpetasTemp.contains("Ramos")) chipRamos?.isChecked = true
+        if (viewModel.carpetasTemp.contains("Peluches")) chipPeluches?.isChecked = true
+        if (viewModel.carpetasTemp.contains("Accesorios")) chipAccesorios?.isChecked = true
+        if (viewModel.carpetasTemp.contains("Extras")) chipExtras?.isChecked = true
 
         if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
             uriFotoSeleccionada = viewModel.fotoUriTemp
@@ -189,6 +206,10 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
         }
 
+        ivPreviewModal?.setOnClickListener {
+            pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
+        }
+
         btnCancelar?.setOnClickListener { dialog.dismiss() }
 
         btnConfirmar?.setOnClickListener {
@@ -201,6 +222,17 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             btnConfirmar.isEnabled = false
             btnCancelar?.isEnabled = false
             btnConfirmar.text = "Subiendo a la nube..."
+
+            val carpetasSeleccionadas = mutableListOf<String>()
+            if (chipAmigurumi?.isChecked == true) carpetasSeleccionadas.add("Amigurumi")
+            if (chipLlaveros?.isChecked == true) carpetasSeleccionadas.add("Llaveros")
+            if (chipRamos?.isChecked == true) carpetasSeleccionadas.add("Ramos")
+            if (chipPeluches?.isChecked == true) carpetasSeleccionadas.add("Peluches")
+            if (chipAccesorios?.isChecked == true) carpetasSeleccionadas.add("Accesorios")
+            if (chipExtras?.isChecked == true) carpetasSeleccionadas.add("Extras")
+
+            viewModel.carpetasTemp.clear()
+            viewModel.carpetasTemp.addAll(carpetasSeleccionadas)
 
             var fotoBytes: ByteArray? = null
             if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {

@@ -12,4 +12,9 @@
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="black">#000000</color>
+
+    <color name="green_mina">#56842b</color>
+    <color name="yellow_mina">#e0b54c</color>
+    <color name="white_mina">#f3ecda</color>
+    <color name="purple_mina">#bd81cd</color>
 </resources>

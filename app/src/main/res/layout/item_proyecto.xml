@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="24dp"
-    android:layout_marginVertical="12dp"
+    android:layout_marginVertical="8dp"
     app:cardCornerRadius="24dp"
     app:cardElevation="6dp"
     android:backgroundTint="@color/white">
@@ -22,8 +21,7 @@
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/RoundedSquare"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvNombreProyecto"
@@ -36,7 +34,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
             app:layout_constraintTop_toTopOf="@id/ivImagenProyecto"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"/>
 
         <TextView
             android:id="@+id/tvFecha"
@@ -48,11 +46,12 @@
             android:textSize="14sp"
             android:textColor="@color/gray_hint"
             app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
+            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"
             app:layout_constraintTop_toBottomOf="@id/tvNombreProyecto"/>
 
         <TextView
             android:id="@+id/tvPrecioProyecto"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="4dp"
@@ -61,6 +60,69 @@
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
+            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"
             app:layout_constraintTop_toBottomOf="@id/tvFecha" />
+
+        <ImageButton
+            android:id="@+id/btnAgregarCarpetaVacio"
+            android:layout_width="52dp"
+            android:layout_height="0dp"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_editar_carpeta"
+            app:tint="@color/purple_primary"
+            android:contentDescription="Asignar carpetas"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvFecha"
+            app:layout_constraintBottom_toBottomOf="@id/tvPrecioProyecto"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/llContenedorTags"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/ivImagenProyecto"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:scrollbars="none"
+                android:layout_marginEnd="8dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cgCarpetasTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleLine="true">
+
+                    <com.google.android.material.chip.Chip android:id="@+id/chipAmigurumi" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Amigurumi" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+                    <com.google.android.material.chip.Chip android:id="@+id/chipLlaveros" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Llaveros" android:textColor="@color/black" app:chipStrokeColor="@color/white_mina" app:chipBackgroundColor="@color/white_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+                    <com.google.android.material.chip.Chip android:id="@+id/chipRamos" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Ramos" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+                    <com.google.android.material.chip.Chip android:id="@+id/chipPeluches" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Peluches" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+                    <com.google.android.material.chip.Chip android:id="@+id/chipAccesorios" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Accesorios" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+                    <com.google.android.material.chip.Chip android:id="@+id/chipExtras" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Extras" app:chipStrokeColor="@color/yellow_mina" app:chipBackgroundColor="@color/yellow_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <ImageButton
+                android:id="@+id/btnEditarCarpeta"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="centerInside"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_editar_carpeta"
+                app:tint="@color/purple_primary"
+                android:contentDescription="Asignar carpetas"/>
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -38,27 +38,14 @@
                         android:id="@+id/tvTituloDashboard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tus Proyectos\nGuardados"
-                        android:textSize="28sp"
+                        android:text="Tus Proyectos"
+                        android:textSize="40sp"
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:gravity="center"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent" />
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/btnConfiguracion"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_settings"
-                        app:backgroundTint="@color/white"
-                        app:tint="@color/purple_primary"
-                        app:elevation="2dp"
-                        app:fabSize="mini"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -123,14 +110,221 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <HorizontalScrollView
+                android:id="@+id/hsvCarpetas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@id/cardControlesBuscador"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="4dp">
+
+                    <LinearLayout
+                        android:id="@+id/folderTodos"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_todos"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Todos"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderAmigurumi"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_amigurumi"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Amigurumi"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderLlaveros"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_llaveros"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Llaveros"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderRamos"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_ramos"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ramos"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderPeluches"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_peluches"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Peluches"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderAccesorios"
+                        android:layout_width="76dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_accesorios"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Accesorios"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/folderExtras"
+                        android:layout_width="72dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:alpha="0.5"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_carpeta_extras"
+                            android:scaleType="centerInside"
+                            android:layout_marginBottom="4dp"
+                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Extras"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvProyectos"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
                 android:clipToPadding="false"
-                app:layout_constraintTop_toBottomOf="@id/cardControlesBuscador"
+                app:layout_constraintTop_toBottomOf="@id/hsvCarpetas"
                 app:layout_constraintBottom_toTopOf="@id/btnNuevoProyecto"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
