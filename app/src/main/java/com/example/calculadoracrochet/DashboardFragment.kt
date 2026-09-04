@@ -8,10 +8,13 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +22,12 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -28,8 +36,38 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
     private var ordenMasReciente = true
-
     private var carpetaSeleccionada = "Todos"
+
+    private var proyectoEditandoID: String? = null
+    private var ivFotoActualizando: ImageView? = null
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null && proyectoEditandoID != null) {
+            val idProyecto = proyectoEditandoID!!
+            ivFotoActualizando?.load(uri) { crossfade(true) }
+            ivFotoActualizando?.imageTintList = null
+            ivFotoActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
+
+            var fotoBytes: ByteArray? = null
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                fotoBytes = inputStream?.readBytes()
+                inputStream?.close()
+            } catch (e: Exception) { e.printStackTrace() }
+
+            if (fotoBytes != null) {
+                val storageRef = FirebaseStorage.getInstance().reference.child("fotos_proyectos/${idProyecto}.jpg")
+                storageRef.putBytes(fotoBytes).addOnSuccessListener {
+                    storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
+                        FirebaseFirestore.getInstance().collection("proyectos_mina")
+                            .document(idProyecto).update("fotoUri", uriDescarga.toString())
+                    }
+                }
+            }
+        }
+        proyectoEditandoID = null
+        ivFotoActualizando = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,25 +77,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         adapter = ProyectosAdapter(
             listaProyectos = emptyList<ProyectoCrochet>(),
-            onItemClick = { proyectoClickeado ->
-                mostrarDetalleProyecto(proyectoClickeado)
-            },
-            onEditCarpetaClick = { proyectoParaEditar ->
-                mostrarModalCarpetas(proyectoParaEditar)
-            }
+            onItemClick = { proyectoClickeado -> mostrarDetalleProyecto(proyectoClickeado) },
+            onEditCarpetaClick = { proyectoParaEditar -> mostrarModalCarpetas(proyectoParaEditar) }
         )
 
         recyclerView.adapter = adapter
 
-        viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
-            filtrarYOrdenarLista()
-        }
+        viewModel.proyectosEnVivo.observe(viewLifecycleOwner) { filtrarYOrdenarLista() }
 
         val etBuscar = view.findViewById<EditText>(R.id.etBuscarProyecto)
         etBuscar.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                filtrarYOrdenarLista()
-            }
+            override fun afterTextChanged(s: Editable?) { filtrarYOrdenarLista() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -101,9 +131,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         cbAccesorios.isChecked = proyecto.carpetas.contains("Accesorios")
         cbExtras.isChecked = proyecto.carpetas.contains("Extras")
 
-        dialogView.findViewById<MaterialButton>(R.id.btnCancelarCarpetas).setOnClickListener {
-            dialog.dismiss()
-        }
+        dialogView.findViewById<MaterialButton>(R.id.btnCancelarCarpetas).setOnClickListener { dialog.dismiss() }
 
         dialogView.findViewById<MaterialButton>(R.id.btnGuardarCarpetas).setOnClickListener {
             val nuevasCarpetas = mutableListOf<String>()
@@ -115,9 +143,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             if (cbExtras.isChecked) nuevasCarpetas.add("Extras")
 
             proyecto.carpetas = nuevasCarpetas
-
             viewModel.actualizarCarpetasProyecto(proyecto)
-
             filtrarYOrdenarLista()
             dialog.dismiss()
         }
@@ -139,12 +165,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         carpetasIds.forEach { (nombreCarpeta, idLayout) ->
             view.findViewById<LinearLayout>(idLayout).setOnClickListener {
                 carpetaSeleccionada = nombreCarpeta
-
                 carpetasIds.forEach { (_, id) ->
                     val layout = view.findViewById<LinearLayout>(id)
                     layout.alpha = if (id == idLayout) 1.0f else 0.5f
                 }
-
                 filtrarYOrdenarLista()
             }
         }
@@ -180,20 +204,103 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
 
-        if (!proyecto.fotoUri.isNullOrEmpty()) {
-            cvFotoContenedor.visibility = View.VISIBLE
-            ivFoto.load(proyecto.fotoUri) {
-                crossfade(true)
-                error(android.R.drawable.ic_menu_camera)
+        fun refrescarImagenLocal() {
+            if (!proyecto.fotoUri.isNullOrEmpty()) {
+                ivFoto.load(proyecto.fotoUri) { crossfade(true) }
+                ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
+                ivFoto.imageTintList = null
+            } else {
+                ivFoto.setImageResource(R.drawable.ic_photo)
+                ivFoto.scaleType = ImageView.ScaleType.CENTER
+                ivFoto.imageTintList = android.content.res.ColorStateList.valueOf(Color.GRAY)
             }
-        } else {
-            cvFotoContenedor.visibility = View.GONE
+        }
+        refrescarImagenLocal()
+
+        cvFotoContenedor.setOnClickListener {
+            val opciones = if (proyecto.fotoUri.isNullOrEmpty()) arrayOf("Añadir foto") else arrayOf("Cambiar foto", "Eliminar foto")
+            MaterialAlertDialogBuilder(requireContext())
+                .setItems(opciones) { _, which ->
+                    when (opciones[which]) {
+                        "Eliminar foto" -> {
+                            FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fotoUri", null)
+                            proyecto.fotoUri = null
+                            refrescarImagenLocal()
+                        }
+                        else -> {
+                            proyectoEditandoID = proyecto.id
+                            ivFotoActualizando = ivFoto
+                            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        }
+                    }
+                }.show()
         }
 
-        dialogView.findViewById<TextView>(R.id.tvDetalleNombre).text = proyecto.nombre
+        val tvNombre = dialogView.findViewById<TextView>(R.id.tvDetalleNombre)
+        tvNombre.text = proyecto.nombre
+
+        tvNombre.setOnClickListener {
+            val viewNombre = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_nombre, null)
+            val dialogNombre = AlertDialog.Builder(requireContext()).setView(viewNombre).create()
+            dialogNombre.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            val etNuevoNombre = viewNombre.findViewById<TextInputEditText>(R.id.etNuevoNombre)
+            etNuevoNombre.setText(proyecto.nombre)
+
+            viewNombre.findViewById<MaterialButton>(R.id.btnCancelarNombre).setOnClickListener {
+                dialogNombre.dismiss()
+            }
+
+            viewNombre.findViewById<MaterialButton>(R.id.btnGuardarNombre).setOnClickListener {
+                val nuevoNombre = etNuevoNombre.text.toString().trim()
+                if (nuevoNombre.isNotEmpty()) {
+                    FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("nombre", nuevoNombre)
+                    proyecto.nombre = nuevoNombre
+                    tvNombre.text = nuevoNombre
+                    dialogNombre.dismiss()
+                } else {
+                    etNuevoNombre.error = "Ingresa un nombre"
+                }
+            }
+            dialogNombre.show()
+        }
 
         val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", Locale("es", "MX"))
-        dialogView.findViewById<TextView>(R.id.tvDetalleFecha).text = formatoFecha.format(Date(proyecto.fechaGuardado))
+        val tvFecha = dialogView.findViewById<TextView>(R.id.tvDetalleFecha)
+        tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
+
+        tvFecha.setOnClickListener {
+            val fechaDialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_seleccionar_fecha, null)
+            val dialogFecha = MaterialAlertDialogBuilder(requireContext()).setView(fechaDialogView).create()
+            dialogFecha.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+            val datePicker = fechaDialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
+            val calendario = Calendar.getInstance()
+            calendario.timeInMillis = proyecto.fechaGuardado
+
+            datePicker.updateDate(
+                calendario.get(Calendar.YEAR),
+                calendario.get(Calendar.MONTH),
+                calendario.get(Calendar.DAY_OF_MONTH)
+            )
+
+            fechaDialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
+                dialogFecha.dismiss()
+            }
+
+            fechaDialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+                val nuevaFecha = Calendar.getInstance()
+                nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
+                val tiempoMs = nuevaFecha.timeInMillis
+
+                FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fechaGuardado", tiempoMs)
+                proyecto.fechaGuardado = tiempoMs
+                tvFecha.text = formatoFecha.format(Date(tiempoMs))
+
+                dialogFecha.dismiss()
+            }
+            dialogFecha.show()
+        }
 
         dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = String.format("Total: $%.2f", proyecto.precioFinal)
         dialogView.findViewById<TextView>(R.id.tvDetallePatron).text = String.format("$%.2f", proyecto.costoDiseno)
@@ -245,9 +352,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         }
 
-        fun prepararProyectoParaEdicion(esDuplicado: Boolean) {
-            viewModel.idProyectoEnEdicion = if (esDuplicado) null else proyecto.id
-
+        val btnOpciones = dialogView.findViewById<View>(R.id.btnOpcionesDetalle)
+        btnOpciones?.setOnClickListener {
+            viewModel.idProyectoEnEdicion = proyecto.id
             viewModel.costoMateriales = proyecto.costoMateriales
             viewModel.costoDiseno = proyecto.costoDiseno
             viewModel.costoManoObra = proyecto.costoManoObra
@@ -257,9 +364,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
             viewModel.nombreTemp = proyecto.nombre
             viewModel.fotoUriTemp = proyecto.fotoUri
-
-            viewModel.carpetasTemp.clear()
-            viewModel.carpetasTemp.addAll(proyecto.carpetas)
 
             viewModel.listaEstambresGuardados.clear()
             viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
@@ -274,12 +378,27 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener {
-            prepararProyectoParaEdicion(esDuplicado = true)
-        }
+            viewModel.idProyectoEnEdicion = null
+            viewModel.costoMateriales = proyecto.costoMateriales
+            viewModel.costoDiseno = proyecto.costoDiseno
+            viewModel.costoManoObra = proyecto.costoManoObra
+            viewModel.costoEmpaque = proyecto.costoEmpaque
+            viewModel.margenGanancia = proyecto.margenGanancia
+            viewModel.horasTrabajadasTemp = proyecto.horasTrabajadas
+            viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
+            viewModel.nombreTemp = proyecto.nombre
+            viewModel.fotoUriTemp = proyecto.fotoUri
 
-        val btnOpciones = dialogView.findViewById<View>(R.id.btnOpcionesDetalle)
-        btnOpciones?.setOnClickListener {
-            prepararProyectoParaEdicion(esDuplicado = false)
+            viewModel.listaEstambresGuardados.clear()
+            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
+            viewModel.listaAccesoriosGuardados.clear()
+            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
+
+            dialog.dismiss()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, MaterialesFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         dialog.show()
