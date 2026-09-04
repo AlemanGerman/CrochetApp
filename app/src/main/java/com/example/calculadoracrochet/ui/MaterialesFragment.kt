@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,11 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.viewmodel.EstambreGuardado
+import com.example.calculadoracrochet.R
 import com.google.android.material.textfield.TextInputLayout
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {

@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
 import android.graphics.Color
 import android.os.Bundle
@@ -9,6 +9,8 @@ import android.widget.TimePicker
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar

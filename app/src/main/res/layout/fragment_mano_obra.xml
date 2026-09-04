@@ -178,7 +178,7 @@
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
 
-                            <com.example.calculadoracrochet.RelojScrollWrapper
+                            <com.example.calculadoracrochet.utils.RelojScrollWrapper
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content">
 
@@ -189,7 +189,7 @@
                                     android:timePickerMode="clock"
                                     android:theme="@style/RelojMinaCrochett" />
 
-                            </com.example.calculadoracrochet.RelojScrollWrapper>
+                            </com.example.calculadoracrochet.utils.RelojScrollWrapper>
 
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>

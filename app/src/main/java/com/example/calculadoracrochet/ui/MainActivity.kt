@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
 import android.animation.ObjectAnimator
 import android.os.Bundle
@@ -8,6 +8,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.calculadoracrochet.R
 
 class MainActivity : AppCompatActivity() {
 

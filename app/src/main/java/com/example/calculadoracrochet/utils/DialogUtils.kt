@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.utils
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout

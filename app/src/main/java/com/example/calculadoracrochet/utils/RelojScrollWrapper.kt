@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.utils
 
 import android.content.Context
 import android.util.AttributeSet

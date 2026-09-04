@@ -1,7 +1,9 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +17,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -34,7 +39,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            requireContext().contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             uriFotoSeleccionada = uri.toString()
             try {
                 ivPreviewModal?.setImageURI(uri)
@@ -169,7 +174,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
             uriFotoSeleccionada = viewModel.fotoUriTemp
             try {
-                ivPreviewModal?.setImageURI(android.net.Uri.parse(viewModel.fotoUriTemp))
+                ivPreviewModal?.setImageURI(Uri.parse(viewModel.fotoUriTemp))
                 ivPreviewModal?.imageTintList = null
             } catch (e: Exception) { uriFotoSeleccionada = null }
         }
@@ -196,7 +201,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             var fotoBytes: ByteArray? = null
             if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {
                 try {
-                    val uri = android.net.Uri.parse(uriFotoSeleccionada)
+                    val uri = Uri.parse(uriFotoSeleccionada)
                     val inputStream = requireContext().contentResolver.openInputStream(uri)
                     fotoBytes = inputStream?.readBytes()
                     inputStream?.close()

@@ -1,6 +1,7 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
 import android.app.AlertDialog
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -21,6 +22,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.adapters.ProyectosAdapter
+import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
@@ -220,7 +227,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             } else {
                 ivFoto.setImageResource(android.R.drawable.ic_menu_camera)
                 ivFoto.scaleType = ImageView.ScaleType.CENTER
-                ivFoto.imageTintList = android.content.res.ColorStateList.valueOf(Color.GRAY)
+                ivFoto.imageTintList = ColorStateList.valueOf(Color.GRAY)
             }
         }
         refrescarImagenLocal()

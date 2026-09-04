@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.ui
 
 import android.os.Bundle
 import android.view.View
@@ -6,6 +6,8 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 

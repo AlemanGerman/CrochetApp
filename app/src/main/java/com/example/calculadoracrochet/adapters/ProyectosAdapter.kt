@@ -1,5 +1,6 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.adapters
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,9 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
@@ -60,7 +64,7 @@ class ProyectosAdapter(
         } else {
             holder.ivImagen.load(null)
             holder.ivImagen.setImageResource(android.R.drawable.ic_menu_camera)
-            holder.ivImagen.imageTintList = android.content.res.ColorStateList.valueOf(
+            holder.ivImagen.imageTintList = ColorStateList.valueOf(
                 ContextCompat.getColor(holder.itemView.context, R.color.gray_hint)
             )
         }

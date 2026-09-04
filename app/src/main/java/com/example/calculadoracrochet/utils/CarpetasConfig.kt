@@ -1,4 +1,6 @@
-package com.example.calculadoracrochet
+package com.example.calculadoracrochet.utils
+
+import com.example.calculadoracrochet.R
 
 object CarpetasConfig {
     data class CarpetaInfo(
