@@ -97,19 +97,10 @@
                 android:layout_marginEnd="8dp">
 
                 <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/cgCarpetasTag"
+                    android:id="@+id/cgCarpetasProyecto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleLine="true">
-
-                    <com.google.android.material.chip.Chip android:id="@+id/chipAmigurumi" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Amigurumi" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-                    <com.google.android.material.chip.Chip android:id="@+id/chipLlaveros" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Llaveros" android:textColor="@color/black" app:chipStrokeColor="@color/white_mina" app:chipBackgroundColor="@color/white_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-                    <com.google.android.material.chip.Chip android:id="@+id/chipRamos" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Ramos" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-                    <com.google.android.material.chip.Chip android:id="@+id/chipPeluches" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Peluches" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-                    <com.google.android.material.chip.Chip android:id="@+id/chipAccesorios" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Accesorios" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-                    <com.google.android.material.chip.Chip android:id="@+id/chipExtras" style="@style/Widget.MaterialComponents.Chip.Action" android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="false" android:text="Extras" app:chipStrokeColor="@color/yellow_mina" app:chipBackgroundColor="@color/yellow_mina" app:chipStrokeWidth="1dp" android:visibility="gone"/>
-
-                </com.google.android.material.chip.ChipGroup>
+                    app:singleLine="true"/>
             </HorizontalScrollView>
 
             <ImageButton

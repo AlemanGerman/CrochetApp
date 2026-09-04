@@ -83,13 +83,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleLine="true">
-
-                <com.google.android.material.chip.Chip android:id="@+id/chipAmigurumi" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Amigurumi" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp"/>
-                <com.google.android.material.chip.Chip android:id="@+id/chipLlaveros" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Llaveros" app:chipStrokeColor="@color/white_mina" app:chipBackgroundColor="@color/white_mina" app:chipStrokeWidth="1dp"/>
-                <com.google.android.material.chip.Chip android:id="@+id/chipRamos" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Ramos" android:textColor="@color/white" app:chipStrokeColor="@color/green_mina" app:chipBackgroundColor="@color/green_mina" app:chipStrokeWidth="1dp"/>
-                <com.google.android.material.chip.Chip android:id="@+id/chipPeluches" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Peluches" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp"/>
-                <com.google.android.material.chip.Chip android:id="@+id/chipAccesorios" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Accesorios" android:textColor="@color/white" app:chipStrokeColor="@color/purple_mina" app:chipBackgroundColor="@color/purple_mina" app:chipStrokeWidth="1dp"/>
-                <com.google.android.material.chip.Chip android:id="@+id/chipExtras" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="Extras" app:chipStrokeColor="@color/yellow_mina" app:chipBackgroundColor="@color/yellow_mina" app:chipStrokeWidth="1dp"/>
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 

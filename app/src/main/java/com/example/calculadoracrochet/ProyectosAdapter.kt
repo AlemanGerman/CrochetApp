@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,12 +29,8 @@ class ProyectosAdapter(
         val ivImagen: ShapeableImageView = view.findViewById(R.id.ivImagenProyecto)
         val llContenedorTags: LinearLayout = view.findViewById(R.id.llContenedorTags)
         val btnAgregarCarpetaVacio: ImageButton = view.findViewById(R.id.btnAgregarCarpetaVacio)
-        val chipAmigurumi: Chip = view.findViewById(R.id.chipAmigurumi)
-        val chipLlaveros: Chip = view.findViewById(R.id.chipLlaveros)
-        val chipRamos: Chip = view.findViewById(R.id.chipRamos)
-        val chipPeluches: Chip = view.findViewById(R.id.chipPeluches)
-        val chipAccesorios: Chip = view.findViewById(R.id.chipAccesorios)
-        val chipExtras: Chip = view.findViewById(R.id.chipExtras)
+
+        val cgCarpetasProyecto: ChipGroup = view.findViewById(R.id.cgCarpetasProyecto)
         val btnEditarCarpeta: ImageButton = view.findViewById(R.id.btnEditarCarpeta)
     }
 
@@ -63,7 +61,7 @@ class ProyectosAdapter(
             holder.ivImagen.load(null)
             holder.ivImagen.setImageResource(android.R.drawable.ic_menu_camera)
             holder.ivImagen.imageTintList = android.content.res.ColorStateList.valueOf(
-                androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.gray_hint)
+                ContextCompat.getColor(holder.itemView.context, R.color.gray_hint)
             )
         }
 
@@ -78,12 +76,22 @@ class ProyectosAdapter(
             holder.btnAgregarCarpetaVacio.visibility = View.GONE
             holder.llContenedorTags.visibility = View.VISIBLE
 
-            holder.chipAmigurumi.visibility = if (proyecto.carpetas.contains("Amigurumi")) View.VISIBLE else View.GONE
-            holder.chipLlaveros.visibility = if (proyecto.carpetas.contains("Llaveros")) View.VISIBLE else View.GONE
-            holder.chipRamos.visibility = if (proyecto.carpetas.contains("Ramos")) View.VISIBLE else View.GONE
-            holder.chipPeluches.visibility = if (proyecto.carpetas.contains("Peluches")) View.VISIBLE else View.GONE
-            holder.chipAccesorios.visibility = if (proyecto.carpetas.contains("Accesorios")) View.VISIBLE else View.GONE
-            holder.chipExtras.visibility = if (proyecto.carpetas.contains("Extras")) View.VISIBLE else View.GONE
+            holder.cgCarpetasProyecto.removeAllViews()
+
+            CarpetasConfig.listaCarpetas.forEach { info ->
+                if (info.nombre != "Todos" && proyecto.carpetas.contains(info.nombre)) {
+                    val chip = Chip(holder.itemView.context).apply {
+                        text = info.nombre
+                        isCheckable = false
+                        isClickable = false
+                        setChipBackgroundColorResource(info.colorRes)
+                        setTextColor(ContextCompat.getColor(context, info.textColorRes))
+                        setChipStrokeColorResource(info.colorRes)
+                        chipStrokeWidth = 1f * resources.displayMetrics.density
+                    }
+                    holder.cgCarpetasProyecto.addView(chip)
+                }
+            }
         }
 
         holder.btnAgregarCarpetaVacio.setOnClickListener {

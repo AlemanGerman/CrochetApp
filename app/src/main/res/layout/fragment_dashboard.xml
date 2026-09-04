@@ -47,7 +47,6 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -132,200 +131,11 @@
                 app:layout_constraintEnd_toEndOf="parent">
 
                 <LinearLayout
+                    android:id="@+id/llCarpetasDashboard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:paddingVertical="4dp">
-
-                    <LinearLayout
-                        android:id="@+id/folderTodos"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_todos"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Todos"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderAmigurumi"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_amigurumi"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Amigurumi"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderLlaveros"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_llaveros"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Llaveros"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderRamos"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_ramos"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Ramos"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderPeluches"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_peluches"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Peluches"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderAccesorios"
-                        android:layout_width="76dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_accesorios"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Accesorios"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/folderExtras"
-                        android:layout_width="72dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:alpha="0.5"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/ic_carpeta_extras"
-                            android:scaleType="centerInside"
-                            android:layout_marginBottom="4dp"
-                            app:shapeAppearanceOverlay="@style/RoundedSquare" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Extras"
-                            android:textSize="11sp"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
-                </LinearLayout>
+                    android:paddingVertical="4dp" />
             </HorizontalScrollView>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -355,7 +165,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

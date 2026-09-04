@@ -32,54 +32,16 @@
             android:gravity="center"
             android:layout_marginBottom="16dp"/>
 
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbAmigurumi"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Amigurumi"
-            android:textColor="@color/black"
-            app:buttonTint="@color/green_mina"/>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbLlaveros"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Llaveros"
-            android:textColor="@color/black"
-            app:buttonTint="@color/white_mina"/>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbRamos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ramos"
-            android:textColor="@color/black"
-            app:buttonTint="@color/green_mina"/>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbPeluches"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Peluches"
-            android:textColor="@color/black"
-            app:buttonTint="@color/purple_mina"/>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbAccesorios"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Accesorios"
-            android:textColor="@color/black"
-            app:buttonTint="@color/purple_mina"/>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/cbExtras"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Extras"
-            android:textColor="@color/black"
-            app:buttonTint="@color/yellow_mina"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:id="@+id/llCarpetasContenedor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
