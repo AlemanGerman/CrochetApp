@@ -1,13 +1,17 @@
 package com.example.calculadoracrochet
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.TimePicker
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputLayout
 
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
@@ -15,20 +19,17 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val tilPagoHora = view.findViewById<TextInputLayout>(R.id.tilPagoHora)
+        val cardPagoHora = view.findViewById<MaterialCardView>(R.id.cardPagoHora)
+        val tvErrorPago = view.findViewById<TextView>(R.id.tvErrorPago)
         val etPagoHora = view.findViewById<EditText>(R.id.etPagoHora)
         val timePickerHoras = view.findViewById<TimePicker>(R.id.timePickerHoras)
         timePickerHoras.setIs24HourView(true)
+        val colorMorado = ContextCompat.getColor(requireContext(), R.color.purple_primary)
 
-        if (viewModel.pagoPorHoraTemp > 0.0) {
-            etPagoHora.setText(viewModel.pagoPorHoraTemp.toString())
-        }
-
-        if (viewModel.horasTrabajadasTemp > 0.0) {
-            val horas = viewModel.horasTrabajadasTemp.toInt()
-            val minutos = ((viewModel.horasTrabajadasTemp - horas) * 60).toInt()
-            timePickerHoras.hour = horas
-            timePickerHoras.minute = minutos
+        view.findViewById<MaterialButton>(R.id.btnSalarioMinimo).setOnClickListener {
+            etPagoHora.setText("39.38")
+            cardPagoHora.strokeColor = colorMorado
+            tvErrorPago.visibility = View.GONE
         }
 
         view.findViewById<View>(R.id.btnSiguienteManoObra).setOnClickListener {
@@ -42,23 +43,25 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
             val horasTotales = horas + (minutos / 60.0)
 
             if (pagoPorHora < 39.38) {
-                tilPagoHora?.error = "El salario mínimo es $39.38"
+                cardPagoHora.strokeColor = Color.parseColor("#E53935")
+                tvErrorPago.visibility = View.VISIBLE
                 todoCorrecto = false
             } else {
-                tilPagoHora?.error = null
+                cardPagoHora.strokeColor = colorMorado
+                tvErrorPago.visibility = View.GONE
             }
 
             if (horasTotales <= 0.0) {
-                Snackbar.make(view, "Debes seleccionar al menos 1 minuto de trabajo en el reloj", Snackbar.LENGTH_LONG)
-                    .setBackgroundTint(resources.getColor(R.color.purple_primary, null))
+                Snackbar.make(view, "Debes seleccionar al menos 1 minuto de trabajo", Snackbar.LENGTH_LONG)
+                    .setBackgroundTint(colorMorado)
                     .show()
                 todoCorrecto = false
             }
 
             if (todoCorrecto) {
+                viewModel.costoManoObra = pagoPorHora * horasTotales
                 viewModel.pagoPorHoraTemp = pagoPorHora
                 viewModel.horasTrabajadasTemp = horasTotales
-                viewModel.costoManoObra = pagoPorHora * horasTotales
 
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(

@@ -84,27 +84,89 @@
                             android:orientation="vertical"
                             android:padding="20dp">
 
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:id="@+id/tilPagoHora"
-                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="16dp"
-                                android:hint="Pago deseado por hora ($)"
-                                android:textColorHint="@color/gray_text"
-                                app:boxStrokeColor="@color/purple_primary"
-                                app:hintTextColor="@color/purple_primary"
-                                app:startIconDrawable="@drawable/ic_monetization"
-                                app:startIconTint="@color/purple_primary">
+                                android:layout_marginBottom="8dp"
+                                android:text="Pago deseado por hora ($)"
+                                android:textColor="@color/purple_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
 
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etPagoHora"
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/cardPagoHora"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="@color/purple_primary"
+                                app:strokeWidth="1dp"
+                                android:backgroundTint="@color/white">
+
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:inputType="numberDecimal"
-                                    android:textColor="@color/gray_text"
-                                    android:textColorHint="@color/gray_hint" />
-                            </com.google.android.material.textfield.TextInputLayout>
+                                    android:orientation="horizontal"
+                                    android:paddingStart="16dp"
+                                    android:paddingEnd="6dp"
+                                    android:paddingVertical="4dp"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_monetization"
+                                        app:tint="@color/purple_primary" />
+
+                                    <EditText
+                                        android:id="@+id/etPagoHora"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:layout_marginStart="12dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:background="@null"
+                                        android:minHeight="48dp"
+                                        android:hint="Valora tu tiempo"
+                                        android:textColor="@color/gray_text"
+                                        android:textColorHint="@color/gray_hint"
+                                        android:inputType="numberDecimal"
+                                        android:maxLines="1"
+                                        android:textSize="16sp" />
+
+                                    <View
+                                        android:layout_width="1dp"
+                                        android:layout_height="28dp"
+                                        android:background="@color/purple_light"
+                                        android:layout_marginEnd="4dp"/>
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnSalarioMinimo"
+                                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="MIN ($39.38)"
+                                        android:textColor="@color/purple_primary"
+                                        android:textSize="12sp"
+                                        android:insetBottom="0dp"
+                                        android:insetTop="0dp"
+                                        android:minWidth="0dp"
+                                        android:minHeight="40dp"
+                                        android:paddingHorizontal="12dp" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:id="@+id/tvErrorPago"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="El salario mínimo es $39.38"
+                                android:textColor="#E53935"
+                                android:textSize="12sp"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="12dp"
+                                android:visibility="gone" />
 
                             <TextView
                                 android:layout_width="match_parent"

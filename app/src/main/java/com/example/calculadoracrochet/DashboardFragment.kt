@@ -68,6 +68,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             val iconRes = if (ordenMasReciente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
             btnOrdenar.setIconResource(iconRes)
             filtrarYOrdenarLista()
+            recyclerView.scrollToPosition(0)
         }
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
