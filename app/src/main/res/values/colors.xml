@@ -17,4 +17,6 @@
     <color name="yellow_mina">#e0b54c</color>
     <color name="white_mina">#f3ecda</color>
     <color name="purple_mina">#bd81cd</color>
+
+    <color name="splash_screen">#ba7cc9</color>
 </resources>

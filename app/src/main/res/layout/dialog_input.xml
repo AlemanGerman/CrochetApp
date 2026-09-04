@@ -30,6 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
+            android:textColorHint="@color/gray_text"
             app:hintTextColor="@color/purple_primary"
             app:boxStrokeColor="@color/purple_primary">
 

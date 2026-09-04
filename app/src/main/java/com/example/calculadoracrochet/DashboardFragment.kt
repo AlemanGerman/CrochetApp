@@ -8,10 +8,13 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -20,7 +23,10 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -30,6 +36,37 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private lateinit var adapter: ProyectosAdapter
     private var ordenMasReciente = true
     private var carpetaSeleccionada = "Todos"
+
+    private var proyectoEditandoID: String? = null
+    private var ivFotoActualizando: ImageView? = null
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null && proyectoEditandoID != null) {
+            val idProyecto = proyectoEditandoID!!
+            ivFotoActualizando?.load(uri) { crossfade(true) }
+            ivFotoActualizando?.imageTintList = null
+            ivFotoActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
+
+            var fotoBytes: ByteArray? = null
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                fotoBytes = inputStream?.readBytes()
+                inputStream?.close()
+            } catch (e: Exception) { e.printStackTrace() }
+
+            if (fotoBytes != null) {
+                val storageRef = FirebaseStorage.getInstance().reference.child("fotos_proyectos/${idProyecto}.jpg")
+                storageRef.putBytes(fotoBytes).addOnSuccessListener {
+                    storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
+                        FirebaseFirestore.getInstance().collection("proyectos_mina")
+                            .document(idProyecto).update("fotoUri", uriDescarga.toString())
+                    }
+                }
+            }
+        }
+        proyectoEditandoID = null
+        ivFotoActualizando = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -174,19 +211,91 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
 
-        if (!proyecto.fotoUri.isNullOrEmpty()) {
+        fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE
-            ivFoto.load(proyecto.fotoUri) {
-                crossfade(true)
-                error(android.R.drawable.ic_menu_camera)
+            if (!proyecto.fotoUri.isNullOrEmpty()) {
+                ivFoto.load(proyecto.fotoUri) { crossfade(true) }
+                ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
+                ivFoto.imageTintList = null
+            } else {
+                ivFoto.setImageResource(android.R.drawable.ic_menu_camera)
+                ivFoto.scaleType = ImageView.ScaleType.CENTER
+                ivFoto.imageTintList = android.content.res.ColorStateList.valueOf(Color.GRAY)
             }
-        } else {
-            cvFotoContenedor.visibility = View.GONE
+        }
+        refrescarImagenLocal()
+
+        cvFotoContenedor.setOnClickListener {
+            if (proyecto.fotoUri.isNullOrEmpty()) {
+                proyectoEditandoID = proyecto.id
+                ivFotoActualizando = ivFoto
+                pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            } else {
+                DialogUtils.mostrarOpciones(
+                    context = requireContext(),
+                    titulo = "Opciones de foto",
+                    textoOpcion1 = "Cambiar foto",
+                    textoOpcion2 = "Eliminar foto",
+                    accionOpcion1 = {
+                        proyectoEditandoID = proyecto.id
+                        ivFotoActualizando = ivFoto
+                        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                    accionOpcion2 = {
+                        FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fotoUri", null)
+                        proyecto.fotoUri = null
+                        refrescarImagenLocal()
+                    }
+                )
+            }
         }
 
-        dialogView.findViewById<TextView>(R.id.tvDetalleNombre).text = proyecto.nombre
+        val tvNombre = dialogView.findViewById<TextView>(R.id.tvDetalleNombre)
+        tvNombre.text = proyecto.nombre
+
+        tvNombre.setOnClickListener {
+            DialogUtils.mostrarInput(
+                context = requireContext(),
+                titulo = "Cambiar nombre",
+                hint = "Nombre del proyecto",
+                textoActual = proyecto.nombre
+            ) { nuevoNombre ->
+                FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("nombre", nuevoNombre)
+                proyecto.nombre = nuevoNombre
+                tvNombre.text = nuevoNombre
+            }
+        }
+
         val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", Locale("es", "MX"))
-        dialogView.findViewById<TextView>(R.id.tvDetalleFecha).text = formatoFecha.format(Date(proyecto.fechaGuardado))
+        val tvFecha = dialogView.findViewById<TextView>(R.id.tvDetalleFecha)
+        tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
+
+        tvFecha.setOnClickListener {
+            val (dialogFecha, fechaDialogView) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_seleccionar_fecha)
+            val datePicker = fechaDialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
+            val calendario = Calendar.getInstance()
+            calendario.timeInMillis = proyecto.fechaGuardado
+
+            datePicker.updateDate(
+                calendario.get(Calendar.YEAR),
+                calendario.get(Calendar.MONTH),
+                calendario.get(Calendar.DAY_OF_MONTH)
+            )
+
+            fechaDialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener { dialogFecha.dismiss() }
+            fechaDialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+                val nuevaFecha = Calendar.getInstance()
+                nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
+                val tiempoMs = nuevaFecha.timeInMillis
+
+                FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fechaGuardado", tiempoMs)
+                proyecto.fechaGuardado = tiempoMs
+                tvFecha.text = formatoFecha.format(Date(tiempoMs))
+                dialogFecha.dismiss()
+            }
+            dialogFecha.show()
+        }
+
         dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = String.format("Total: $%.2f", proyecto.precioFinal)
         dialogView.findViewById<TextView>(R.id.tvDetallePatron).text = String.format("$%.2f", proyecto.costoDiseno)
         dialogView.findViewById<TextView>(R.id.tvDetalleEmpaque).text = String.format("$%.2f", proyecto.costoEmpaque)

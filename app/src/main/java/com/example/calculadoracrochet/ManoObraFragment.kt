@@ -26,6 +26,17 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
         timePickerHoras.setIs24HourView(true)
         val colorMorado = ContextCompat.getColor(requireContext(), R.color.purple_primary)
 
+        if (viewModel.pagoPorHoraTemp > 0.0) {
+            etPagoHora.setText(viewModel.pagoPorHoraTemp.toString())
+        }
+
+        if (viewModel.horasTrabajadasTemp > 0.0) {
+            val horas = viewModel.horasTrabajadasTemp.toInt()
+            val minutos = ((viewModel.horasTrabajadasTemp - horas) * 60).toInt()
+            timePickerHoras.hour = horas
+            timePickerHoras.minute = minutos
+        }
+
         view.findViewById<MaterialButton>(R.id.btnSalarioMinimo).setOnClickListener {
             etPagoHora.setText("39.38")
             cardPagoHora.strokeColor = colorMorado

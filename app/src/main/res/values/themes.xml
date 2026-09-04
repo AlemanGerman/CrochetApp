@@ -10,8 +10,10 @@
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/purple_primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenBackground">@color/splash_screen</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/img_splash</item>
+
         <item name="postSplashScreenTheme">@style/Theme.CalculadoraCrochet</item>
     </style>
 
