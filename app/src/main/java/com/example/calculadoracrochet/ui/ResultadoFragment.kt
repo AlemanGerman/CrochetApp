@@ -1,10 +1,12 @@
 package com.example.calculadoracrochet.ui
 
+import android.animation.Animator
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.DatePicker
@@ -221,11 +223,15 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 if (exito) {
                     dialog.dismiss()
 
-                    val lottieGanchillo = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
-                    lottieGanchillo.visibility = View.GONE
+                    mostrarModalExito {
+                        val lottieGanchillo = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
+                        lottieGanchillo?.visibility = View.GONE
 
-                    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    parentFragmentManager.beginTransaction().replace(R.id.fragmentContainer, DashboardFragment()).commit()
+                        parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragmentContainer, DashboardFragment())
+                            .commit()
+                    }
                 } else {
                     btnConfirmar.isEnabled = true
                     btnCancelar?.isEnabled = true
@@ -234,5 +240,50 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             }
         }
         dialog.show()
+    }
+
+    private fun mostrarModalExito(onAnimacionTerminada: () -> Unit) {
+        val context = requireContext()
+
+        val lottieView = LottieAnimationView(context).apply {
+            setAnimation(R.raw.animacion_success)
+            repeatCount = 0
+            val size = (220 * resources.displayMetrics.density).toInt()
+            layoutParams = LinearLayout.LayoutParams(size, size)
+        }
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(32, 32, 32, 32)
+            addView(lottieView)
+        }
+
+        val dialogExito = MaterialAlertDialogBuilder(context)
+            .setView(container)
+            .setCancelable(false)
+            .create()
+
+        dialogExito.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        lottieView.addAnimatorListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) {
+                if (isAdded && activity != null) {
+                    dialogExito.dismiss()
+                    onAnimacionTerminada()
+                }
+            }
+            override fun onAnimationCancel(animation: Animator) {
+                if (isAdded && activity != null) {
+                    dialogExito.dismiss()
+                    onAnimacionTerminada()
+                }
+            }
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
+
+        dialogExito.show()
+        lottieView.playAnimation()
     }
 }
