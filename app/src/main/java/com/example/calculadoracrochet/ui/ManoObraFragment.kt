@@ -6,25 +6,37 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.TimePicker
-import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import android.os.SystemClock
+import androidx.activity.OnBackPressedCallback
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
     private val viewModel: CalculadoraViewModel by activityViewModels()
+    private var ultimoRetrocesoTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                (requireActivity() as MainActivity).regresarConGanchillo()
+                val tiempoActual = SystemClock.elapsedRealtime()
+
+                if (tiempoActual - ultimoRetrocesoTiempo < 400L) {
+                    return
+                }
+                ultimoRetrocesoTiempo = tiempoActual
+
+                val lottie = requireActivity().findViewById<View>(R.id.lottieGanchillo)
+                lottie?.visibility = View.GONE
+
+                parentFragmentManager.popBackStack()
             }
         })
 
@@ -83,7 +95,16 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
                 viewModel.pagoPorHoraTemp = pagoPorHora
                 viewModel.horasTrabajadasTemp = horasTotales
 
-                (requireActivity() as MainActivity).navegarConGanchillo(EmpaqueFragment())
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                    )
+                    .replace(R.id.fragmentContainer, EmpaqueFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
         }
     }

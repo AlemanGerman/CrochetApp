@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.R
+import android.os.SystemClock
+import androidx.activity.OnBackPressedCallback
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 
@@ -16,12 +17,25 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
 
+
+    private var ultimoRetrocesoTiempo: Long = 0L
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                (requireActivity() as MainActivity).regresarConGanchillo()
+                val tiempoActual = SystemClock.elapsedRealtime()
+
+                if (tiempoActual - ultimoRetrocesoTiempo < 400L) {
+                    return
+                }
+                ultimoRetrocesoTiempo = tiempoActual
+
+                val lottie = requireActivity().findViewById<View>(R.id.lottieGanchillo)
+                lottie?.visibility = View.GONE
+
+                parentFragmentManager.popBackStack()
             }
         })
 
@@ -34,7 +48,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
         val etCostoPatron = view.findViewById<EditText>(R.id.etCostoPatron)
         val etNumeroMunecos = view.findViewById<EditText>(R.id.etNumeroMunecos)
 
-        tgComproPatron.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        tgComproPatron.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 if (checkedId == R.id.btnPatronSi) {
                     llCamposPatron.visibility = View.VISIBLE
@@ -82,7 +96,16 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             }
 
             if (todoCorrecto) {
-                (requireActivity() as MainActivity).navegarConGanchillo(ManoObraFragment())
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                    )
+                    .replace(R.id.fragmentContainer, ManoObraFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
         }
     }

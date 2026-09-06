@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputLayout
 
@@ -18,9 +18,17 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
+        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
+            lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+            lottieGanchillo.progress = 0f
+            lottieGanchillo.visibility = View.VISIBLE
+        }
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                (requireActivity() as MainActivity).regresarConGanchillo()
+                requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
+                parentFragmentManager.popBackStack()
             }
         })
 
