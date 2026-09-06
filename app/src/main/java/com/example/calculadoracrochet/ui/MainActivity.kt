@@ -26,9 +26,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         lottieGanchillo = findViewById(R.id.lottieGanchillo)
+
         lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
         lottieGanchillo.progress = 0f
-        lottieGanchillo.visibility = View.GONE
+        lottieGanchillo.visibility = View.VISIBLE
 
         splashScreen.setKeepOnScreenCondition { !estaListo }
 
@@ -121,8 +122,6 @@ class MainActivity : AppCompatActivity() {
         estaNavegando = true
         bloquearToques(true)
 
-        val volviendoAlDashboard = supportFragmentManager.backStackEntryCount <= 1
-
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
 
@@ -142,12 +141,9 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onAnimationEnd(animation: Animator) {
                 lottieGanchillo.post {
-                    if (volviendoAlDashboard) {
-                        lottieGanchillo.visibility = View.GONE
-                    } else {
-                        lottieGanchillo.progress = 0f
-                        lottieGanchillo.visibility = View.VISIBLE
-                    }
+                    lottieGanchillo.pauseAnimation()
+                    lottieGanchillo.progress = 0f
+                    lottieGanchillo.visibility = View.VISIBLE
                 }
                 lottieGanchillo.tag = ""
                 lottieGanchillo.removeAllUpdateListeners()
