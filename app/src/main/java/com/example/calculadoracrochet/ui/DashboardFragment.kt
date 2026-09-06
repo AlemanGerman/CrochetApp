@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -84,6 +85,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             lottieGanchillo.progress = 0f
             lottieGanchillo.visibility = View.VISIBLE
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                DialogUtils.mostrarAlerta(
+                    context = requireContext(),
+                    titulo = "¿Salir de la aplicación?",
+                    mensaje = "¿Acaso me odias 😿?",
+                    textoConfirmar = "Sí, salir",
+                    iconoResId =  R.drawable.ic_sad
+                ) {
+                    requireActivity().finish()
+                }
+            }
+        })
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())

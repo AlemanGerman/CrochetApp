@@ -54,7 +54,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val tiempoActual = SystemClock.elapsedRealtime()
-                if (tiempoActual - ultimoClicTiempo < 500L) return
+                if (tiempoActual - ultimoClicTiempo < 400L) return
                 ultimoClicTiempo = tiempoActual
 
                 (requireActivity() as? MainActivity)?.regresarConGanchillo()

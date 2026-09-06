@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private var estaListo = false
     private lateinit var lottieGanchillo: LottieAnimationView
+    private var estaNavegando = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -26,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         lottieGanchillo = findViewById(R.id.lottieGanchillo)
         lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
         lottieGanchillo.progress = 0f
-        lottieGanchillo.visibility = View.VISIBLE
+        lottieGanchillo.visibility = View.GONE
 
         splashScreen.setKeepOnScreenCondition { !estaListo }
 
@@ -56,6 +58,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun navegarConGanchillo(fragmentDestino: Fragment) {
+        if (estaNavegando) return
+        estaNavegando = true
+        bloquearToques(true)
+
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
 
@@ -90,10 +96,20 @@ class MainActivity : AppCompatActivity() {
                     lottieGanchillo.visibility = View.VISIBLE
                 }
 
+                lottieGanchillo.tag = ""
                 lottieGanchillo.removeAllUpdateListeners()
                 lottieGanchillo.removeAllAnimatorListeners()
+
+                estaNavegando = false
+                bloquearToques(false)
             }
-            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {
+                lottieGanchillo.tag = ""
+                lottieGanchillo.removeAllUpdateListeners()
+                lottieGanchillo.removeAllAnimatorListeners()
+                estaNavegando = false
+                bloquearToques(false)
+            }
             override fun onAnimationRepeat(animation: Animator) {}
         })
 
@@ -101,6 +117,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun regresarConGanchillo() {
+        if (estaNavegando) return
+        estaNavegando = true
+        bloquearToques(true)
+
+        val volviendoAlDashboard = supportFragmentManager.backStackEntryCount <= 1
+
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
 
@@ -120,17 +142,41 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onAnimationEnd(animation: Animator) {
                 lottieGanchillo.post {
-                    lottieGanchillo.progress = 0f
-                    lottieGanchillo.visibility = View.VISIBLE
+                    if (volviendoAlDashboard) {
+                        lottieGanchillo.visibility = View.GONE
+                    } else {
+                        lottieGanchillo.progress = 0f
+                        lottieGanchillo.visibility = View.VISIBLE
+                    }
                 }
                 lottieGanchillo.tag = ""
                 lottieGanchillo.removeAllUpdateListeners()
                 lottieGanchillo.removeAllAnimatorListeners()
+
+                estaNavegando = false
+                bloquearToques(false)
             }
-            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {
+                lottieGanchillo.tag = ""
+                lottieGanchillo.removeAllUpdateListeners()
+                lottieGanchillo.removeAllAnimatorListeners()
+                estaNavegando = false
+                bloquearToques(false)
+            }
             override fun onAnimationRepeat(animation: Animator) {}
         })
 
         lottieGanchillo.playAnimation()
+    }
+
+    private fun bloquearToques(bloquear: Boolean) {
+        if (bloquear) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            )
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        }
     }
 }
