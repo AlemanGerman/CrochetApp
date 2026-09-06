@@ -22,12 +22,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
-import com.example.calculadoracrochet.adapters.ProyectosAdapter
-import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
@@ -78,6 +78,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
+        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
+            lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+            lottieGanchillo.progress = 0f
+            lottieGanchillo.visibility = View.VISIBLE
+        }
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -110,17 +117,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
             viewModel.limpiarCalculoActual()
-
-            parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    0,
-                    0,
-                    R.anim.slide_in_top,
-                    R.anim.slide_out_bottom
-                )
-                .replace(R.id.fragmentContainer, MaterialesFragment())
-                .addToBackStack(null)
-                .commit()
+            (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
         configurarBotonesCarpetas(view)
@@ -382,17 +379,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
 
             dialog.dismiss()
-
-            parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    0,                      // 1. Sin transición de entrada (Ida instantánea)
-                    0,                      // 2. Sin transición de salida (Ida instantánea)
-                    R.anim.slide_in_top,    // 3. Entra desde arriba (Regreso con ganchillo)
-                    R.anim.slide_out_bottom // 4. Sale hacia abajo (Regreso con ganchillo)
-                )
-                .replace(R.id.fragmentContainer, MaterialesFragment())
-                .addToBackStack(null)
-                .commit()
+            (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener { prepararProyectoParaEdicion(true) }

@@ -1,6 +1,7 @@
 package com.example.calculadoracrochet.ui
 
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -19,12 +20,32 @@ import com.google.android.material.textfield.TextInputLayout
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
+    private var ultimoClicTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val llContenedorEstambres = view.findViewById<LinearLayout>(R.id.llContenedorEstambres)
+        val llContenedorExtra = view.findViewById<LinearLayout>(R.id.llContenedorMaterialesExtra)
+
+        view.post {
+            if (viewModel.listaEstambresGuardados.isEmpty()) {
+                agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
+            } else {
+                viewModel.listaEstambresGuardados.forEach {
+                    agregarFilaEstambre(llContenedorEstambres, it.nombre, it.costo, it.totales, it.usados)
+                }
+            }
+
+            if (viewModel.listaAccesoriosGuardados.isNotEmpty()) {
+                viewModel.listaAccesoriosGuardados.forEach {
+                    agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
+                }
+            }
+        }
+
         val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
-        if (!lottieGanchillo.isAnimating) {
+        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
             lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
             lottieGanchillo.progress = 0f
             lottieGanchillo.visibility = View.VISIBLE
@@ -32,26 +53,13 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                (requireActivity() as MainActivity).regresarConGanchillo()
+                val tiempoActual = SystemClock.elapsedRealtime()
+                if (tiempoActual - ultimoClicTiempo < 500L) return
+                ultimoClicTiempo = tiempoActual
+
+                (requireActivity() as? MainActivity)?.regresarConGanchillo()
             }
         })
-
-        val llContenedorEstambres = view.findViewById<LinearLayout>(R.id.llContenedorEstambres)
-        val llContenedorExtra = view.findViewById<LinearLayout>(R.id.llContenedorMaterialesExtra)
-
-        if (viewModel.listaEstambresGuardados.isEmpty()) {
-            agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
-        } else {
-            viewModel.listaEstambresGuardados.forEach {
-                agregarFilaEstambre(llContenedorEstambres, it.nombre, it.costo, it.totales, it.usados)
-            }
-        }
-
-        if (viewModel.listaAccesoriosGuardados.isNotEmpty()) {
-            viewModel.listaAccesoriosGuardados.forEach {
-                agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
-            }
-        }
 
         view.findViewById<View>(R.id.btnAnadirEstambre).setOnClickListener {
             agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
@@ -69,6 +77,10 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
 
         view.findViewById<View>(R.id.btnSiguienteMateriales).setOnClickListener {
+            val tiempoActual = SystemClock.elapsedRealtime()
+            if (tiempoActual - ultimoClicTiempo < 500L) return@setOnClickListener
+            ultimoClicTiempo = tiempoActual
+
             var todoCorrecto = true
             var costoTotalEstambres = 0.0
             var costoTotalAccesorios = 0.0
@@ -169,7 +181,18 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 viewModel.listaAccesoriosGuardados.clear()
                 viewModel.listaAccesoriosGuardados.addAll(accesoriosTemp)
 
-                (requireActivity() as MainActivity).navegarConGanchillo(PatronFragment())
+                requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
+
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                    )
+                    .replace(R.id.fragmentContainer, PatronFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
         }
     }
