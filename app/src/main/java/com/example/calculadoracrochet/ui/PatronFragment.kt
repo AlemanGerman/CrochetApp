@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
@@ -17,6 +18,12 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).regresarConGanchillo()
+            }
+        })
 
         val tgComproPatron = view.findViewById<MaterialButtonToggleGroup>(R.id.tgComproPatron)
         val llCamposPatron = view.findViewById<LinearLayout>(R.id.llCamposPatronComprado)
@@ -75,16 +82,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             }
 
             if (todoCorrecto) {
-                parentFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        android.R.anim.slide_in_left,
-                        android.R.anim.slide_out_right,
-                        android.R.anim.slide_in_left,
-                        android.R.anim.slide_out_right
-                    )
-                    .replace(R.id.fragmentContainer, ManoObraFragment())
-                    .addToBackStack(null)
-                    .commit()
+                (requireActivity() as MainActivity).navegarConGanchillo(ManoObraFragment())
             }
         }
     }

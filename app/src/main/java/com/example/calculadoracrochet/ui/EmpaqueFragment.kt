@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
@@ -16,6 +17,12 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).regresarConGanchillo()
+            }
+        })
 
         val tilCostoCaja = view.findViewById<TextInputLayout>(R.id.tilCostoCaja)
         val etCostoCaja = view.findViewById<EditText>(R.id.etCostoCaja)
@@ -58,10 +65,7 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
                 viewModel.costoEmpaque = costoCaja
                 viewModel.margenGanancia = margen
 
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, ResultadoFragment())
-                    .addToBackStack(null)
-                    .commit()
+                (requireActivity() as MainActivity).navegarConGanchillo(ResultadoFragment())
             }
         }
     }

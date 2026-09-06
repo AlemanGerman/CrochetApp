@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.TimePicker
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -20,6 +21,12 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).regresarConGanchillo()
+            }
+        })
 
         val cardPagoHora = view.findViewById<MaterialCardView>(R.id.cardPagoHora)
         val tvErrorPago = view.findViewById<TextView>(R.id.tvErrorPago)
@@ -76,16 +83,7 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
                 viewModel.pagoPorHoraTemp = pagoPorHora
                 viewModel.horasTrabajadasTemp = horasTotales
 
-                parentFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        android.R.anim.slide_in_left,
-                        android.R.anim.slide_out_right,
-                        android.R.anim.slide_in_left,
-                        android.R.anim.slide_out_right
-                    )
-                    .replace(R.id.fragmentContainer, EmpaqueFragment())
-                    .addToBackStack(null)
-                    .commit()
+                (requireActivity() as MainActivity).navegarConGanchillo(EmpaqueFragment())
             }
         }
     }

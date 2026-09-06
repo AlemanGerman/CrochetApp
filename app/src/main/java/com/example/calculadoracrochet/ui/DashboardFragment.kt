@@ -110,7 +110,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
             viewModel.limpiarCalculoActual()
+
             parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    0,
+                    0,
+                    R.anim.slide_in_top,
+                    R.anim.slide_out_bottom
+                )
                 .replace(R.id.fragmentContainer, MaterialesFragment())
                 .addToBackStack(null)
                 .commit()
@@ -375,7 +382,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
 
             dialog.dismiss()
+
             parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    0,                      // 1. Sin transición de entrada (Ida instantánea)
+                    0,                      // 2. Sin transición de salida (Ida instantánea)
+                    R.anim.slide_in_top,    // 3. Entra desde arriba (Regreso con ganchillo)
+                    R.anim.slide_out_bottom // 4. Sale hacia abajo (Regreso con ganchillo)
+                )
                 .replace(R.id.fragmentContainer, MaterialesFragment())
                 .addToBackStack(null)
                 .commit()

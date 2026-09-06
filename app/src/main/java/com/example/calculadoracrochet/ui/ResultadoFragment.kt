@@ -11,12 +11,14 @@ import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.R
@@ -50,6 +52,13 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).regresarConGanchillo()
+            }
+        })
+
         viewModel.calcularTotal()
 
         val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
@@ -211,6 +220,10 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             viewModel.guardarProyecto(nombre, uriFotoSeleccionada, fotoBytes) { exito ->
                 if (exito) {
                     dialog.dismiss()
+
+                    val lottieGanchillo = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
+                    lottieGanchillo.visibility = View.GONE
+
                     parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                     parentFragmentManager.beginTransaction().replace(R.id.fragmentContainer, DashboardFragment()).commit()
                 } else {
