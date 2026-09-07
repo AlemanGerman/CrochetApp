@@ -1,17 +1,18 @@
 package com.example.calculadoracrochet.adapters
 
-import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -58,15 +59,42 @@ class ProyectosAdapter(
         val formatoFecha = SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
         holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
-        if (!proyecto.fotoUri.isNullOrEmpty()) {
-            holder.ivImagen.load(proyecto.fotoUri) { crossfade(true) }
+        val tieneFotoValida = !proyecto.fotoUri.isNullOrBlank() &&
+                proyecto.fotoUri != "null" &&
+                proyecto.fotoUri != "undefined"
+
+        if (tieneFotoValida) {
+            holder.ivImagen.scaleType = ImageView.ScaleType.CENTER_CROP
+            holder.ivImagen.setPadding(0, 0, 0, 0)
             holder.ivImagen.imageTintList = null
+            holder.ivImagen.setBackgroundColor(Color.TRANSPARENT)
+            holder.ivImagen.load(proyecto.fotoUri) {
+                crossfade(true)
+            }
         } else {
-            holder.ivImagen.load(null)
-            holder.ivImagen.setImageResource(android.R.drawable.ic_menu_camera)
-            holder.ivImagen.imageTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(holder.itemView.context, R.color.gray_hint)
-            )
+            holder.ivImagen.scaleType = ImageView.ScaleType.FIT_CENTER
+            val paddingPx = (6 * holder.itemView.context.resources.displayMetrics.density).toInt()
+            holder.ivImagen.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+            holder.ivImagen.setBackgroundColor(Color.parseColor("#F3E8FF"))
+            holder.ivImagen.imageTintList = null
+
+            val iconoRes = if (proyecto.carpetas.size == 1) {
+                val nombre = proyecto.carpetas.first().trim()
+                when (nombre.lowercase()) {
+                    "accesorio", "accesorios" -> R.drawable.img_accesorio
+                    "amigurumi", "amigurumis" -> R.drawable.img_amigurumi
+                    "llavero", "llaveros" -> R.drawable.img_llavero
+                    "peluche", "peluches" -> R.drawable.img_peluche
+                    "ramo", "ramos" -> R.drawable.img_ramo
+                    "extra", "extras" -> R.drawable.ic_mas
+                    else -> CarpetasConfig.listaCarpetas.find { it.nombre.equals(nombre, ignoreCase = true) }?.iconoRes
+                        ?: R.drawable.img_todos
+                }
+            } else {
+                R.drawable.img_todos
+            }
+
+            holder.ivImagen.load(iconoRes)
         }
 
         holder.itemView.setOnClickListener {

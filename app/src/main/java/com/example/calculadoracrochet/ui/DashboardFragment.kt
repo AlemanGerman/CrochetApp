@@ -81,9 +81,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
         if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
-            lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-            lottieGanchillo.progress = 0f
-            lottieGanchillo.visibility = View.VISIBLE
+            lottieGanchillo.post {
+                lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+                lottieGanchillo.pauseAnimation()
+                lottieGanchillo.progress = 0f
+                lottieGanchillo.visibility = View.VISIBLE
+            }
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -244,8 +247,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
                 ivFoto.imageTintList = null
             } else {
-                ivFoto.setImageResource(android.R.drawable.ic_menu_camera)
-                ivFoto.scaleType = ImageView.ScaleType.CENTER
+                ivFoto.setImageResource(R.drawable.ic_photo)
                 ivFoto.imageTintList = ColorStateList.valueOf(Color.GRAY)
             }
         }

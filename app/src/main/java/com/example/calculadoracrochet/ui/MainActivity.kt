@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
 
@@ -62,6 +63,10 @@ class MainActivity : AppCompatActivity() {
         if (estaNavegando) return
         estaNavegando = true
         bloquearToques(true)
+
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
 
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
@@ -153,6 +158,68 @@ class MainActivity : AppCompatActivity() {
                 bloquearToques(false)
             }
             override fun onAnimationCancel(animation: Animator) {
+                lottieGanchillo.tag = ""
+                lottieGanchillo.removeAllUpdateListeners()
+                lottieGanchillo.removeAllAnimatorListeners()
+                estaNavegando = false
+                bloquearToques(false)
+            }
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
+
+        lottieGanchillo.playAnimation()
+    }
+
+    fun irAlDashboardConGanchillo() {
+        if (estaNavegando) return
+        estaNavegando = true
+        bloquearToques(true)
+
+        lottieGanchillo.removeAllUpdateListeners()
+        lottieGanchillo.removeAllAnimatorListeners()
+
+        lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+        lottieGanchillo.visibility = View.VISIBLE
+
+        var navegacionDisparada = false
+
+        lottieGanchillo.addAnimatorUpdateListener { animation ->
+            if (animation.animatedFraction >= 0.25f && !navegacionDisparada) {
+                navegacionDisparada = true
+
+                supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(
+                        R.anim.slide_in_top,
+                        R.anim.slide_out_bottom
+                    )
+                    .replace(R.id.fragmentContainer, DashboardFragment())
+                    .commit()
+            }
+        }
+
+        lottieGanchillo.addAnimatorListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {
+                lottieGanchillo.tag = ""
+            }
+            override fun onAnimationEnd(animation: Animator) {
+                lottieGanchillo.post {
+                    lottieGanchillo.pauseAnimation()
+                    lottieGanchillo.progress = 0f
+                    lottieGanchillo.visibility = View.VISIBLE
+                }
+                lottieGanchillo.tag = ""
+                lottieGanchillo.removeAllUpdateListeners()
+                lottieGanchillo.removeAllAnimatorListeners()
+
+                estaNavegando = false
+                bloquearToques(false)
+            }
+            override fun onAnimationCancel(animation: Animator) {
+                lottieGanchillo.post {
+                    lottieGanchillo.pauseAnimation()
+                    lottieGanchillo.progress = 0f
+                    lottieGanchillo.visibility = View.VISIBLE
+                }
                 lottieGanchillo.tag = ""
                 lottieGanchillo.removeAllUpdateListeners()
                 lottieGanchillo.removeAllAnimatorListeners()

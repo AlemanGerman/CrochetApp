@@ -18,7 +18,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
@@ -201,10 +200,6 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 return@setOnClickListener
             }
 
-            btnConfirmar.isEnabled = false
-            btnCancelar?.isEnabled = false
-            btnConfirmar.text = "Subiendo a la nube..."
-
             val carpetasSeleccionadas = mapChips.filter { it.value.isChecked }.keys.toList()
             viewModel.carpetasTemp.clear()
             viewModel.carpetasTemp.addAll(carpetasSeleccionadas)
@@ -219,31 +214,19 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 } catch (e: Exception) { e.printStackTrace() }
             }
 
-            viewModel.guardarProyecto(nombre, uriFotoSeleccionada, fotoBytes) { exito ->
-                if (exito) {
-                    dialog.dismiss()
+            dialog.dismiss()
 
-                    mostrarModalExito {
-                        val lottieGanchillo = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
-                        lottieGanchillo?.visibility = View.GONE
+            viewModel.guardarProyecto(nombre, uriFotoSeleccionada, fotoBytes) { }
 
-                        parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragmentContainer, DashboardFragment())
-                            .commit()
-                    }
-                } else {
-                    btnConfirmar.isEnabled = true
-                    btnCancelar?.isEnabled = true
-                    btnConfirmar.text = "Reintentar"
-                }
+            mostrarModalExito {
+                (requireActivity() as MainActivity).irAlDashboardConGanchillo()
             }
         }
         dialog.show()
     }
 
     private fun mostrarModalExito(onAnimacionTerminada: () -> Unit) {
-        val context = requireContext()
+        val context = context ?: return
 
         val lottieView = LottieAnimationView(context).apply {
             setAnimation(R.raw.animacion_success)
@@ -266,19 +249,22 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         dialogExito.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+        var ejecucionFinalizada = false
+        val ejecutarSalida = {
+            if (!ejecucionFinalizada && isAdded && activity != null) {
+                ejecucionFinalizada = true
+                dialogExito.dismiss()
+                onAnimacionTerminada()
+            }
+        }
+
         lottieView.addAnimatorListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                if (isAdded && activity != null) {
-                    dialogExito.dismiss()
-                    onAnimacionTerminada()
-                }
+                ejecutarSalida()
             }
             override fun onAnimationCancel(animation: Animator) {
-                if (isAdded && activity != null) {
-                    dialogExito.dismiss()
-                    onAnimacionTerminada()
-                }
+                ejecutarSalida()
             }
             override fun onAnimationRepeat(animation: Animator) {}
         })
