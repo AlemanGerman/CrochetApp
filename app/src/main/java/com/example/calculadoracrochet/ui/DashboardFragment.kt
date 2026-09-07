@@ -1,9 +1,11 @@
 package com.example.calculadoracrochet.ui
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -32,6 +34,7 @@ import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -45,29 +48,69 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private var ordenMasReciente = true
     private var carpetaSeleccionada = "Todos"
 
+    private var uriFotoSeleccionada: String? = null
     private var proyectoEditandoID: String? = null
+    private var proyectoEditando: ProyectoCrochet? = null
     private var ivFotoActualizando: ImageView? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null && proyectoEditandoID != null) {
             val idProyecto = proyectoEditandoID!!
-            ivFotoActualizando?.load(uri) { crossfade(true) }
-            ivFotoActualizando?.imageTintList = null
-            ivFotoActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
+            val proyectoActual = proyectoEditando
+
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            uriFotoSeleccionada = uri.toString()
+
+            try {
+                ivFotoActualizando?.setImageURI(uri)
+                ivFotoActualizando?.imageTintList = null
+                ivFotoActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
             var fotoBytes: ByteArray? = null
-            try {
-                val inputStream = requireContext().contentResolver.openInputStream(uri)
-                fotoBytes = inputStream?.readBytes()
-                inputStream?.close()
-            } catch (e: Exception) { e.printStackTrace() }
+            if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {
+                try {
+                    val uriParseada = Uri.parse(uriFotoSeleccionada)
+                    val inputStream = requireContext().contentResolver.openInputStream(uriParseada)
+                    fotoBytes = inputStream?.readBytes()
+                    inputStream?.close()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            val actualizacionLocal = mapOf("fotoUri" to uriFotoSeleccionada)
+            FirebaseFirestore.getInstance().collection("proyectos_mina")
+                .document(idProyecto)
+                .set(actualizacionLocal, SetOptions.merge())
+                .addOnSuccessListener {
+                    proyectoActual?.fotoUri = uriFotoSeleccionada
+                    filtrarYOrdenarLista()
+                }
 
             if (fotoBytes != null) {
                 val storageRef = FirebaseStorage.getInstance().reference.child("fotos_proyectos/${idProyecto}.jpg")
                 storageRef.putBytes(fotoBytes).addOnSuccessListener {
                     storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
+                        val urlFinal = uriDescarga.toString()
+                        val actualizacionRemota = mapOf("fotoUri" to urlFinal)
                         FirebaseFirestore.getInstance().collection("proyectos_mina")
-                            .document(idProyecto).update("fotoUri", uriDescarga.toString())
+                            .document(idProyecto)
+                            .set(actualizacionRemota, SetOptions.merge())
+                            .addOnSuccessListener {
+                                proyectoActual?.fotoUri = urlFinal
+                                filtrarYOrdenarLista()
+                            }
                     }
                 }
             }
@@ -96,7 +139,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     titulo = "¿Salir de la aplicación?",
                     mensaje = "¿Acaso me odias 😿?",
                     textoConfirmar = "Sí, salir",
-                    iconoResId =  R.drawable.ic_sad
+                    iconoResId = R.drawable.ic_sad
                 ) {
                     requireActivity().finish()
                 }
@@ -255,9 +298,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         cvFotoContenedor.setOnClickListener {
             if (proyecto.fotoUri.isNullOrEmpty()) {
+                proyectoEditando = proyecto
                 proyectoEditandoID = proyecto.id
                 ivFotoActualizando = ivFoto
-                pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
             } else {
                 DialogUtils.mostrarOpciones(
                     context = requireContext(),
@@ -265,14 +309,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     textoOpcion1 = "Cambiar foto",
                     textoOpcion2 = "Eliminar foto",
                     accionOpcion1 = {
+                        proyectoEditando = proyecto
                         proyectoEditandoID = proyecto.id
                         ivFotoActualizando = ivFoto
-                        pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
                     },
                     accionOpcion2 = {
                         FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fotoUri", null)
                         proyecto.fotoUri = null
                         refrescarImagenLocal()
+                        filtrarYOrdenarLista()
                     }
                 )
             }
@@ -291,6 +337,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("nombre", nuevoNombre)
                 proyecto.nombre = nuevoNombre
                 tvNombre.text = nuevoNombre
+                filtrarYOrdenarLista()
             }
         }
 
@@ -319,6 +366,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fechaGuardado", tiempoMs)
                 proyecto.fechaGuardado = tiempoMs
                 tvFecha.text = formatoFecha.format(Date(tiempoMs))
+                filtrarYOrdenarLista()
                 dialogFecha.dismiss()
             }
             dialogFecha.show()

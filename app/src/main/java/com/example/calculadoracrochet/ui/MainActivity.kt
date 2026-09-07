@@ -64,10 +64,6 @@ class MainActivity : AppCompatActivity() {
         estaNavegando = true
         bloquearToques(true)
 
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        }
-
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
 
@@ -121,7 +117,6 @@ class MainActivity : AppCompatActivity() {
 
         lottieGanchillo.playAnimation()
     }
-
     fun regresarConGanchillo() {
         if (estaNavegando) return
         estaNavegando = true
