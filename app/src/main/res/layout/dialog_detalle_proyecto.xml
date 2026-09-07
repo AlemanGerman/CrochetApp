@@ -245,6 +245,17 @@
                 android:layout_marginHorizontal="24dp"
                 android:weightSum="2">
 
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDetalleCerrar"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="Cerrar"
+                    android:textColor="@color/gray_text"/>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDetalleEliminar"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -256,16 +267,6 @@
                     android:textColor="#E53935"
                     app:strokeColor="#E53935"
                     app:cornerRadius="28dp"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDetalleCerrar"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:text="Cerrar"
-                    android:textColor="@color/gray_text"/>
             </LinearLayout>
         </LinearLayout>
 
