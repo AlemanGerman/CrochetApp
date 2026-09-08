@@ -173,7 +173,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             val iconRes = if (ordenMasReciente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
             btnOrdenar.setIconResource(iconRes)
             filtrarYOrdenarLista()
-            recyclerView.scrollToPosition(0)
+            view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
         }
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
@@ -209,13 +209,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     vista.alpha = if (tv.text.toString() == carpetaSeleccionada) 1.0f else 0.5f
                 }
                 filtrarYOrdenarLista()
+
+                view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
             }
 
             vistasCarpetas.add(itemView)
             llContenedor.addView(itemView)
         }
     }
-
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_carpetas, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
