@@ -1,8 +1,10 @@
 package com.example.calculadoracrochet.viewmodel
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
@@ -32,6 +34,7 @@ class CalculadoraViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     var costoMateriales: Double = 0.0
     var costoDiseno: Double = 0.0
@@ -82,10 +85,15 @@ class CalculadoraViewModel : ViewModel() {
         precioFinalSugerdio = subtotal + gananciaExtra
     }
 
-    fun guardarProyecto(nombre: String, fotoUriLocal: String?, fotoBytes: ByteArray?, onComplete: (Boolean) -> Unit) {
+    /**
+     * Guarda el proyecto solamente después de que la foto elegida quede respaldada en
+     * Firebase Storage. Firestore conserva la URL de descarga, nunca una URI local.
+     */
+    fun guardarProyecto(nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
         val idNuevo = idProyectoEnEdicion ?: UUID.randomUUID().toString()
+        val fotoAnterior = fotoUriTemp
 
-        fun escribirEnFirestore(uriParaGuardar: String?) {
+        fun escribirEnFirestore(uriParaGuardar: String?, fotoRecienSubida: Boolean = false) {
             val nuevoProyecto = ProyectoCrochet(
                 id = idNuevo,
                 nombre = nombre,
@@ -107,49 +115,132 @@ class CalculadoraViewModel : ViewModel() {
             db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
                 .addOnSuccessListener {
                     Log.d("Firebase", "Proyecto guardado con éxito")
+                    if (uriParaGuardar != fotoAnterior) {
+                        borrarFotoDeStorage(fotoAnterior)
+                    }
                     limpiarCalculoActual()
                     onComplete(true)
                 }
                 .addOnFailureListener { e ->
                     Log.e("Firebase", "Error al guardar en Firestore", e)
+                    // La ruta generada para esta carga no era usada antes, por lo que se
+                    // puede limpiar sin afectar la foto anterior del proyecto.
+                    if (fotoRecienSubida) borrarFotoDeStorage(uriParaGuardar)
                     onComplete(false)
                 }
         }
 
-        if (fotoBytes != null) {
-            val storageRef = storage.reference.child("fotos_proyectos/${idNuevo}.jpg")
-
-            storageRef.putBytes(fotoBytes)
-                .addOnSuccessListener {
-                    storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
-                        Log.d("Firebase", "Foto subida por bytes con éxito: $uriDescarga")
-                        escribirEnFirestore(uriDescarga.toString())
-                    }.addOnFailureListener {
-                        Log.e("Firebase", "Error al obtener downloadUrl")
-                        escribirEnFirestore(fotoUriLocal)
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "La foto se guardará de forma local", e)
-                    escribirEnFirestore(fotoUriLocal)
-                }
+        if (fotoUri.esUriLocal()) {
+            subirFoto(idNuevo, Uri.parse(fotoUri), onSuccess = { urlDescarga ->
+                escribirEnFirestore(urlDescarga, fotoRecienSubida = true)
+            }, onFailure = { onComplete(false) })
         } else {
-            escribirEnFirestore(fotoUriLocal)
+            escribirEnFirestore(fotoUri)
         }
     }
 
     fun eliminarProyecto(proyecto: ProyectoCrochet) {
         db.collection("proyectos_mina").document(proyecto.id).delete()
+            .addOnSuccessListener { borrarFotoDeStorage(proyecto.fotoUri) }
+            .addOnFailureListener { e -> Log.e("Firebase", "Error al eliminar proyecto", e) }
+    }
 
-        if (proyecto.fotoUri != null && proyecto.fotoUri!!.startsWith("http")) {
-            try {
-                val fotoRef = storage.getReferenceFromUrl(proyecto.fotoUri!!)
-                fotoRef.delete()
-            } catch (e: Exception) {
-                Log.e("Firebase", "Error al borrar foto de Storage", e)
+    fun actualizarFotoProyecto(
+        proyecto: ProyectoCrochet,
+        fotoLocal: String,
+        onComplete: (String?) -> Unit
+    ) {
+        subirFoto(proyecto.id, Uri.parse(fotoLocal), onSuccess = { urlDescarga ->
+            db.collection("proyectos_mina").document(proyecto.id)
+                .update("fotoUri", urlDescarga)
+                .addOnSuccessListener {
+                    val fotoAnterior = proyecto.fotoUri
+                    proyecto.fotoUri = urlDescarga
+                    if (fotoAnterior != urlDescarga) borrarFotoDeStorage(fotoAnterior)
+                    onComplete(urlDescarga)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firebase", "Error al guardar la URL de la foto", e)
+                    // La nueva foto no quedó vinculada a ningún proyecto.
+                    borrarFotoDeStorage(urlDescarga)
+                    onComplete(null)
+                }
+        }, onFailure = {
+            onComplete(null)
+        })
+    }
+
+    fun eliminarFotoProyecto(proyecto: ProyectoCrochet, onComplete: (Boolean) -> Unit) {
+        val fotoAnterior = proyecto.fotoUri
+        db.collection("proyectos_mina").document(proyecto.id).update("fotoUri", null)
+            .addOnSuccessListener {
+                proyecto.fotoUri = null
+                borrarFotoDeStorage(fotoAnterior)
+                onComplete(true)
             }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error al eliminar la foto del proyecto", e)
+                onComplete(false)
+            }
+    }
+
+    private fun subirFoto(
+        idProyecto: String,
+        uriLocal: Uri,
+        onSuccess: (String) -> Unit,
+        onFailure: () -> Unit
+    ) {
+        // Cada carga usa una ruta nueva. Así, al reemplazar una foto, la versión anterior
+        // sigue disponible hasta que Firestore apunte correctamente a la nueva URL.
+        val storageRef = storage.reference.child("fotos_proyectos/$idProyecto/${UUID.randomUUID()}.jpg")
+
+        asegurarSesionEnFirebase(onSuccess = {
+            storageRef.putFile(uriLocal)
+                .continueWithTask { tareaSubida ->
+                    if (!tareaSubida.isSuccessful) {
+                        throw tareaSubida.exception ?: IllegalStateException("No se pudo subir la foto")
+                    }
+                    storageRef.downloadUrl
+                }
+                .addOnSuccessListener { uriDescarga ->
+                    Log.d("Firebase", "Foto respaldada en Storage: $uriDescarga")
+                    onSuccess(uriDescarga.toString())
+                }
+                .addOnFailureListener { error ->
+                    Log.e("Firebase", "No se pudo respaldar la foto en Storage", error)
+                    storageRef.delete()
+                    onFailure()
+                }
+        }, onFailure = onFailure)
+    }
+
+    private fun asegurarSesionEnFirebase(onSuccess: () -> Unit, onFailure: () -> Unit) {
+        if (auth.currentUser != null) {
+            onSuccess()
+            return
+        }
+
+        auth.signInAnonymously()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { error ->
+                Log.e("Firebase", "No se pudo iniciar sesión para respaldar la foto", error)
+                onFailure()
+            }
+    }
+
+    private fun borrarFotoDeStorage(fotoUri: String?) {
+        if (fotoUri.isNullOrBlank() || !fotoUri.startsWith("http")) return
+
+        try {
+            storage.getReferenceFromUrl(fotoUri).delete()
+                .addOnFailureListener { e -> Log.e("Firebase", "Error al borrar foto de Storage", e) }
+        } catch (e: Exception) {
+            // Las rutas locales antiguas y URLs de servicios externos no pertenecen a Storage.
+            Log.w("Firebase", "La foto no pertenece a Firebase Storage", e)
         }
     }
+
+    private fun String?.esUriLocal(): Boolean = !isNullOrBlank() && !startsWith("http")
 
     fun actualizarCarpetasProyecto(proyecto: ProyectoCrochet) {
         db.collection("proyectos_mina")

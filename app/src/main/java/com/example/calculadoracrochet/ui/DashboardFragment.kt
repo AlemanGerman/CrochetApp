@@ -1,11 +1,9 @@
 package com.example.calculadoracrochet.ui
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,8 +33,6 @@ import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -48,69 +45,38 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private var ordenMasReciente = true
     private var carpetaSeleccionada = "Todos"
 
-    private var uriFotoSeleccionada: String? = null
     private var proyectoEditandoID: String? = null
     private var proyectoEditando: ProyectoCrochet? = null
     private var ivFotoActualizando: ImageView? = null
+    private val proyectosConFotoEnRespaldo = mutableSetOf<String>()
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null && proyectoEditandoID != null) {
-            val idProyecto = proyectoEditandoID!!
             val proyectoActual = proyectoEditando
+            val imagenActualizando = ivFotoActualizando
 
             try {
-                requireContext().contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
+                imagenActualizando?.setImageURI(uri)
+                imagenActualizando?.imageTintList = null
+                imagenActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
             } catch (e: Exception) {
                 e.printStackTrace()
             }
 
-            uriFotoSeleccionada = uri.toString()
+            if (proyectoActual != null) {
+                viewModel.actualizarFotoProyecto(proyectoActual, uri.toString()) { urlFinal ->
+                    if (!isAdded) return@actualizarFotoProyecto
 
-            try {
-                ivFotoActualizando?.setImageURI(uri)
-                ivFotoActualizando?.imageTintList = null
-                ivFotoActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            var fotoBytes: ByteArray? = null
-            if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {
-                try {
-                    val uriParseada = Uri.parse(uriFotoSeleccionada)
-                    val inputStream = requireContext().contentResolver.openInputStream(uriParseada)
-                    fotoBytes = inputStream?.readBytes()
-                    inputStream?.close()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-
-            val actualizacionLocal = mapOf("fotoUri" to uriFotoSeleccionada)
-            FirebaseFirestore.getInstance().collection("proyectos_mina")
-                .document(idProyecto)
-                .set(actualizacionLocal, SetOptions.merge())
-                .addOnSuccessListener {
-                    proyectoActual?.fotoUri = uriFotoSeleccionada
-                    filtrarYOrdenarLista()
-                }
-
-            if (fotoBytes != null) {
-                val storageRef = FirebaseStorage.getInstance().reference.child("fotos_proyectos/${idProyecto}.jpg")
-                storageRef.putBytes(fotoBytes).addOnSuccessListener {
-                    storageRef.downloadUrl.addOnSuccessListener { uriDescarga ->
-                        val urlFinal = uriDescarga.toString()
-                        val actualizacionRemota = mapOf("fotoUri" to urlFinal)
-                        FirebaseFirestore.getInstance().collection("proyectos_mina")
-                            .document(idProyecto)
-                            .set(actualizacionRemota, SetOptions.merge())
-                            .addOnSuccessListener {
-                                proyectoActual?.fotoUri = urlFinal
-                                filtrarYOrdenarLista()
-                            }
+                    if (urlFinal != null) {
+                        imagenActualizando?.load(urlFinal) { crossfade(true) }
+                        filtrarYOrdenarLista()
+                    } else {
+                        imagenActualizando?.load(proyectoActual.fotoUri) { crossfade(true) }
+                        Toast.makeText(
+                            requireContext(),
+                            "No se pudo respaldar la foto. Inténtalo de nuevo.",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
@@ -157,6 +123,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         recyclerView.adapter = adapter
 
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
+            respaldarFotosLocalesPendientes(it)
             filtrarYOrdenarLista()
         }
 
@@ -276,6 +243,27 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         adapter.actualizarLista(listaResultante)
     }
 
+    /**
+     * Migra los proyectos creados antes del respaldo remoto. Solo puede completar la
+     * migración desde el dispositivo que aún conserva permiso para leer la foto local.
+     */
+    private fun respaldarFotosLocalesPendientes(proyectos: List<ProyectoCrochet>) {
+        proyectos
+            .filter { proyecto ->
+                val fotoUri = proyecto.fotoUri
+                !fotoUri.isNullOrBlank() &&
+                    !fotoUri.startsWith("http") &&
+                    fotoUri != "null" &&
+                    fotoUri != "undefined" &&
+                    proyectosConFotoEnRespaldo.add(proyecto.id)
+            }
+            .forEach { proyecto ->
+                viewModel.actualizarFotoProyecto(proyecto, proyecto.fotoUri!!) { urlFinal ->
+                    if (urlFinal != null && isAdded) filtrarYOrdenarLista()
+                }
+            }
+    }
+
     private fun mostrarDetalleProyecto(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_detalle_proyecto, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
@@ -316,10 +304,19 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                         pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
                     },
                     accionOpcion2 = {
-                        FirebaseFirestore.getInstance().collection("proyectos_mina").document(proyecto.id).update("fotoUri", null)
-                        proyecto.fotoUri = null
-                        refrescarImagenLocal()
-                        filtrarYOrdenarLista()
+                        viewModel.eliminarFotoProyecto(proyecto) { eliminada ->
+                            if (!isAdded) return@eliminarFotoProyecto
+                            if (eliminada) {
+                                refrescarImagenLocal()
+                                filtrarYOrdenarLista()
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "No se pudo eliminar la foto. Inténtalo de nuevo.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     }
                 )
             }
