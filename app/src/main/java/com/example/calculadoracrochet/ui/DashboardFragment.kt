@@ -34,6 +34,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.lang.ref.WeakReference
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -47,31 +48,35 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private var proyectoEditandoID: String? = null
     private var proyectoEditando: ProyectoCrochet? = null
-    private var ivFotoActualizando: ImageView? = null
-    private val proyectosConFotoEnRespaldo = mutableSetOf<String>()
+    private var vistaFotoEnEdicion: WeakReference<ImageView>? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null && proyectoEditandoID != null) {
+        val contexto = context
+        if (uri != null && proyectoEditandoID != null && contexto != null) {
             val proyectoActual = proyectoEditando
-            val imagenActualizando = ivFotoActualizando
+            val referenciaVista = vistaFotoEnEdicion
+            val fotoAnterior = proyectoActual?.fotoUri
 
             try {
-                imagenActualizando?.setImageURI(uri)
-                imagenActualizando?.imageTintList = null
-                imagenActualizando?.scaleType = ImageView.ScaleType.CENTER_CROP
+                referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.apply {
+                    setImageURI(uri)
+                    imageTintList = null
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
 
             if (proyectoActual != null) {
-                viewModel.actualizarFotoProyecto(proyectoActual, uri.toString()) { urlFinal ->
+                viewModel.actualizarFotoProyecto(contexto, proyectoActual, uri.toString()) { actualizada ->
                     if (!isAdded) return@actualizarFotoProyecto
 
-                    if (urlFinal != null) {
-                        imagenActualizando?.load(urlFinal) { crossfade(true) }
+                    if (actualizada) {
                         filtrarYOrdenarLista()
                     } else {
-                        imagenActualizando?.load(proyectoActual.fotoUri) { crossfade(true) }
+                        referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.load(fotoAnterior) {
+                            crossfade(true)
+                        }
                         Toast.makeText(
                             requireContext(),
                             "No se pudo respaldar la foto. Inténtalo de nuevo.",
@@ -82,7 +87,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         }
         proyectoEditandoID = null
-        ivFotoActualizando = null
+        proyectoEditando = null
+        vistaFotoEnEdicion = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -123,7 +129,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         recyclerView.adapter = adapter
 
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
-            respaldarFotosLocalesPendientes(it)
             filtrarYOrdenarLista()
         }
 
@@ -243,27 +248,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         adapter.actualizarLista(listaResultante)
     }
 
-    /**
-     * Migra los proyectos creados antes del respaldo remoto. Solo puede completar la
-     * migración desde el dispositivo que aún conserva permiso para leer la foto local.
-     */
-    private fun respaldarFotosLocalesPendientes(proyectos: List<ProyectoCrochet>) {
-        proyectos
-            .filter { proyecto ->
-                val fotoUri = proyecto.fotoUri
-                !fotoUri.isNullOrBlank() &&
-                    !fotoUri.startsWith("http") &&
-                    fotoUri != "null" &&
-                    fotoUri != "undefined" &&
-                    proyectosConFotoEnRespaldo.add(proyecto.id)
-            }
-            .forEach { proyecto ->
-                viewModel.actualizarFotoProyecto(proyecto, proyecto.fotoUri!!) { urlFinal ->
-                    if (urlFinal != null && isAdded) filtrarYOrdenarLista()
-                }
-            }
-    }
-
     private fun mostrarDetalleProyecto(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_detalle_proyecto, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
@@ -289,7 +273,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             if (proyecto.fotoUri.isNullOrEmpty()) {
                 proyectoEditando = proyecto
                 proyectoEditandoID = proyecto.id
-                ivFotoActualizando = ivFoto
+                vistaFotoEnEdicion = WeakReference(ivFoto)
                 pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
             } else {
                 DialogUtils.mostrarOpciones(
@@ -300,7 +284,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     accionOpcion1 = {
                         proyectoEditando = proyecto
                         proyectoEditandoID = proyecto.id
-                        ivFotoActualizando = ivFoto
+                        vistaFotoEnEdicion = WeakReference(ivFoto)
                         pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
                     },
                     accionOpcion2 = {
@@ -418,13 +402,24 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 mensaje = "¿Segura que deseas eliminar '${proyecto.nombre}'?",
                 textoConfirmar = "Eliminar"
             ) {
-                viewModel.eliminarProyecto(proyecto)
-                dialog.dismiss()
+                viewModel.eliminarProyecto(proyecto) { eliminado ->
+                    if (!isAdded) return@eliminarProyecto
+                    if (eliminado) {
+                        dialog.dismiss()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "No se pudo eliminar el proyecto y su foto. Inténtalo de nuevo.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
             }
         }
 
         fun prepararProyectoParaEdicion(esDuplicado: Boolean) {
             viewModel.idProyectoEnEdicion = if (esDuplicado) null else proyecto.id
+            viewModel.fechaEnEdicion = if (esDuplicado) null else proyecto.fechaGuardado
             viewModel.costoMateriales = proyecto.costoMateriales
             viewModel.costoDiseno = proyecto.costoDiseno
             viewModel.costoManoObra = proyecto.costoManoObra
@@ -434,6 +429,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
             viewModel.nombreTemp = proyecto.nombre
             viewModel.fotoUriTemp = proyecto.fotoUri
+            viewModel.fotoMiniaturaUriTemp = proyecto.fotoMiniaturaUri
             viewModel.carpetasTemp.clear()
             viewModel.carpetasTemp.addAll(proyecto.carpetas)
             viewModel.listaEstambresGuardados.clear()

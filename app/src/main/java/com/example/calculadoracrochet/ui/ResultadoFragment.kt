@@ -202,7 +202,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
             btnConfirmar.isEnabled = false
             btnCancelar?.isEnabled = false
-            viewModel.guardarProyecto(nombre, uriFotoSeleccionada) { guardado ->
+            viewModel.guardarProyecto(requireContext(), nombre, uriFotoSeleccionada) { guardado ->
                 if (!isAdded) return@guardarProyecto
 
                 if (guardado) {
