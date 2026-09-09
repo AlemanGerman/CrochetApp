@@ -15,8 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageMetadata
-import java.util.concurrent.Executors
+import java.io.File
 import java.util.UUID
+import java.util.concurrent.Executors
 
 data class EstambreGuardado(var nombre: String = "", var costo: String = "", var totales: String = "", var usados: String = "")
 data class AccesorioGuardado(var nombre: String = "", var costo: String = "")
@@ -104,8 +105,7 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     /**
-     * Guarda el proyecto solamente después de que la foto elegida quede respaldada en
-     * Firebase Storage. Firestore conserva la URL de descarga, nunca una URI local.
+     * Guarda el proyecto respaldando primero la foto en Firebase Storage.
      */
     fun guardarProyecto(context: Context, nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
         val idNuevo = idProyectoEnEdicion ?: UUID.randomUUID().toString()
@@ -135,7 +135,7 @@ class CalculadoraViewModel : ViewModel() {
                 .addOnSuccessListener {
                     Log.d("Firebase", "Proyecto guardado con éxito")
                     if (fotoParaGuardar != fotoAnterior) {
-                        borrarFotosNoReferenciadas(fotoAnterior)
+                        borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = idNuevo)
                     }
                     limpiarCalculoActual()
                     onComplete(true)
@@ -152,7 +152,8 @@ class CalculadoraViewModel : ViewModel() {
                 escribirEnFirestore(fotoRemota, fotoRecienSubida = true)
             }, onFailure = { onComplete(false) })
         } else {
-            escribirEnFirestore(FotoRemota(fotoUri, fotoMiniaturaUriTemp))
+            val miniatura = if (fotoUri.isNullOrBlank()) null else fotoMiniaturaUriTemp
+            escribirEnFirestore(FotoRemota(fotoUri, miniatura))
         }
     }
 
@@ -193,7 +194,7 @@ class CalculadoraViewModel : ViewModel() {
                     val fotoAnterior = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
                     proyecto.fotoUri = fotoNueva.principal
                     proyecto.fotoMiniaturaUri = fotoNueva.miniatura
-                    borrarFotosNoReferenciadas(fotoAnterior)
+                    borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = proyecto.id)
                     onComplete(true)
                 }
                 .addOnFailureListener { e ->
@@ -237,14 +238,33 @@ class CalculadoraViewModel : ViewModel() {
         onSuccess: (FotoRemota) -> Unit,
         onFailure: () -> Unit
     ) {
-        val contextoApp = context.applicationContext
+        val cacheDir = context.cacheDir
+        val archivoTemporal = try {
+            val dirTemp = File(cacheDir, "picker_temp").apply { mkdirs() }
+            val temp = File(dirTemp, "${UUID.randomUUID()}.tmp")
+            if (uriLocal.scheme == "file") {
+                File(uriLocal.path ?: "").copyTo(temp, overwrite = true)
+            } else {
+                context.contentResolver.openInputStream(uriLocal)?.use { input ->
+                    temp.outputStream().use { output -> input.copyTo(output) }
+                } ?: throw IllegalStateException("No se pudo abrir el stream de la URI")
+            }
+            temp
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error al extraer la imagen seleccionada", e)
+            handlerPrincipal.post(onFailure)
+            return
+        }
+
         hiloFotos.execute {
             val fotosOptimizadas = try {
-                FotosOptimizador.optimizar(contextoApp, uriLocal)
+                FotosOptimizador.optimizarArchivo(cacheDir, archivoTemporal)
             } catch (error: Exception) {
                 Log.e("Firebase", "No se pudo optimizar la foto seleccionada", error)
                 handlerPrincipal.post(onFailure)
                 return@execute
+            } finally {
+                archivoTemporal.delete()
             }
 
             handlerPrincipal.post {
@@ -271,13 +291,11 @@ class CalculadoraViewModel : ViewModel() {
 
         fun fallo(error: Exception) {
             Log.e("Firebase", "No se pudo respaldar la foto en Storage", error)
-            referenciaPrincipal.delete()
-            referenciaMiniatura?.delete()
             fotos.eliminarArchivosTemporales()
             onFailure()
         }
 
-        asegurarSesionEnFirebase(onSuccess = {
+        fun ejecutarSubida() {
             referenciaPrincipal.putFile(Uri.fromFile(fotos.principal), metadata)
                 .continueWithTask { tareaSubida ->
                     if (!tareaSubida.isSuccessful) {
@@ -306,23 +324,22 @@ class CalculadoraViewModel : ViewModel() {
                         .addOnFailureListener(::fallo)
                 }
                 .addOnFailureListener(::fallo)
-        }, onFailure = {
-            fotos.eliminarArchivosTemporales()
-            onFailure()
-        })
+        }
+
+        asegurarSesionEnFirebase {
+            ejecutarSubida()
+        }
     }
 
-    private fun asegurarSesionEnFirebase(onSuccess: () -> Unit, onFailure: () -> Unit) {
+    private fun asegurarSesionEnFirebase(onListo: () -> Unit) {
         if (auth.currentUser != null) {
-            onSuccess()
+            onListo()
             return
         }
 
         auth.signInAnonymously()
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { error ->
-                Log.e("Firebase", "No se pudo iniciar sesión para respaldar la foto", error)
-                onFailure()
+            .addOnCompleteListener {
+                onListo()
             }
     }
 
@@ -378,7 +395,7 @@ class CalculadoraViewModel : ViewModel() {
             return
         }
 
-        asegurarSesionEnFirebase(onSuccess = {
+        asegurarSesionEnFirebase {
             val tareas = urls.mapNotNull { url ->
                 try {
                     storage.getReferenceFromUrl(url).delete()
@@ -395,11 +412,11 @@ class CalculadoraViewModel : ViewModel() {
             Tasks.whenAllComplete(tareas).addOnCompleteListener {
                 val seEliminoTodo = tareas.all { tarea ->
                     tarea.isSuccessful ||
-                        (tarea.exception as? StorageException)?.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND
+                            (tarea.exception as? StorageException)?.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND
                 }
                 onComplete(seEliminoTodo)
             }
-        }, onFailure = { onComplete(false) })
+        }
     }
 
     private fun String?.esUriLocal(): Boolean = !isNullOrBlank() && !startsWith("http")

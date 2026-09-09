@@ -1,6 +1,5 @@
 package com.example.calculadoracrochet.utils
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -9,10 +8,10 @@ import android.media.ExifInterface
 import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.roundToInt
+import androidx.core.graphics.scale
 
 data class FotosOptimizadas(
     val principal: File,
@@ -33,22 +32,19 @@ object FotosOptimizador {
     private const val TAMANO_MAX_FOTO_BYTES = 1_200_000L
     private const val TAMANO_MAX_MINIATURA_BYTES = 150_000L
 
-    fun optimizar(context: Context, uri: Uri): FotosOptimizadas {
-        val resolver = context.contentResolver
-        val dimensiones = leerDimensiones(resolver, uri)
-        val bitmapDecodificado = resolver.abrir(uri) { input ->
-            BitmapFactory.decodeStream(
-                input,
-                null,
-                BitmapFactory.Options().apply {
-                    inSampleSize = calcularMuestreo(dimensiones.first, dimensiones.second, MAX_LADO_FOTO)
-                    inPreferredConfig = Bitmap.Config.ARGB_8888
-                }
-            )
-        } ?: error("No se pudo leer la foto seleccionada")
+    fun optimizarArchivo(cacheDir: File, archivoOrigen: File): FotosOptimizadas {
+        val dimensiones = leerDimensionesArchivo(archivoOrigen)
+        val muestra = calcularMuestreo(dimensiones.first, dimensiones.second, MAX_LADO_FOTO)
+
+        val opciones = BitmapFactory.Options().apply {
+            inSampleSize = muestra
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
+        val bitmapDecodificado = BitmapFactory.decodeFile(archivoOrigen.absolutePath, opciones)
+            ?: error("No se pudo decodificar la imagen seleccionada")
 
         var foto = bitmapDecodificado
-        val orientada = aplicarOrientacion(foto, leerOrientacion(resolver, uri))
+        val orientada = aplicarOrientacion(foto, leerOrientacionArchivo(archivoOrigen))
         if (orientada !== foto) foto.recycle()
         foto = orientada
 
@@ -56,7 +52,7 @@ object FotosOptimizador {
         if (reducida !== foto) foto.recycle()
         foto = reducida
 
-        val directorio = File(context.cacheDir, "fotos_para_subir").apply { mkdirs() }
+        val directorio = File(cacheDir, "fotos_para_subir").apply { mkdirs() }
         val idArchivo = UUID.randomUUID().toString()
         val archivoPrincipal = File(directorio, "$idArchivo.jpg")
 
@@ -87,9 +83,25 @@ object FotosOptimizador {
         }
     }
 
-    private fun leerDimensiones(resolver: ContentResolver, uri: Uri): Pair<Int, Int> {
+    fun optimizar(context: Context, uri: Uri): FotosOptimizadas {
+        val temp = File(context.cacheDir, "temp_opt_${UUID.randomUUID()}.tmp")
+        try {
+            if (uri.scheme == "file") {
+                File(uri.path ?: "").copyTo(temp, overwrite = true)
+            } else {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    temp.outputStream().use { output -> input.copyTo(output) }
+                } ?: error("No se pudo abrir la foto seleccionada")
+            }
+            return optimizarArchivo(context.cacheDir, temp)
+        } finally {
+            temp.delete()
+        }
+    }
+
+    private fun leerDimensionesArchivo(archivo: File): Pair<Int, Int> {
         val opciones = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.abrir(uri) { input -> BitmapFactory.decodeStream(input, null, opciones) }
+        BitmapFactory.decodeFile(archivo.absolutePath, opciones)
         check(opciones.outWidth > 0 && opciones.outHeight > 0) { "El archivo seleccionado no es una imagen válida" }
         return opciones.outWidth to opciones.outHeight
     }
@@ -105,18 +117,15 @@ object FotosOptimizador {
         if (ladoActual <= maxLado) return bitmap
 
         val escala = maxLado.toFloat() / ladoActual
-        return Bitmap.createScaledBitmap(
-            bitmap,
+        return bitmap.scale(
             (bitmap.width * escala).roundToInt().coerceAtLeast(1),
-            (bitmap.height * escala).roundToInt().coerceAtLeast(1),
-            true
+            (bitmap.height * escala).roundToInt().coerceAtLeast(1)
         )
     }
 
-    private fun leerOrientacion(resolver: ContentResolver, uri: Uri): Int = try {
-        resolver.abrir(uri) { input ->
-            ExifInterface(input).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-        }
+    private fun leerOrientacionArchivo(archivo: File): Int = try {
+        val exif = ExifInterface(archivo.absolutePath)
+        exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
     } catch (_: Exception) {
         ExifInterface.ORIENTATION_NORMAL
     }
@@ -145,9 +154,5 @@ object FotosOptimizador {
             }
             calidad -= 5
         } while (archivo.length() > tamanoMaximo && calidad >= CALIDAD_MINIMA)
-    }
-
-    private inline fun <T> ContentResolver.abrir(uri: Uri, bloque: (InputStream) -> T): T {
-        return openInputStream(uri)?.use(bloque) ?: error("No se pudo abrir la foto seleccionada")
     }
 }

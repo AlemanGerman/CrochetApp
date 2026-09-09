@@ -69,9 +69,7 @@ class ProyectosAdapter(
             holder.ivImagen.setPadding(0, 0, 0, 0)
             holder.ivImagen.imageTintList = null
             holder.ivImagen.setBackgroundColor(Color.TRANSPARENT)
-            val fotoParaDashboard = proyecto.fotoMiniaturaUri?.takeIf {
-                it.isNotBlank() && it != "null" && it != "undefined"
-            } ?: proyecto.fotoUri
+            val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
                 holder.ivImagen.load(fotoParaDashboard) {
                 crossfade(false)
                 memoryCachePolicy(CachePolicy.ENABLED)
