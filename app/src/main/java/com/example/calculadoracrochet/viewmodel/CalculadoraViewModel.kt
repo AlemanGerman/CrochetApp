@@ -7,6 +7,9 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import coil.imageLoader
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizadas
 import com.example.calculadoracrochet.utils.FotosOptimizador
 import com.google.android.gms.tasks.Tasks
@@ -104,9 +107,6 @@ class CalculadoraViewModel : ViewModel() {
         precioFinalSugerdio = subtotal + gananciaExtra
     }
 
-    /**
-     * Guarda el proyecto respaldando primero la foto en Firebase Storage.
-     */
     fun guardarProyecto(context: Context, nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
         val idNuevo = idProyectoEnEdicion ?: UUID.randomUUID().toString()
         val fotoAnterior = FotoRemota(fotoUriTemp, fotoMiniaturaUriTemp)
@@ -158,22 +158,20 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     fun eliminarProyecto(proyecto: ProyectoCrochet, onComplete: (Boolean) -> Unit) {
-        borrarFotosNoReferenciadas(
-            FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri),
-            idProyectoExcluido = proyecto.id
-        ) { fotosEliminadas ->
-            if (!fotosEliminadas) {
-                onComplete(false)
-                return@borrarFotosNoReferenciadas
+        // 1. Borramos el documento de Firestore primero
+        db.collection("proyectos_mina").document(proyecto.id).delete()
+            .addOnSuccessListener {
+                // 2. Limpiamos en segundo plano las fotos que ya no se usan
+                borrarFotosNoReferenciadas(
+                    FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri),
+                    idProyectoExcluido = proyecto.id
+                )
+                onComplete(true)
             }
-
-            db.collection("proyectos_mina").document(proyecto.id).delete()
-                .addOnSuccessListener { onComplete(true) }
-                .addOnFailureListener { error ->
-                    Log.e("Firebase", "Error al eliminar proyecto", error)
-                    onComplete(false)
-                }
-        }
+            .addOnFailureListener { error ->
+                Log.e("Firebase", "Error al eliminar proyecto de Firestore", error)
+                onComplete(false)
+            }
     }
 
     fun actualizarFotoProyecto(
@@ -208,27 +206,22 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     fun eliminarFotoProyecto(proyecto: ProyectoCrochet, onComplete: (Boolean) -> Unit) {
-        borrarFotosNoReferenciadas(
-            FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri),
-            idProyectoExcluido = proyecto.id
-        ) { fotosEliminadas ->
-            if (!fotosEliminadas) {
-                onComplete(false)
-                return@borrarFotosNoReferenciadas
-            }
+        val fotoAnterior = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
 
-            db.collection("proyectos_mina").document(proyecto.id)
-                .update(mapOf("fotoUri" to null, "fotoMiniaturaUri" to null))
-                .addOnSuccessListener {
-                    proyecto.fotoUri = null
-                    proyecto.fotoMiniaturaUri = null
-                    onComplete(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Error al eliminar la foto del proyecto", e)
-                    onComplete(false)
-                }
-        }
+        // 1. Quitamos las referencias en Firestore primero
+        db.collection("proyectos_mina").document(proyecto.id)
+            .update(mapOf("fotoUri" to null, "fotoMiniaturaUri" to null))
+            .addOnSuccessListener {
+                proyecto.fotoUri = null
+                proyecto.fotoMiniaturaUri = null
+                // 2. Borramos en segundo plano de Storage
+                borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = proyecto.id)
+                onComplete(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error al eliminar la foto del proyecto", e)
+                onComplete(false)
+            }
     }
 
     private fun subirFoto(
@@ -256,6 +249,7 @@ class CalculadoraViewModel : ViewModel() {
             return
         }
 
+        val contextoApp = context.applicationContext
         hiloFotos.execute {
             val fotosOptimizadas = try {
                 FotosOptimizador.optimizarArchivo(cacheDir, archivoTemporal)
@@ -268,12 +262,13 @@ class CalculadoraViewModel : ViewModel() {
             }
 
             handlerPrincipal.post {
-                subirFotosOptimizadas(idProyecto, fotosOptimizadas, onSuccess, onFailure)
+                subirFotosOptimizadas(contextoApp, idProyecto, fotosOptimizadas, onSuccess, onFailure)
             }
         }
     }
 
     private fun subirFotosOptimizadas(
+        context: Context,
         idProyecto: String,
         fotos: FotosOptimizadas,
         onSuccess: (FotoRemota) -> Unit,
@@ -295,6 +290,34 @@ class CalculadoraViewModel : ViewModel() {
             onFailure()
         }
 
+        fun precargarEnCoil(fotoRemota: FotoRemota) {
+            try {
+                val loader = context.imageLoader
+                fotoRemota.principal?.let { url ->
+                    loader.enqueue(
+                        ImageRequest.Builder(context)
+                            .data(url)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build()
+                    )
+                }
+                fotoRemota.miniatura?.let { urlMin ->
+                    if (urlMin != fotoRemota.principal) {
+                        loader.enqueue(
+                            ImageRequest.Builder(context)
+                                .data(urlMin)
+                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                .diskCachePolicy(CachePolicy.ENABLED)
+                                .build()
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
+            }
+        }
+
         fun ejecutarSubida() {
             referenciaPrincipal.putFile(Uri.fromFile(fotos.principal), metadata)
                 .continueWithTask { tareaSubida ->
@@ -306,7 +329,9 @@ class CalculadoraViewModel : ViewModel() {
                 .addOnSuccessListener { urlPrincipal ->
                     if (referenciaMiniatura == null) {
                         fotos.eliminarArchivosTemporales()
-                        onSuccess(FotoRemota(urlPrincipal.toString(), urlPrincipal.toString()))
+                        val fotoRemota = FotoRemota(urlPrincipal.toString(), urlPrincipal.toString())
+                        precargarEnCoil(fotoRemota)
+                        onSuccess(fotoRemota)
                         return@addOnSuccessListener
                     }
 
@@ -319,7 +344,9 @@ class CalculadoraViewModel : ViewModel() {
                         }
                         .addOnSuccessListener { urlMiniatura ->
                             fotos.eliminarArchivosTemporales()
-                            onSuccess(FotoRemota(urlPrincipal.toString(), urlMiniatura.toString()))
+                            val fotoRemota = FotoRemota(urlPrincipal.toString(), urlMiniatura.toString())
+                            precargarEnCoil(fotoRemota)
+                            onSuccess(fotoRemota)
                         }
                         .addOnFailureListener(::fallo)
                 }
@@ -370,7 +397,6 @@ class CalculadoraViewModel : ViewModel() {
                     miniatura = fotos.miniatura?.takeUnless { it in urlsEnUso }
                 )
                 eliminarFotosDeStorage(fotosSinReferencias) { eliminadas ->
-                    if (!eliminadas) Log.w("Firebase", "No se pudieron eliminar algunas fotos antiguas de Storage")
                     onComplete?.invoke(eliminadas)
                 }
             }
@@ -381,17 +407,15 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     private fun borrarFotosDeStorage(fotos: FotoRemota) {
-        eliminarFotosDeStorage(fotos) { eliminadas ->
-            if (!eliminadas) Log.w("Firebase", "No se pudieron eliminar algunas fotos antiguas de Storage")
-        }
+        eliminarFotosDeStorage(fotos)
     }
 
-    private fun eliminarFotosDeStorage(fotos: FotoRemota, onComplete: (Boolean) -> Unit) {
+    private fun eliminarFotosDeStorage(fotos: FotoRemota, onComplete: ((Boolean) -> Unit)? = null) {
         val urls = setOf(fotos.principal, fotos.miniatura)
             .filterNotNull()
             .filter { it.startsWith("http") }
         if (urls.isEmpty()) {
-            onComplete(true)
+            onComplete?.invoke(true)
             return
         }
 
@@ -400,21 +424,29 @@ class CalculadoraViewModel : ViewModel() {
                 try {
                     storage.getReferenceFromUrl(url).delete()
                 } catch (error: Exception) {
-                    Log.w("Firebase", "La foto no pertenece a Firebase Storage", error)
+                    Log.w("Firebase", "URL no pertenece a Storage o ya fue descartada: $url", error)
                     null
                 }
             }
             if (tareas.isEmpty()) {
-                onComplete(true)
+                onComplete?.invoke(true)
                 return@asegurarSesionEnFirebase
             }
 
             Tasks.whenAllComplete(tareas).addOnCompleteListener {
                 val seEliminoTodo = tareas.all { tarea ->
+                    val ex = tarea.exception as? StorageException
+                    val msg = tarea.exception?.message?.lowercase() ?: ""
                     tarea.isSuccessful ||
-                            (tarea.exception as? StorageException)?.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND
+                            ex?.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND ||
+                            ex?.httpResultCode == 404 ||
+                            msg.contains("does not exist") ||
+                            msg.contains("not found")
                 }
-                onComplete(seEliminoTodo)
+                if (!seEliminoTodo) {
+                    Log.w("Firebase", "Algunas fotos no se encontraron en Storage al limpiar (pudo haberse borrado antes)")
+                }
+                onComplete?.invoke(seEliminoTodo)
             }
         }
     }
