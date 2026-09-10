@@ -16,7 +16,6 @@ import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.example.calculadoracrochet.utils.FotosOptimizadas
 import com.example.calculadoracrochet.utils.FotosOptimizador
 import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
@@ -93,6 +92,7 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     fun cargarProyectosDeLaNube() {
+        val appContext = FirebaseApp.getInstance().applicationContext
         db.collection("proyectos_mina")
             .addSnapshotListener { documentos, error ->
                 if (error != null || documentos == null) return@addSnapshotListener
@@ -103,6 +103,7 @@ class CalculadoraViewModel : ViewModel() {
                         id = documento.id
                     }
                     historialProyectos.add(proyecto)
+                    precargarEnCoil(appContext, FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri))
                 }
 
                 historialProyectos.sortByDescending { it.fechaGuardado }
@@ -410,7 +411,7 @@ class CalculadoraViewModel : ViewModel() {
     private fun precargarEnCoil(context: Context, fotoRemota: FotoRemota) {
         try {
             val loader = context.imageLoader
-            fotoRemota.principal?.let { url ->
+            fotoRemota.principal?.takeIf { it.isNotBlank() }?.let { url ->
                 loader.enqueue(
                     ImageRequest.Builder(context)
                         .data(url)
@@ -419,16 +420,14 @@ class CalculadoraViewModel : ViewModel() {
                         .build()
                 )
             }
-            fotoRemota.miniatura?.let { urlMin ->
-                if (urlMin != fotoRemota.principal) {
-                    loader.enqueue(
-                        ImageRequest.Builder(context)
-                            .data(urlMin)
-                            .memoryCachePolicy(CachePolicy.ENABLED)
-                            .diskCachePolicy(CachePolicy.ENABLED)
-                            .build()
-                    )
-                }
+            fotoRemota.miniatura?.takeIf { it.isNotBlank() && it != fotoRemota.principal }?.let { urlMin ->
+                loader.enqueue(
+                    ImageRequest.Builder(context)
+                        .data(urlMin)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                )
             }
         } catch (e: Exception) {
             Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
