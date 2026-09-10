@@ -7,17 +7,21 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizadas
 import com.example.calculadoracrochet.utils.FotosOptimizador
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
+import com.example.calculadoracrochet.workers.EliminarFotoWorker
+import com.example.calculadoracrochet.workers.SubirFotoWorker
+import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageException
-import com.google.firebase.storage.StorageMetadata
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -49,11 +53,14 @@ private data class FotoRemota(
     val miniatura: String?
 )
 
+private data class FotosLocalesPersistentes(
+    val principal: File,
+    val miniatura: File?
+)
+
 class CalculadoraViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
-    private val auth = FirebaseAuth.getInstance()
     private val hiloFotos = Executors.newSingleThreadExecutor()
     private val handlerPrincipal = Handler(Looper.getMainLooper())
 
@@ -92,7 +99,9 @@ class CalculadoraViewModel : ViewModel() {
 
                 historialProyectos.clear()
                 for (documento in documentos) {
-                    val proyecto = documento.toObject(ProyectoCrochet::class.java)
+                    val proyecto = documento.toObject(ProyectoCrochet::class.java).apply {
+                        id = documento.id
+                    }
                     historialProyectos.add(proyecto)
                 }
 
@@ -110,68 +119,111 @@ class CalculadoraViewModel : ViewModel() {
     fun guardarProyecto(context: Context, nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
         val idNuevo = idProyectoEnEdicion ?: UUID.randomUUID().toString()
         val fotoAnterior = FotoRemota(fotoUriTemp, fotoMiniaturaUriTemp)
+        val contextoApp = context.applicationContext
 
-        fun escribirEnFirestore(fotoParaGuardar: FotoRemota, fotoRecienSubida: Boolean = false) {
-            val nuevoProyecto = ProyectoCrochet(
-                id = idNuevo,
-                nombre = nombre,
-                fotoUri = fotoParaGuardar.principal,
-                fotoMiniaturaUri = fotoParaGuardar.miniatura,
-                fechaGuardado = fechaEnEdicion ?: System.currentTimeMillis(),
-                costoMateriales = costoMateriales,
-                costoDiseno = costoDiseno,
-                costoManoObra = costoManoObra,
-                costoEmpaque = costoEmpaque,
-                margenGanancia = margenGanancia,
-                precioFinal = precioFinalSugerdio,
-                horasTrabajadas = horasTrabajadasTemp,
-                pagoPorHora = pagoPorHoraTemp,
-                listaEstambres = listaEstambresGuardados.toList(),
-                listaAccesorios = listaAccesoriosGuardados.toList(),
-                carpetas = carpetasTemp.toList()
-            )
-
-            db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
-                .addOnSuccessListener {
-                    Log.d("Firebase", "Proyecto guardado con éxito")
-                    if (fotoParaGuardar != fotoAnterior) {
-                        borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = idNuevo)
+        if (fotoUri.esUriLocal()) {
+            hiloFotos.execute {
+                val fotosPersistentes = procesarYGuardarFotoLocal(contextoApp, idNuevo, Uri.parse(fotoUri))
+                handlerPrincipal.post {
+                    if (fotosPersistentes != null) {
+                        val fotoLocal = FotoRemota(
+                            principal = "file://${fotosPersistentes.principal.absolutePath}",
+                            miniatura = fotosPersistentes.miniatura?.let { "file://${it.absolutePath}" }
+                                ?: "file://${fotosPersistentes.principal.absolutePath}"
+                        )
+                        guardarEnFirestoreYEncolar(
+                            contextoApp,
+                            idNuevo,
+                            nombre,
+                            fotoParaGuardar = fotoLocal,
+                            rutasFisicasParaSubir = fotosPersistentes,
+                            fotoAnterior = fotoAnterior
+                        )
+                    } else {
+                        guardarEnFirestoreYEncolar(
+                            contextoApp,
+                            idNuevo,
+                            nombre,
+                            fotoParaGuardar = FotoRemota(null, null),
+                            rutasFisicasParaSubir = null,
+                            fotoAnterior = fotoAnterior
+                        )
                     }
                     limpiarCalculoActual()
                     onComplete(true)
                 }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Error al guardar en Firestore", e)
-                    if (fotoRecienSubida) borrarFotosDeStorage(fotoParaGuardar)
-                    onComplete(false)
-                }
-        }
-
-        if (fotoUri.esUriLocal()) {
-            subirFoto(context, idNuevo, Uri.parse(fotoUri), onSuccess = { fotoRemota ->
-                escribirEnFirestore(fotoRemota, fotoRecienSubida = true)
-            }, onFailure = { onComplete(false) })
+            }
         } else {
             val miniatura = if (fotoUri.isNullOrBlank()) null else fotoMiniaturaUriTemp
-            escribirEnFirestore(FotoRemota(fotoUri, miniatura))
+            val fotoRemota = FotoRemota(fotoUri, miniatura)
+            guardarEnFirestoreYEncolar(
+                contextoApp,
+                idNuevo,
+                nombre,
+                fotoParaGuardar = fotoRemota,
+                rutasFisicasParaSubir = null,
+                fotoAnterior = fotoAnterior
+            )
+            limpiarCalculoActual()
+            onComplete(true)
         }
     }
 
-    fun eliminarProyecto(proyecto: ProyectoCrochet, onComplete: (Boolean) -> Unit) {
-        // 1. Borramos el documento de Firestore primero
-        db.collection("proyectos_mina").document(proyecto.id).delete()
-            .addOnSuccessListener {
-                // 2. Limpiamos en segundo plano las fotos que ya no se usan
-                borrarFotosNoReferenciadas(
-                    FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri),
-                    idProyectoExcluido = proyecto.id
-                )
-                onComplete(true)
-            }
-            .addOnFailureListener { error ->
-                Log.e("Firebase", "Error al eliminar proyecto de Firestore", error)
-                onComplete(false)
-            }
+    private fun guardarEnFirestoreYEncolar(
+        context: Context,
+        idProyecto: String,
+        nombre: String,
+        fotoParaGuardar: FotoRemota,
+        rutasFisicasParaSubir: FotosLocalesPersistentes?,
+        fotoAnterior: FotoRemota
+    ) {
+        val nuevoProyecto = ProyectoCrochet(
+            id = idProyecto,
+            nombre = nombre,
+            fotoUri = fotoParaGuardar.principal,
+            fotoMiniaturaUri = fotoParaGuardar.miniatura,
+            fechaGuardado = fechaEnEdicion ?: System.currentTimeMillis(),
+            costoMateriales = costoMateriales,
+            costoDiseno = costoDiseno,
+            costoManoObra = costoManoObra,
+            costoEmpaque = costoEmpaque,
+            margenGanancia = margenGanancia,
+            precioFinal = precioFinalSugerdio,
+            horasTrabajadas = horasTrabajadasTemp,
+            pagoPorHora = pagoPorHoraTemp,
+            listaEstambres = listaEstambresGuardados.toList(),
+            listaAccesorios = listaAccesoriosGuardados.toList(),
+            carpetas = carpetasTemp.toList()
+        )
+
+        db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
+
+        if (rutasFisicasParaSubir != null) {
+            val urlsAnteriores = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
+                .filter { it.startsWith("http") && it !in listOfNotNull(fotoParaGuardar.principal, fotoParaGuardar.miniatura) }
+
+            encolarSubidaFoto(context, idProyecto, rutasFisicasParaSubir, urlsAnteriores)
+        } else if (fotoParaGuardar != fotoAnterior) {
+            borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
+        }
+
+        precargarEnCoil(context, fotoParaGuardar)
+    }
+
+    fun eliminarProyecto(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
+        val appContext = FirebaseApp.getInstance().applicationContext
+        val fotosABorrar = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
+        val idProyecto = proyecto.id
+
+        WorkManager.getInstance(appContext).cancelUniqueWork("subir_$idProyecto")
+
+        db.collection("proyectos_mina").document(idProyecto).delete()
+
+        borrarArchivosLocalesSiExisten(fotosABorrar)
+
+        borrarFotosSiNoSeUsan(fotosABorrar, idProyectoExcluido = idProyecto)
+
+        onComplete?.invoke(true)
     }
 
     fun actualizarFotoProyecto(
@@ -180,274 +232,206 @@ class CalculadoraViewModel : ViewModel() {
         fotoLocal: String,
         onComplete: (Boolean) -> Unit
     ) {
-        subirFoto(context, proyecto.id, Uri.parse(fotoLocal), onSuccess = { fotoNueva ->
-            db.collection("proyectos_mina").document(proyecto.id)
-                .update(
-                    mapOf(
-                        "fotoUri" to fotoNueva.principal,
-                        "fotoMiniaturaUri" to fotoNueva.miniatura
+        val fotoAnterior = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
+        val idProyecto = proyecto.id
+        val contextoApp = context.applicationContext
+
+        hiloFotos.execute {
+            val fotosPersistentes = procesarYGuardarFotoLocal(contextoApp, idProyecto, Uri.parse(fotoLocal))
+            handlerPrincipal.post {
+                if (fotosPersistentes != null) {
+                    val nuevaFotoLocal = FotoRemota(
+                        principal = "file://${fotosPersistentes.principal.absolutePath}",
+                        miniatura = fotosPersistentes.miniatura?.let { "file://${it.absolutePath}" }
+                            ?: "file://${fotosPersistentes.principal.absolutePath}"
                     )
-                )
-                .addOnSuccessListener {
-                    val fotoAnterior = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
-                    proyecto.fotoUri = fotoNueva.principal
-                    proyecto.fotoMiniaturaUri = fotoNueva.miniatura
-                    borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = proyecto.id)
+
+                    db.collection("proyectos_mina").document(idProyecto)
+                        .update(
+                            mapOf(
+                                "fotoUri" to nuevaFotoLocal.principal,
+                                "fotoMiniaturaUri" to nuevaFotoLocal.miniatura
+                            )
+                        )
+
+                    proyecto.fotoUri = nuevaFotoLocal.principal
+                    proyecto.fotoMiniaturaUri = nuevaFotoLocal.miniatura
+
+                    val urlsABorrar = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
+                        .filter { it.startsWith("http") }
+
+                    encolarSubidaFoto(contextoApp, idProyecto, fotosPersistentes, urlsABorrar)
+                    borrarArchivosLocalesSiExisten(fotoAnterior)
+                    precargarEnCoil(contextoApp, nuevaFotoLocal)
+
                     onComplete(true)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Error al guardar la URL de la foto", e)
-                    borrarFotosDeStorage(fotoNueva)
+                } else {
                     onComplete(false)
                 }
-        }, onFailure = {
-            onComplete(false)
-        })
+            }
+        }
     }
 
-    fun eliminarFotoProyecto(proyecto: ProyectoCrochet, onComplete: (Boolean) -> Unit) {
+    fun eliminarFotoProyecto(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
+        val appContext = FirebaseApp.getInstance().applicationContext
         val fotoAnterior = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
+        val idProyecto = proyecto.id
 
-        // 1. Quitamos las referencias en Firestore primero
-        db.collection("proyectos_mina").document(proyecto.id)
+        WorkManager.getInstance(appContext).cancelUniqueWork("subir_$idProyecto")
+
+        db.collection("proyectos_mina").document(idProyecto)
             .update(mapOf("fotoUri" to null, "fotoMiniaturaUri" to null))
-            .addOnSuccessListener {
-                proyecto.fotoUri = null
-                proyecto.fotoMiniaturaUri = null
-                // 2. Borramos en segundo plano de Storage
-                borrarFotosNoReferenciadas(fotoAnterior, idProyectoExcluido = proyecto.id)
-                onComplete(true)
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firebase", "Error al eliminar la foto del proyecto", e)
-                onComplete(false)
-            }
+
+        proyecto.fotoUri = null
+        proyecto.fotoMiniaturaUri = null
+
+        borrarArchivosLocalesSiExisten(fotoAnterior)
+        borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
+
+        onComplete?.invoke(true)
     }
 
-    private fun subirFoto(
+    private fun procesarYGuardarFotoLocal(
         context: Context,
         idProyecto: String,
-        uriLocal: Uri,
-        onSuccess: (FotoRemota) -> Unit,
-        onFailure: () -> Unit
-    ) {
+        uriLocal: Uri
+    ): FotosLocalesPersistentes? {
         val cacheDir = context.cacheDir
-        val archivoTemporal = try {
-            val dirTemp = File(cacheDir, "picker_temp").apply { mkdirs() }
-            val temp = File(dirTemp, "${UUID.randomUUID()}.tmp")
+        val tempDir = File(cacheDir, "picker_temp").apply { mkdirs() }
+        val archivoTemporal = File(tempDir, "${UUID.randomUUID()}.tmp")
+
+        try {
             if (uriLocal.scheme == "file") {
-                File(uriLocal.path ?: "").copyTo(temp, overwrite = true)
+                File(uriLocal.path ?: "").copyTo(archivoTemporal, overwrite = true)
             } else {
                 context.contentResolver.openInputStream(uriLocal)?.use { input ->
-                    temp.outputStream().use { output -> input.copyTo(output) }
-                } ?: throw IllegalStateException("No se pudo abrir el stream de la URI")
+                    archivoTemporal.outputStream().use { output -> input.copyTo(output) }
+                } ?: return null
             }
-            temp
+
+            val fotosOptimizadas = FotosOptimizador.optimizarArchivo(cacheDir, archivoTemporal)
+            val dirDestino = File(context.filesDir, "fotos_locales").apply { if (!exists()) mkdirs() }
+
+            val archivoPrincipal = File(dirDestino, "${idProyecto}_${UUID.randomUUID()}_foto.jpg")
+            fotosOptimizadas.principal.copyTo(archivoPrincipal, overwrite = true)
+
+            val archivoMiniatura = fotosOptimizadas.miniatura?.let { mini ->
+                val destMini = File(dirDestino, "${idProyecto}_${UUID.randomUUID()}_mini.jpg")
+                mini.copyTo(destMini, overwrite = true)
+                destMini
+            }
+
+            fotosOptimizadas.eliminarArchivosTemporales()
+            return FotosLocalesPersistentes(archivoPrincipal, archivoMiniatura)
         } catch (e: Exception) {
-            Log.e("Firebase", "Error al extraer la imagen seleccionada", e)
-            handlerPrincipal.post(onFailure)
-            return
+            Log.e("Firebase", "Error al procesar foto local", e)
+            return null
+        } finally {
+            if (archivoTemporal.exists()) archivoTemporal.delete()
         }
+    }
 
-        val contextoApp = context.applicationContext
-        hiloFotos.execute {
-            val fotosOptimizadas = try {
-                FotosOptimizador.optimizarArchivo(cacheDir, archivoTemporal)
-            } catch (error: Exception) {
-                Log.e("Firebase", "No se pudo optimizar la foto seleccionada", error)
-                handlerPrincipal.post(onFailure)
-                return@execute
-            } finally {
-                archivoTemporal.delete()
-            }
+    private fun encolarSubidaFoto(
+        context: Context,
+        idProyecto: String,
+        fotos: FotosLocalesPersistentes,
+        urlsAnteriores: List<String> = emptyList()
+    ) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
 
-            handlerPrincipal.post {
-                subirFotosOptimizadas(contextoApp, idProyecto, fotosOptimizadas, onSuccess, onFailure)
+        val datos = Data.Builder()
+            .putString(SubirFotoWorker.KEY_PROYECTO_ID, idProyecto)
+            .putString(SubirFotoWorker.KEY_RUTA_PRINCIPAL, fotos.principal.absolutePath)
+            .putString(SubirFotoWorker.KEY_RUTA_MINIATURA, fotos.miniatura?.absolutePath)
+            .putStringArray(SubirFotoWorker.KEY_URLS_ANTERIORES, urlsAnteriores.toTypedArray())
+            .build()
+
+        val request = OneTimeWorkRequestBuilder<SubirFotoWorker>()
+            .setConstraints(constraints)
+            .setInputData(datos)
+            .addTag("subir_$idProyecto")
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "subir_$idProyecto",
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }
+
+    private fun borrarFotosSiNoSeUsan(
+        fotos: FotoRemota,
+        idProyectoExcluido: String? = null
+    ) {
+        val urlsCandidatas = setOfNotNull(fotos.principal, fotos.miniatura)
+            .filter { it.startsWith("http") }
+        if (urlsCandidatas.isEmpty()) return
+
+        val urlsEnUso = historialProyectos
+            .filter { it.id != idProyectoExcluido }
+            .flatMap { listOfNotNull(it.fotoUri, it.fotoMiniaturaUri) }
+            .toSet()
+
+        val urlsABorrar = urlsCandidatas.filter { it !in urlsEnUso }
+        if (urlsABorrar.isEmpty()) return
+
+        val appContext = FirebaseApp.getInstance().applicationContext
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val datos = Data.Builder()
+            .putStringArray(EliminarFotoWorker.KEY_URLS, urlsABorrar.toTypedArray())
+            .build()
+
+        val request = OneTimeWorkRequestBuilder<EliminarFotoWorker>()
+            .setConstraints(constraints)
+            .setInputData(datos)
+            .build()
+
+        WorkManager.getInstance(appContext).enqueue(request)
+    }
+
+    private fun borrarArchivosLocalesSiExisten(fotos: FotoRemota) {
+        listOfNotNull(fotos.principal, fotos.miniatura).forEach { uriStr ->
+            if (uriStr.startsWith("file://")) {
+                try {
+                    val ruta = uriStr.removePrefix("file://")
+                    File(ruta).delete()
+                } catch (e: Exception) {
+                    Log.e("Firebase", "Error al borrar archivo local: $uriStr", e)
+                }
             }
         }
     }
 
-    private fun subirFotosOptimizadas(
-        context: Context,
-        idProyecto: String,
-        fotos: FotosOptimizadas,
-        onSuccess: (FotoRemota) -> Unit,
-        onFailure: () -> Unit
-    ) {
-        val rutaBase = "fotos_proyectos/$idProyecto/${UUID.randomUUID()}"
-        val metadata = StorageMetadata.Builder()
-            .setContentType("image/jpeg")
-            .setCacheControl("public,max-age=31536000,immutable")
-            .build()
-        val referenciaPrincipal = storage.reference.child("${rutaBase}_foto.jpg")
-        val referenciaMiniatura = fotos.miniatura?.let {
-            storage.reference.child("${rutaBase}_miniatura.jpg")
-        }
-
-        fun fallo(error: Exception) {
-            Log.e("Firebase", "No se pudo respaldar la foto en Storage", error)
-            fotos.eliminarArchivosTemporales()
-            onFailure()
-        }
-
-        fun precargarEnCoil(fotoRemota: FotoRemota) {
-            try {
-                val loader = context.imageLoader
-                fotoRemota.principal?.let { url ->
+    private fun precargarEnCoil(context: Context, fotoRemota: FotoRemota) {
+        try {
+            val loader = context.imageLoader
+            fotoRemota.principal?.let { url ->
+                loader.enqueue(
+                    ImageRequest.Builder(context)
+                        .data(url)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                )
+            }
+            fotoRemota.miniatura?.let { urlMin ->
+                if (urlMin != fotoRemota.principal) {
                     loader.enqueue(
                         ImageRequest.Builder(context)
-                            .data(url)
+                            .data(urlMin)
                             .memoryCachePolicy(CachePolicy.ENABLED)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .build()
                     )
                 }
-                fotoRemota.miniatura?.let { urlMin ->
-                    if (urlMin != fotoRemota.principal) {
-                        loader.enqueue(
-                            ImageRequest.Builder(context)
-                                .data(urlMin)
-                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                .diskCachePolicy(CachePolicy.ENABLED)
-                                .build()
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
             }
-        }
-
-        fun ejecutarSubida() {
-            referenciaPrincipal.putFile(Uri.fromFile(fotos.principal), metadata)
-                .continueWithTask { tareaSubida ->
-                    if (!tareaSubida.isSuccessful) {
-                        throw tareaSubida.exception ?: IllegalStateException("No se pudo subir la foto")
-                    }
-                    referenciaPrincipal.downloadUrl
-                }
-                .addOnSuccessListener { urlPrincipal ->
-                    if (referenciaMiniatura == null) {
-                        fotos.eliminarArchivosTemporales()
-                        val fotoRemota = FotoRemota(urlPrincipal.toString(), urlPrincipal.toString())
-                        precargarEnCoil(fotoRemota)
-                        onSuccess(fotoRemota)
-                        return@addOnSuccessListener
-                    }
-
-                    referenciaMiniatura.putFile(Uri.fromFile(fotos.miniatura), metadata)
-                        .continueWithTask { tareaSubida ->
-                            if (!tareaSubida.isSuccessful) {
-                                throw tareaSubida.exception ?: IllegalStateException("No se pudo subir la miniatura")
-                            }
-                            referenciaMiniatura.downloadUrl
-                        }
-                        .addOnSuccessListener { urlMiniatura ->
-                            fotos.eliminarArchivosTemporales()
-                            val fotoRemota = FotoRemota(urlPrincipal.toString(), urlMiniatura.toString())
-                            precargarEnCoil(fotoRemota)
-                            onSuccess(fotoRemota)
-                        }
-                        .addOnFailureListener(::fallo)
-                }
-                .addOnFailureListener(::fallo)
-        }
-
-        asegurarSesionEnFirebase {
-            ejecutarSubida()
-        }
-    }
-
-    private fun asegurarSesionEnFirebase(onListo: () -> Unit) {
-        if (auth.currentUser != null) {
-            onListo()
-            return
-        }
-
-        auth.signInAnonymously()
-            .addOnCompleteListener {
-                onListo()
-            }
-    }
-
-    private fun borrarFotosNoReferenciadas(
-        fotos: FotoRemota,
-        idProyectoExcluido: String? = null,
-        onComplete: ((Boolean) -> Unit)? = null
-    ) {
-        val urls = setOf(fotos.principal, fotos.miniatura).filterNotNull()
-        if (urls.isEmpty()) {
-            onComplete?.invoke(true)
-            return
-        }
-
-        db.collection("proyectos_mina").get()
-            .addOnSuccessListener { documentos ->
-                val urlsEnUso = documentos
-                    .filter { it.id != idProyectoExcluido }
-                    .flatMap { documento ->
-                        listOf(
-                            documento.getString("fotoUri"),
-                            documento.getString("fotoMiniaturaUri")
-                        )
-                    }
-                    .toSet()
-                val fotosSinReferencias = FotoRemota(
-                    principal = fotos.principal?.takeUnless { it in urlsEnUso },
-                    miniatura = fotos.miniatura?.takeUnless { it in urlsEnUso }
-                )
-                eliminarFotosDeStorage(fotosSinReferencias) { eliminadas ->
-                    onComplete?.invoke(eliminadas)
-                }
-            }
-            .addOnFailureListener { error ->
-                Log.e("Firebase", "No se pudieron verificar las referencias de fotos", error)
-                onComplete?.invoke(false)
-            }
-    }
-
-    private fun borrarFotosDeStorage(fotos: FotoRemota) {
-        eliminarFotosDeStorage(fotos)
-    }
-
-    private fun eliminarFotosDeStorage(fotos: FotoRemota, onComplete: ((Boolean) -> Unit)? = null) {
-        val urls = setOf(fotos.principal, fotos.miniatura)
-            .filterNotNull()
-            .filter { it.startsWith("http") }
-        if (urls.isEmpty()) {
-            onComplete?.invoke(true)
-            return
-        }
-
-        asegurarSesionEnFirebase {
-            val tareas = urls.mapNotNull { url ->
-                try {
-                    storage.getReferenceFromUrl(url).delete()
-                } catch (error: Exception) {
-                    Log.w("Firebase", "URL no pertenece a Storage o ya fue descartada: $url", error)
-                    null
-                }
-            }
-            if (tareas.isEmpty()) {
-                onComplete?.invoke(true)
-                return@asegurarSesionEnFirebase
-            }
-
-            Tasks.whenAllComplete(tareas).addOnCompleteListener {
-                val seEliminoTodo = tareas.all { tarea ->
-                    val ex = tarea.exception as? StorageException
-                    val msg = tarea.exception?.message?.lowercase() ?: ""
-                    tarea.isSuccessful ||
-                            ex?.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND ||
-                            ex?.httpResultCode == 404 ||
-                            msg.contains("does not exist") ||
-                            msg.contains("not found")
-                }
-                if (!seEliminoTodo) {
-                    Log.w("Firebase", "Algunas fotos no se encontraron en Storage al limpiar (pudo haberse borrado antes)")
-                }
-                onComplete?.invoke(seEliminoTodo)
-            }
+        } catch (e: Exception) {
+            Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
         }
     }
 
