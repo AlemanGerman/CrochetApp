@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
@@ -68,8 +69,12 @@ class ProyectosAdapter(
             holder.ivImagen.setPadding(0, 0, 0, 0)
             holder.ivImagen.imageTintList = null
             holder.ivImagen.setBackgroundColor(Color.TRANSPARENT)
-            holder.ivImagen.load(proyecto.fotoUri) {
-                crossfade(true)
+            val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
+                holder.ivImagen.load(fotoParaDashboard) {
+                crossfade(false)
+                memoryCachePolicy(CachePolicy.ENABLED)
+                diskCachePolicy(CachePolicy.ENABLED)
+                networkCachePolicy(CachePolicy.ENABLED)
             }
         } else {
             holder.ivImagen.scaleType = ImageView.ScaleType.FIT_CENTER

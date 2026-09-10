@@ -1,10 +1,8 @@
 package com.example.calculadoracrochet.ui
 
 import android.animation.Animator
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -19,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import coil.load
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
@@ -42,7 +41,6 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             uriFotoSeleccionada = uri.toString()
             try {
                 ivPreviewModal?.setImageURI(uri)
@@ -183,10 +181,8 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
             uriFotoSeleccionada = viewModel.fotoUriTemp
-            try {
-                ivPreviewModal?.setImageURI(Uri.parse(viewModel.fotoUriTemp))
-                ivPreviewModal?.imageTintList = null
-            } catch (e: Exception) { uriFotoSeleccionada = null }
+            ivPreviewModal?.load(viewModel.fotoUriTemp) { crossfade(true) }
+            ivPreviewModal?.imageTintList = null
         }
 
         btnElegirFoto?.setOnClickListener { pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build()) }
@@ -204,22 +200,21 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             viewModel.carpetasTemp.clear()
             viewModel.carpetasTemp.addAll(carpetasSeleccionadas)
 
-            var fotoBytes: ByteArray? = null
-            if (uriFotoSeleccionada != null && !uriFotoSeleccionada!!.startsWith("http")) {
-                try {
-                    val uri = Uri.parse(uriFotoSeleccionada)
-                    val inputStream = requireContext().contentResolver.openInputStream(uri)
-                    fotoBytes = inputStream?.readBytes()
-                    inputStream?.close()
-                } catch (e: Exception) { e.printStackTrace() }
-            }
+            btnConfirmar.isEnabled = false
+            btnCancelar?.isEnabled = false
+            viewModel.guardarProyecto(requireContext(), nombre, uriFotoSeleccionada) { guardado ->
+                if (!isAdded) return@guardarProyecto
 
-            dialog.dismiss()
-
-            viewModel.guardarProyecto(nombre, uriFotoSeleccionada, fotoBytes) { }
-
-            mostrarModalExito {
-                (requireActivity() as MainActivity).irAlDashboardConGanchillo()
+                if (guardado) {
+                    dialog.dismiss()
+                    mostrarModalExito {
+                        (requireActivity() as MainActivity).irAlDashboardConGanchillo()
+                    }
+                } else {
+                    btnConfirmar.isEnabled = true
+                    btnCancelar?.isEnabled = true
+                    tilNombre?.error = "No se pudo respaldar la foto. Revisa tu conexión e inténtalo de nuevo."
+                }
             }
         }
         dialog.show()
