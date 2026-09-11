@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -30,11 +31,12 @@ import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -148,12 +150,45 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
         }
 
+        view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
+            mostrarBottomSheetOpciones()
+        }
+
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
             viewModel.limpiarCalculoActual()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
         configurarBotonesCarpetas(view)
+    }
+
+    private fun mostrarBottomSheetOpciones() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_dashboard_opciones, null)
+        bottomSheetDialog.setContentView(sheetView)
+
+        sheetView.findViewById<View>(R.id.itemOpcionEstadisticas).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(EstadisticasFragment())
+        }
+
+        sheetView.findViewById<View>(R.id.itemOpcionPapelera).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(PapeleraFragment())
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun navegarHaciaFragmento(fragment: Fragment) {
+        try {
+            (requireActivity() as MainActivity).navegarConGanchillo(fragment)
+        } catch (e: Exception) {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     private fun configurarBotonesCarpetas(view: View) {
@@ -189,6 +224,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             llContenedor.addView(itemView)
         }
     }
+
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_carpetas, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
@@ -231,7 +267,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun filtrarYOrdenarLista() {
         val textoBusqueda = view?.findViewById<EditText>(R.id.etBuscarProyecto)?.text.toString().lowercase()
         var listaResultante = viewModel.historialProyectos.filter { proyecto ->
-            proyecto.nombre.lowercase().contains(textoBusqueda)
+            proyecto.fechaEliminado == null && proyecto.nombre.lowercase().contains(textoBusqueda)
         }
 
         if (carpetaSeleccionada != "Todos") {
@@ -398,18 +434,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
-                titulo = "Eliminar Proyecto",
-                mensaje = "¿Segura que deseas eliminar '${proyecto.nombre}'?",
-                textoConfirmar = "Eliminar"
+                titulo = "Mover a la papelera",
+                mensaje = "¿Segura que deseas mover '${proyecto.nombre}' a la papelera?",
+                textoConfirmar = "Mover",
+                iconoResId = R.drawable.ic_sad
             ) {
-                viewModel.eliminarProyecto(proyecto) { eliminado ->
-                    if (!isAdded) return@eliminarProyecto
-                    if (eliminado) {
+                viewModel.moverAPapelera(proyecto) { movido ->
+                    if (!isAdded) return@moverAPapelera
+                    if (movido) {
                         dialog.dismiss()
+                        filtrarYOrdenarLista()
+                        Toast.makeText(requireContext(), "Proyecto enviado a la papelera", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(
                             requireContext(),
-                            "No se pudo eliminar el proyecto y su foto. Inténtalo de nuevo.",
+                            "No se pudo mover a la papelera. Inténtalo de nuevo.",
                             Toast.LENGTH_LONG
                         ).show()
                     }
