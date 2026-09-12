@@ -41,8 +41,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rendimiento del Taller"
-                    android:textSize="22sp"
+                    android:text="Detalles de tu Empresa"
+                    android:textSize="21sp"
                     android:textColor="@color/white"
                     android:textStyle="bold"
                     app:layout_constraintStart_toEndOf="@id/btnVolverEstadisticas"
@@ -83,7 +83,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="INGRESOS ACUMULADOS"
+                            android:text="INGRESOS BRUTOS ACUMULADOS"
                             android:textSize="12sp"
                             android:textColor="@color/gray_hint"
                             android:textStyle="bold"
@@ -102,7 +102,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Suma bruta de cotizaciones activas registradas"
+                            android:text="Y de todo eso no me pichas nada..."
                             android:textColor="@color/gray_hint"
                             android:textSize="12sp"
                             android:layout_marginTop="4dp"/>
@@ -133,7 +133,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Proyectos en catálogo"
+                                android:text="Cantidad de Proyectos"
                                 android:textColor="@color/gray_text"
                                 android:textSize="14sp"/>
 
@@ -173,7 +173,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RÉCORDS DEL TALLER"
+                            android:text="RÉCORDS PERSONALES"
                             android:textSize="12sp"
                             android:textColor="@color/gray_hint"
                             android:textStyle="bold"
@@ -209,7 +209,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Más valioso"
+                                    android:text="Más valioso :0"
                                     android:textColor="@color/purple_primary"
                                     android:textSize="11sp"
                                     android:textStyle="bold"/>
@@ -317,7 +317,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="PROYECTOS POR CARPETA"
+                            android:text="TIPOS DE PROYECTOS"
                             android:textSize="12sp"
                             android:textColor="@color/gray_hint"
                             android:textStyle="bold"

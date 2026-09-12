@@ -183,14 +183,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun navegarHaciaFragmento(fragment: Fragment) {
-        try {
-            (requireActivity() as MainActivity).navegarConGanchillo(fragment)
-        } catch (e: Exception) {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
+        requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
+
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun configurarBotonesCarpetas(view: View) {
