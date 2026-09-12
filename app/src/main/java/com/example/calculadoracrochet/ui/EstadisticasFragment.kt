@@ -1,19 +1,23 @@
 package com.example.calculadoracrochet.ui
 
-import android.graphics.Typeface
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import coil.load
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.material.card.MaterialCardView
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
@@ -22,7 +26,7 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ImageButton>(R.id.btnVolverEstadisticas).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.btnVolverEstadisticas)?.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
@@ -34,43 +38,137 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
         val totalProyectos = proyectos.size
         val totalVentas = proyectos.sumOf { it.precioFinal }
-        val totalHoras = proyectos.sumOf { it.horasTrabajadas }
 
-        val gananciaNeta = proyectos.sumOf { p ->
-            val subtotal = p.costoMateriales + p.costoDiseno + p.costoManoObra + p.costoEmpaque
-            val margenExtra = subtotal * (p.margenGanancia / 100.0)
-            margenExtra + p.costoManoObra
-        }
+        rootView.findViewById<TextView>(R.id.tvNumeroProyectos)?.text =
+            if (totalProyectos == 1) "1 creación" else "$totalProyectos creaciones"
+        rootView.findViewById<TextView>(R.id.tvTotalVentas)?.text =
+            String.format(Locale("es", "MX"), "$%,.2f", totalVentas)
 
-        rootView.findViewById<TextView>(R.id.tvNumeroProyectos).text = totalProyectos.toString()
-        rootView.findViewById<TextView>(R.id.tvTotalVentas).text = String.format(Locale("es", "MX"), "$%,.2f", totalVentas)
-        rootView.findViewById<TextView>(R.id.tvGananciasNetas).text = String.format(Locale("es", "MX"), "$%,.2f", gananciaNeta)
-        rootView.findViewById<TextView>(R.id.tvHorasTotales).text = String.format(Locale("es", "MX"), "%.1f h", totalHoras)
+        val masCostoso = proyectos.maxByOrNull { it.precioFinal }
+        val masHoras = proyectos.maxByOrNull { it.horasTrabajadas }
+
+        configurarDestacado(
+            proyecto = masCostoso,
+            iv = rootView.findViewById(R.id.ivImgMasCostoso),
+            tvNombre = rootView.findViewById(R.id.tvNombreMasCostoso),
+            tvValor = rootView.findViewById(R.id.tvValorMasCostoso),
+            textoValor = masCostoso?.let { String.format(Locale("es", "MX"), "$%,.2f", it.precioFinal) } ?: "$0.00"
+        )
+
+        configurarDestacado(
+            proyecto = masHoras,
+            iv = rootView.findViewById(R.id.ivImgMasHoras),
+            tvNombre = rootView.findViewById(R.id.tvNombreMasHoras),
+            tvValor = rootView.findViewById(R.id.tvValorMasHoras),
+            textoValor = masHoras?.let { String.format(Locale("es", "MX"), "%.1f hrs", it.horasTrabajadas) } ?: "0.0 hrs"
+        )
 
         val llCarpetas = rootView.findViewById<LinearLayout>(R.id.llContenedorCarpetasStats)
-        llCarpetas.removeAllViews()
+        llCarpetas?.removeAllViews()
 
         val carpetasSinTodos = CarpetasConfig.listaCarpetas.filter { it.nombre != "Todos" }
 
-        carpetasSinTodos.forEach { carpeta ->
+        val conteosPorCarpeta = carpetasSinTodos.map { carpeta ->
             val conteo = proyectos.count { it.carpetas.contains(carpeta.nombre) }
+            Pair(carpeta, conteo)
+        }
 
-            val rowView = LayoutInflater.from(requireContext())
-                .inflate(android.R.layout.simple_list_item_2, llCarpetas, false)
+        val totalPiezasGrafica = conteosPorCarpeta.sumOf { it.second }
 
-            val text1 = rowView.findViewById<TextView>(android.R.id.text1)
-            val text2 = rowView.findViewById<TextView>(android.R.id.text2)
+        val listaSlices = mutableListOf<PieChartView.Slice>()
 
-            text1.text = carpeta.nombre
-            text1.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_text))
-            text1.textSize = 15f
+        val coloresGrafica = listOf(
+            0xFF8A4FB8.toInt(),
+            0xFF10B981.toInt(),
+            0xFFF59E0B.toInt(),
+            0xFFEC4899.toInt(),
+            0xFF3B82F6.toInt(),
+            0xFF8B5CF6.toInt(),
+            0xFF64748B.toInt()
+        )
 
-            text2.text = "$conteo ${if (conteo == 1) "proyecto" else "proyectos"}"
-            text2.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
-            text2.setTypeface(text2.typeface, Typeface.BOLD)
-            text2.textSize = 14f
+        conteosPorCarpeta.forEachIndexed { index, (carpeta, conteo) ->
+            val colorAsignado = coloresGrafica[index % coloresGrafica.size]
 
-            llCarpetas.addView(rowView)
+            if (conteo > 0) {
+                listaSlices.add(PieChartView.Slice(carpeta.nombre, conteo, colorAsignado))
+            }
+
+            if (llCarpetas != null) {
+                val rowView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.item_estadistica_carpeta, llCarpetas, false)
+
+                val cardColor = rowView.findViewById<MaterialCardView>(R.id.cardColorIndicador)
+                val ivIcono = rowView.findViewById<ImageView>(R.id.ivIconoCarpetaStat)
+                val tvNombre = rowView.findViewById<TextView>(R.id.tvNombreCarpetaStat)
+                val tvConteo = rowView.findViewById<TextView>(R.id.tvConteoCarpetaStat)
+
+                val colorFinal = if (conteo > 0) colorAsignado else 0xFFE2E8F0.toInt()
+                val colorStateList = ColorStateList.valueOf(colorFinal)
+                cardColor?.setCardBackgroundColor(colorStateList)
+                cardColor?.backgroundTintList = colorStateList
+
+                ivIcono?.setImageResource(carpeta.iconoRes)
+                ivIcono?.scaleType = ImageView.ScaleType.CENTER_CROP
+                ivIcono?.setPadding(0, 0, 0, 0)
+                ivIcono?.imageTintList = null
+
+                val porcentaje = if (totalPiezasGrafica > 0) {
+                    (conteo.toFloat() / totalPiezasGrafica * 100).roundToInt()
+                } else 0
+
+                val textoProyectos = if (conteo == 1) "1 proyecto" else "$conteo proyectos"
+                tvNombre?.text = carpeta.nombre
+                tvConteo?.text = if (conteo > 0) "$textoProyectos ($porcentaje%)" else "0 proyectos"
+
+                llCarpetas.addView(rowView)
+            }
+        }
+
+        val pieChart = rootView.findViewById<PieChartView>(R.id.pieChartCarpetas)
+        pieChart?.setData(listaSlices)
+    }
+
+    private fun configurarDestacado(
+        proyecto: ProyectoCrochet?,
+        iv: ImageView?,
+        tvNombre: TextView?,
+        tvValor: TextView?,
+        textoValor: String
+    ) {
+        if (iv == null || tvNombre == null || tvValor == null) return
+
+        if (proyecto != null) {
+            tvNombre.text = proyecto.nombre
+            tvValor.text = textoValor
+
+            if (!proyecto.fotoUri.isNullOrEmpty()) {
+                iv.load(proyecto.fotoUri) { crossfade(true) }
+                iv.scaleType = ImageView.ScaleType.CENTER_CROP
+                iv.setPadding(0, 0, 0, 0)
+                iv.imageTintList = null
+            } else {
+                iv.load(null)
+                iv.scaleType = ImageView.ScaleType.CENTER_CROP
+                iv.setPadding(0, 0, 0, 0)
+
+                val iconoRes = if (proyecto.carpetas.size == 1) {
+                    CarpetasConfig.listaCarpetas.find { it.nombre == proyecto.carpetas.first() }?.iconoRes
+                        ?: R.drawable.img_todos
+                } else {
+                    R.drawable.img_todos
+                }
+                iv.setImageResource(iconoRes)
+                iv.imageTintList = null
+            }
+        } else {
+            tvNombre.text = "Sin proyectos"
+            tvValor.text = "-"
+            iv.load(null)
+            iv.setImageResource(R.drawable.img_todos)
+            iv.scaleType = ImageView.ScaleType.CENTER_CROP
+            iv.setPadding(0, 0, 0, 0)
+            iv.imageTintList = null
         }
     }
 }

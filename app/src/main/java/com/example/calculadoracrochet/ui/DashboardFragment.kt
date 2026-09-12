@@ -160,6 +160,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         configurarBotonesCarpetas(view)
+
+        filtrarYOrdenarLista()
     }
 
     private fun mostrarBottomSheetOpciones() {
@@ -243,7 +245,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 carpetaInfo?.let {
                     buttonTintList = ContextCompat.getColorStateList(context, it.colorRes)
                 }
-                isChecked = proyecto.carpetas.contains(nombreCarpeta)
+                isChecked = (proyecto.carpetas ?: emptyList()).contains(nombreCarpeta)
             }
             checkboxesMap[nombreCarpeta] = cb
             llContenedor.addView(cb)
@@ -265,14 +267,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun filtrarYOrdenarLista() {
-        val textoBusqueda = view?.findViewById<EditText>(R.id.etBuscarProyecto)?.text.toString().lowercase()
+        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
+        val textoBusqueda = etBuscar?.text?.toString()?.lowercase() ?: ""
+
         var listaResultante = viewModel.historialProyectos.filter { proyecto ->
-            proyecto.fechaEliminado == null && proyecto.nombre.lowercase().contains(textoBusqueda)
+            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
+            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
+            noEliminado && coincideNombre
         }
 
         if (carpetaSeleccionada != "Todos") {
             listaResultante = listaResultante.filter { proyecto ->
-                proyecto.carpetas.contains(carpetaSeleccionada)
+                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
             }
         }
 
@@ -402,12 +408,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val tvCostoMatResumen = dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen)
         val tvDesgloseMat = dialogView.findViewById<TextView>(R.id.tvDesgloseMateriales)
         tvCostoMatResumen.text = String.format("$%.2f", proyecto.costoMateriales)
+
+        val estambres = proyecto.listaEstambres ?: emptyList()
+        val accesorios = proyecto.listaAccesorios ?: emptyList()
+
         tvDesgloseMat.text = buildString {
-            if (proyecto.listaEstambres.isEmpty() && proyecto.listaAccesorios.isEmpty()) {
+            if (estambres.isEmpty() && accesorios.isEmpty()) {
                 append("Sin detalles guardados")
             } else {
-                proyecto.listaEstambres.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
-                proyecto.listaAccesorios.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
+                estambres.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
+                accesorios.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
             }
         }.trimEnd()
 
@@ -470,11 +480,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.fotoUriTemp = proyecto.fotoUri
             viewModel.fotoMiniaturaUriTemp = proyecto.fotoMiniaturaUri
             viewModel.carpetasTemp.clear()
-            viewModel.carpetasTemp.addAll(proyecto.carpetas)
+            viewModel.carpetasTemp.addAll(proyecto.carpetas ?: emptyList())
             viewModel.listaEstambresGuardados.clear()
-            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
+            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres ?: emptyList())
             viewModel.listaAccesoriosGuardados.clear()
-            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
+            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios ?: emptyList())
 
             dialog.dismiss()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())

@@ -83,159 +83,223 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="BALANCE MONETARIO"
+                            android:text="INGRESOS ACUMULADOS"
                             android:textSize="12sp"
                             android:textColor="@color/gray_hint"
                             android:textStyle="bold"
                             android:letterSpacing="0.08" />
 
+                        <TextView
+                            android:id="@+id/tvTotalVentas"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="$12,450.00"
+                            android:textColor="@color/purple_primary"
+                            android:textSize="30sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="6dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Suma bruta de cotizaciones activas registradas"
+                            android:textColor="@color/gray_hint"
+                            android:textSize="12sp"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    android:backgroundTint="@color/white"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
                         <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Proyectos en catálogo"
+                                android:textColor="@color/gray_text"
+                                android:textSize="14sp"/>
+
+                            <TextView
+                                android:id="@+id/tvNumeroProyectos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                tools:text="28 creaciones"
+                                android:textColor="@color/black"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/img_todos"
+                            app:tint="@color/purple_primary"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    android:backgroundTint="@color/white"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RÉCORDS DEL TALLER"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_hint"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08"
+                            android:layout_marginBottom="12dp"/>
+
+                        <LinearLayout
+                            android:id="@+id/itemProyectoMasCostoso"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="12dp"
-                            android:weightSum="2">
+                            android:gravity="center_vertical"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingVertical="8dp">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/ivImgMasCostoso"
+                                android:layout_width="50dp"
+                                android:layout_height="50dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/RoundedSquare"
+                                android:background="#F3E8FF"/>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:layout_marginStart="12dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Ingresos Totales"
-                                    android:textColor="@color/gray_text"
-                                    android:textSize="14sp" />
-
-                                <TextView
-                                    android:id="@+id/tvTotalVentas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    tools:text="$12,450.00"
+                                    android:text="Más valioso"
                                     android:textColor="@color/purple_primary"
-                                    android:textSize="22sp"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvNombreMasCostoso"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    tools:text="Ramo Reversible"
+                                    android:textColor="@color/black"
+                                    android:textSize="15sp"
                                     android:textStyle="bold"
-                                    android:layout_marginTop="4dp"/>
+                                    android:maxLines="1"
+                                    android:ellipsize="end"/>
                             </LinearLayout>
 
-                            <LinearLayout
-                                android:layout_width="0dp"
+                            <TextView
+                                android:id="@+id/tvValorMasCostoso"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Ganancia Neta"
-                                    android:textColor="@color/gray_text"
-                                    android:textSize="14sp" />
-
-                                <TextView
-                                    android:id="@+id/tvGananciasNetas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    tools:text="$6,820.00"
-                                    android:textColor="#16A34A"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold"
-                                    android:layout_marginTop="4dp"/>
-                            </LinearLayout>
+                                tools:text="$1,850.00"
+                                android:textColor="@color/purple_primary"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
                         </LinearLayout>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:background="#F0F0F0"
-                            android:layout_marginVertical="16dp"/>
+                            android:layout_marginVertical="8dp"/>
 
-                        <TextView
-                            android:id="@+id/tvExplicacionNeta"
+                        <LinearLayout
+                            android:id="@+id/itemProyectoMasHoras"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="* Ganancia neta = Margen comercial extra + Mano de obra generada."
-                            android:textColor="@color/gray_hint"
-                            android:textSize="11sp"/>
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingVertical="8dp">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/ivImgMasHoras"
+                                android:layout_width="50dp"
+                                android:layout_height="50dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/RoundedSquare"
+                                android:background="#F3E8FF"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="12dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Mayor Dedicación"
+                                    android:textColor="@color/purple_primary"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvNombreMasHoras"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    tools:text="Vaquita Gigante"
+                                    android:textColor="@color/black"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"
+                                    android:maxLines="1"
+                                    android:ellipsize="end"/>
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvValorMasHoras"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                tools:text="14.5 hrs"
+                                android:textColor="@color/purple_primary"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:weightSum="2"
-                    android:layout_marginBottom="16dp">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        android:backgroundTint="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Proyectos"
-                                android:textColor="@color/gray_text"
-                                android:textSize="13sp"/>
-
-                            <TextView
-                                android:id="@+id/tvNumeroProyectos"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="28"
-                                android:textColor="@color/black"
-                                android:textSize="24sp"
-                                android:textStyle="bold"
-                                android:layout_marginTop="4dp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        android:backgroundTint="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Horas Tejidas"
-                                android:textColor="@color/gray_text"
-                                android:textSize="13sp"/>
-
-                            <TextView
-                                android:id="@+id/tvHorasTotales"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="142.5 h"
-                                android:textColor="@color/black"
-                                android:textSize="24sp"
-                                android:textStyle="bold"
-                                android:layout_marginTop="4dp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -259,6 +323,18 @@
                             android:textStyle="bold"
                             android:letterSpacing="0.08"
                             android:layout_marginBottom="12dp"/>
+
+                        <com.example.calculadoracrochet.ui.PieChartView
+                            android:id="@+id/pieChartCarpetas"
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:layout_marginVertical="8dp"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#F0F0F0"
+                            android:layout_marginVertical="12dp"/>
 
                         <LinearLayout
                             android:id="@+id/llContenedorCarpetasStats"

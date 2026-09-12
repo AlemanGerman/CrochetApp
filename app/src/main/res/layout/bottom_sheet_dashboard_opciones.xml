@@ -27,7 +27,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pícale a lo que estás ocupas :]"
+        android:text="Pícale a lo que estás ocupas"
         android:textSize="13sp"
         android:textColor="@color/gray_hint"
         android:layout_marginBottom="16dp" />
