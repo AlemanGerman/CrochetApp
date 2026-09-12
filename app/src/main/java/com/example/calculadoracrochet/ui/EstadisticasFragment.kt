@@ -17,7 +17,6 @@ import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import java.util.Locale
-import kotlin.math.roundToInt
 
 class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
@@ -75,6 +74,26 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
         val totalPiezasGrafica = conteosPorCarpeta.sumOf { it.second }
 
+        val mapaPorcentajes = mutableMapOf<String, Int>()
+        if (totalPiezasGrafica > 0) {
+            data class ItemResto(val nombre: String, val base: Int, val resto: Double)
+
+            val listaItems = conteosPorCarpeta.filter { it.second > 0 }.map { (carpeta, conteo) ->
+                val exacto = (conteo.toDouble() / totalPiezasGrafica) * 100.0
+                val base = exacto.toInt()
+                ItemResto(carpeta.nombre, base, exacto - base)
+            }
+
+            val sumaBases = listaItems.sumOf { it.base }
+            val faltante = 100 - sumaBases
+
+            val ordenados = listaItems.sortedByDescending { it.resto }
+            ordenados.forEachIndexed { i, item ->
+                val extra = if (i < faltante) 1 else 0
+                mapaPorcentajes[item.nombre] = item.base + extra
+            }
+        }
+
         val listaSlices = mutableListOf<PieChartView.Slice>()
 
         val coloresGrafica = listOf(
@@ -89,9 +108,10 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
         conteosPorCarpeta.forEachIndexed { index, (carpeta, conteo) ->
             val colorAsignado = coloresGrafica[index % coloresGrafica.size]
+            val porcentaje = mapaPorcentajes[carpeta.nombre] ?: 0
 
             if (conteo > 0) {
-                listaSlices.add(PieChartView.Slice(carpeta.nombre, conteo, colorAsignado))
+                listaSlices.add(PieChartView.Slice(carpeta.nombre, conteo, colorAsignado, porcentaje))
             }
 
             if (llCarpetas != null) {
@@ -112,10 +132,6 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
                 ivIcono?.scaleType = ImageView.ScaleType.CENTER_CROP
                 ivIcono?.setPadding(0, 0, 0, 0)
                 ivIcono?.imageTintList = null
-
-                val porcentaje = if (totalPiezasGrafica > 0) {
-                    (conteo.toFloat() / totalPiezasGrafica * 100).roundToInt()
-                } else 0
 
                 val textoProyectos = if (conteo == 1) "1 proyecto" else "$conteo proyectos"
                 tvNombre?.text = carpeta.nombre

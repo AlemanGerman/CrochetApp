@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class PieChartView @JvmOverloads constructor(
@@ -19,7 +20,8 @@ class PieChartView @JvmOverloads constructor(
     data class Slice(
         val nombre: String,
         val cantidad: Int,
-        val color: Int
+        val color: Int,
+        val porcentaje: Int = 0
     )
 
     private val slices = mutableListOf<Slice>()
@@ -80,7 +82,12 @@ class PieChartView @JvmOverloads constructor(
             arcPaint.color = slice.color
             canvas.drawArc(rectF, startAngle, sweepAngle, false, arcPaint)
 
-            val porcentaje = (slice.cantidad.toFloat() / total * 100).toInt()
+            val porcentaje = if (slice.porcentaje > 0) {
+                slice.porcentaje
+            } else {
+                (slice.cantidad.toFloat() / total * 100).roundToInt()
+            }
+
             if (porcentaje >= 8) {
                 val midAngleRad = Math.toRadians((startAngle + sweepAngle / 2f).toDouble())
                 val textX = cx + (arcRadius * cos(midAngleRad)).toFloat()
