@@ -25,8 +25,17 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 
-data class EstambreGuardado(var nombre: String = "", var costo: String = "", var totales: String = "", var usados: String = "")
-data class AccesorioGuardado(var nombre: String = "", var costo: String = "")
+data class EstambreGuardado(
+    var nombre: String = "",
+    var costo: String = "",
+    var totales: String = "",
+    var usados: String = ""
+)
+
+data class AccesorioGuardado(
+    var nombre: String = "",
+    var costo: String = ""
+)
 
 data class ProyectoCrochet(
     var id: String = UUID.randomUUID().toString(),
@@ -34,6 +43,8 @@ data class ProyectoCrochet(
     var fotoUri: String? = null,
     var fotoMiniaturaUri: String? = null,
     var fechaGuardado: Long = System.currentTimeMillis(),
+    var fechaEliminado: Long? = null,
+    var eliminado: Boolean = false,
     var costoMateriales: Double = 0.0,
     var costoDiseno: Double = 0.0,
     var costoManoObra: Double = 0.0,
@@ -87,6 +98,12 @@ class CalculadoraViewModel : ViewModel() {
     val proyectosEnVivo = MutableLiveData<List<ProyectoCrochet>>()
     val historialProyectos = mutableListOf<ProyectoCrochet>()
 
+    val proyectosActivos: List<ProyectoCrochet>
+        get() = historialProyectos.filter { it.fechaEliminado == null && !it.eliminado }
+
+    val papeleraProyectos: List<ProyectoCrochet>
+        get() = historialProyectos.filter { it.fechaEliminado != null || it.eliminado }
+
     init {
         cargarProyectosDeLaNube()
     }
@@ -95,19 +112,37 @@ class CalculadoraViewModel : ViewModel() {
         val appContext = FirebaseApp.getInstance().applicationContext
         db.collection("proyectos_mina")
             .addSnapshotListener { documentos, error ->
-                if (error != null || documentos == null) return@addSnapshotListener
+                if (error != null) {
+                    Log.e("Firebase", "Error al escuchar proyectos_mina", error)
+                    return@addSnapshotListener
+                }
+                if (documentos == null) return@addSnapshotListener
 
-                historialProyectos.clear()
+                val listaProcesada = mutableListOf<ProyectoCrochet>()
                 for (documento in documentos) {
-                    val proyecto = documento.toObject(ProyectoCrochet::class.java).apply {
-                        id = documento.id
+                    try {
+                        val proyecto = documento.toObject(ProyectoCrochet::class.java)?.apply {
+                            id = documento.id
+                            // Protección contra deserialización nula de Firebase
+                            carpetas = carpetas ?: emptyList()
+                            listaEstambres = listaEstambres ?: emptyList()
+                            listaAccesorios = listaAccesorios ?: emptyList()
+                        }
+                        if (proyecto != null) {
+                            listaProcesada.add(proyecto)
+                            precargarEnCoil(appContext, FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri))
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Firebase", "Error al procesar proyecto con ID: ${documento.id}", e)
                     }
-                    historialProyectos.add(proyecto)
-                    precargarEnCoil(appContext, FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri))
                 }
 
-                historialProyectos.sortByDescending { it.fechaGuardado }
-                proyectosEnVivo.postValue(historialProyectos)
+                listaProcesada.sortByDescending { it.fechaGuardado }
+
+                historialProyectos.clear()
+                historialProyectos.addAll(listaProcesada)
+                // Se envía una copia inmutable para notificar correctamente a los observadores
+                proyectosEnVivo.postValue(historialProyectos.toList())
             }
     }
 
@@ -184,6 +219,8 @@ class CalculadoraViewModel : ViewModel() {
             fotoUri = fotoParaGuardar.principal,
             fotoMiniaturaUri = fotoParaGuardar.miniatura,
             fechaGuardado = fechaEnEdicion ?: System.currentTimeMillis(),
+            fechaEliminado = null,
+            eliminado = false,
             costoMateriales = costoMateriales,
             costoDiseno = costoDiseno,
             costoManoObra = costoManoObra,
@@ -211,6 +248,45 @@ class CalculadoraViewModel : ViewModel() {
         precargarEnCoil(context, fotoParaGuardar)
     }
 
+    fun moverAPapelera(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
+        val ahora = System.currentTimeMillis()
+        db.collection("proyectos_mina").document(proyecto.id)
+            .update(mapOf("fechaEliminado" to ahora, "eliminado" to true))
+            .addOnSuccessListener {
+                proyecto.fechaEliminado = ahora
+                proyecto.eliminado = true
+                proyectosEnVivo.postValue(historialProyectos.toList())
+                onComplete?.invoke(true)
+            }
+            .addOnFailureListener {
+                onComplete?.invoke(false)
+            }
+    }
+
+    fun restaurarProyectos(proyectos: List<ProyectoCrochet>, onComplete: ((Boolean) -> Unit)? = null) {
+        if (proyectos.isEmpty()) {
+            onComplete?.invoke(true)
+            return
+        }
+        val batch = db.batch()
+        proyectos.forEach { p ->
+            val ref = db.collection("proyectos_mina").document(p.id)
+            batch.update(ref, mapOf("fechaEliminado" to null, "eliminado" to false))
+        }
+        batch.commit()
+            .addOnSuccessListener {
+                proyectos.forEach {
+                    it.fechaEliminado = null
+                    it.eliminado = false
+                }
+                proyectosEnVivo.postValue(historialProyectos.toList())
+                onComplete?.invoke(true)
+            }
+            .addOnFailureListener {
+                onComplete?.invoke(false)
+            }
+    }
+
     fun eliminarProyecto(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
         val appContext = FirebaseApp.getInstance().applicationContext
         val fotosABorrar = FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
@@ -219,12 +295,48 @@ class CalculadoraViewModel : ViewModel() {
         WorkManager.getInstance(appContext).cancelUniqueWork("subir_$idProyecto")
 
         db.collection("proyectos_mina").document(idProyecto).delete()
+            .addOnSuccessListener {
+                historialProyectos.removeAll { it.id == idProyecto }
+                proyectosEnVivo.postValue(historialProyectos.toList())
+                borrarArchivosLocalesSiExisten(fotosABorrar)
+                borrarFotosSiNoSeUsan(fotosABorrar, idProyectoExcluido = idProyecto)
+                onComplete?.invoke(true)
+            }
+            .addOnFailureListener {
+                onComplete?.invoke(false)
+            }
+    }
 
-        borrarArchivosLocalesSiExisten(fotosABorrar)
+    fun eliminarProyectosPermanentes(proyectos: List<ProyectoCrochet>, onComplete: ((Boolean) -> Unit)? = null) {
+        if (proyectos.isEmpty()) {
+            onComplete?.invoke(true)
+            return
+        }
+        val appContext = FirebaseApp.getInstance().applicationContext
+        val batch = db.batch()
 
-        borrarFotosSiNoSeUsan(fotosABorrar, idProyectoExcluido = idProyecto)
+        proyectos.forEach { p ->
+            val ref = db.collection("proyectos_mina").document(p.id)
+            batch.delete(ref)
+            WorkManager.getInstance(appContext).cancelUniqueWork("subir_${p.id}")
+            val fotosABorrar = FotoRemota(p.fotoUri, p.fotoMiniaturaUri)
+            borrarArchivosLocalesSiExisten(fotosABorrar)
+            borrarFotosSiNoSeUsan(fotosABorrar, idProyectoExcluido = p.id)
+        }
 
-        onComplete?.invoke(true)
+        batch.commit()
+            .addOnSuccessListener {
+                historialProyectos.removeAll(proyectos.toSet())
+                proyectosEnVivo.postValue(historialProyectos.toList())
+                onComplete?.invoke(true)
+            }
+            .addOnFailureListener {
+                onComplete?.invoke(false)
+            }
+    }
+
+    fun vaciarPapelera(onComplete: ((Boolean) -> Unit)? = null) {
+        eliminarProyectosPermanentes(papeleraProyectos, onComplete)
     }
 
     fun actualizarFotoProyecto(

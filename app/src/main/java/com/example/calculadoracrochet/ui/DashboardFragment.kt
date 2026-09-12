@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -30,11 +31,12 @@ import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -148,12 +150,51 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
         }
 
+        view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
+            mostrarBottomSheetOpciones()
+        }
+
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
             viewModel.limpiarCalculoActual()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
         configurarBotonesCarpetas(view)
+
+        filtrarYOrdenarLista()
+    }
+
+    private fun mostrarBottomSheetOpciones() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_dashboard_opciones, null)
+        bottomSheetDialog.setContentView(sheetView)
+
+        sheetView.findViewById<View>(R.id.itemOpcionEstadisticas).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(EstadisticasFragment())
+        }
+
+        sheetView.findViewById<View>(R.id.itemOpcionPapelera).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(PapeleraFragment())
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun navegarHaciaFragmento(fragment: Fragment) {
+        requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
+
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun configurarBotonesCarpetas(view: View) {
@@ -189,6 +230,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             llContenedor.addView(itemView)
         }
     }
+
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_carpetas, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
@@ -207,7 +249,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 carpetaInfo?.let {
                     buttonTintList = ContextCompat.getColorStateList(context, it.colorRes)
                 }
-                isChecked = proyecto.carpetas.contains(nombreCarpeta)
+                isChecked = (proyecto.carpetas ?: emptyList()).contains(nombreCarpeta)
             }
             checkboxesMap[nombreCarpeta] = cb
             llContenedor.addView(cb)
@@ -229,14 +271,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun filtrarYOrdenarLista() {
-        val textoBusqueda = view?.findViewById<EditText>(R.id.etBuscarProyecto)?.text.toString().lowercase()
+        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
+        val textoBusqueda = etBuscar?.text?.toString()?.lowercase() ?: ""
+
         var listaResultante = viewModel.historialProyectos.filter { proyecto ->
-            proyecto.nombre.lowercase().contains(textoBusqueda)
+            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
+            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
+            noEliminado && coincideNombre
         }
 
         if (carpetaSeleccionada != "Todos") {
             listaResultante = listaResultante.filter { proyecto ->
-                proyecto.carpetas.contains(carpetaSeleccionada)
+                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
             }
         }
 
@@ -366,12 +412,16 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val tvCostoMatResumen = dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen)
         val tvDesgloseMat = dialogView.findViewById<TextView>(R.id.tvDesgloseMateriales)
         tvCostoMatResumen.text = String.format("$%.2f", proyecto.costoMateriales)
+
+        val estambres = proyecto.listaEstambres ?: emptyList()
+        val accesorios = proyecto.listaAccesorios ?: emptyList()
+
         tvDesgloseMat.text = buildString {
-            if (proyecto.listaEstambres.isEmpty() && proyecto.listaAccesorios.isEmpty()) {
+            if (estambres.isEmpty() && accesorios.isEmpty()) {
                 append("Sin detalles guardados")
             } else {
-                proyecto.listaEstambres.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
-                proyecto.listaAccesorios.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
+                estambres.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
+                accesorios.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
             }
         }.trimEnd()
 
@@ -398,18 +448,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
-                titulo = "Eliminar Proyecto",
-                mensaje = "¿Segura que deseas eliminar '${proyecto.nombre}'?",
-                textoConfirmar = "Eliminar"
+                titulo = "Mover a la papelera",
+                mensaje = "¿Segura que deseas mover '${proyecto.nombre}' a la papelera?",
+                textoConfirmar = "Mover",
+                iconoResId = R.drawable.ic_sad
             ) {
-                viewModel.eliminarProyecto(proyecto) { eliminado ->
-                    if (!isAdded) return@eliminarProyecto
-                    if (eliminado) {
+                viewModel.moverAPapelera(proyecto) { movido ->
+                    if (!isAdded) return@moverAPapelera
+                    if (movido) {
                         dialog.dismiss()
+                        filtrarYOrdenarLista()
+                        Toast.makeText(requireContext(), "Proyecto enviado a la papelera", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(
                             requireContext(),
-                            "No se pudo eliminar el proyecto y su foto. Inténtalo de nuevo.",
+                            "No se pudo mover a la papelera. Inténtalo de nuevo.",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -431,11 +484,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.fotoUriTemp = proyecto.fotoUri
             viewModel.fotoMiniaturaUriTemp = proyecto.fotoMiniaturaUri
             viewModel.carpetasTemp.clear()
-            viewModel.carpetasTemp.addAll(proyecto.carpetas)
+            viewModel.carpetasTemp.addAll(proyecto.carpetas ?: emptyList())
             viewModel.listaEstambresGuardados.clear()
-            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres)
+            viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres ?: emptyList())
             viewModel.listaAccesoriosGuardados.clear()
-            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios)
+            viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios ?: emptyList())
 
             dialog.dismiss()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
