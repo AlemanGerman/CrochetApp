@@ -144,23 +144,47 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <HorizontalScrollView
-                android:id="@+id/hsvCarpetas"
+            <FrameLayout
+                android:id="@+id/dockCarpetas"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:scrollbars="none"
+                android:background="@drawable/bg_dock_carpetas"
+                android:paddingVertical="4dp"
+                android:clipToOutline="true"
                 app:layout_constraintTop_toBottomOf="@id/cardControlesBuscador"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-                <LinearLayout
-                    android:id="@+id/llCarpetasDashboard"
-                    android:layout_width="wrap_content"
+                <HorizontalScrollView
+                    android:id="@+id/hsvCarpetas"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="4dp" />
-            </HorizontalScrollView>
+                    android:scrollbars="none"
+                    android:paddingHorizontal="16dp"
+                    android:clipToPadding="false">
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <View
+                            android:id="@+id/indicadorSelector"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:background="@drawable/bg_selector_pildora"
+                            android:elevation="0dp"
+                            android:visibility="invisible" />
+
+                        <LinearLayout
+                            android:id="@+id/llCarpetasDashboard"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:elevation="2dp" />
+                    </FrameLayout>
+                </HorizontalScrollView>
+            </FrameLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvProyectos"
@@ -169,7 +193,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
                 android:clipToPadding="false"
-                app:layout_constraintTop_toBottomOf="@id/hsvCarpetas"
+                app:layout_constraintTop_toBottomOf="@id/dockCarpetas"
                 app:layout_constraintBottom_toTopOf="@id/btnNuevoProyecto"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

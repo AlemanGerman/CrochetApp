@@ -1,5 +1,6 @@
 package com.example.calculadoracrochet.ui
 
+import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -9,8 +10,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -51,6 +54,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private var proyectoEditandoID: String? = null
     private var proyectoEditando: ProyectoCrochet? = null
     private var vistaFotoEnEdicion: WeakReference<ImageView>? = null
+
+    private var animadorSelector: ValueAnimator? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         val contexto = context
@@ -159,9 +164,126 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
-        configurarBotonesCarpetas(view)
+        configurarDockCarpetas(view)
 
         filtrarYOrdenarLista()
+    }
+
+    private fun configurarDockCarpetas(view: View) {
+        val dockCarpetas = view.findViewById<View>(R.id.dockCarpetas)
+        val llContenedor = view.findViewById<LinearLayout>(R.id.llCarpetasDashboard)
+        val indicador = view.findViewById<View>(R.id.indicadorSelector)
+        val hsvCarpetas = view.findViewById<HorizontalScrollView>(R.id.hsvCarpetas)
+
+        dockCarpetas.clipToOutline = true
+
+        indicador.elevation = 0f
+        llContenedor.elevation = 2f
+        llContenedor.bringToFront()
+
+        llContenedor.removeAllViews()
+        val vistasCarpetas = mutableListOf<View>()
+
+        CarpetasConfig.listaCarpetas.forEach { carpetaInfo ->
+            val itemView = layoutInflater.inflate(R.layout.item_carpeta_dashboard, llContenedor, false)
+
+            val ivIcono = itemView.findViewById<ImageView>(R.id.ivIconoCarpeta)
+            val tvNombre = itemView.findViewById<TextView>(R.id.tvNombreCarpeta)
+
+            ivIcono.setImageResource(carpetaInfo.iconoRes)
+            tvNombre.text = carpetaInfo.nombre
+            itemView.alpha = 1.0f
+
+            val esLaSeleccionada = carpetaInfo.nombre == carpetaSeleccionada
+            actualizarColorTexto(tvNombre, esLaSeleccionada)
+
+            itemView.setOnClickListener {
+                if (carpetaSeleccionada == carpetaInfo.nombre) return@setOnClickListener
+
+                carpetaSeleccionada = carpetaInfo.nombre
+
+                vistasCarpetas.forEach { vista ->
+                    val tv = vista.findViewById<TextView>(R.id.tvNombreCarpeta)
+                    actualizarColorTexto(tv, tv.text.toString() == carpetaSeleccionada)
+                }
+
+                animarSelectorHacia(itemView, indicador, hsvCarpetas)
+
+                filtrarYOrdenarLista()
+                view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+            }
+
+            vistasCarpetas.add(itemView)
+            llContenedor.addView(itemView)
+        }
+
+        llContenedor.post {
+            if (!isAdded) return@post
+            val indiceInicial = CarpetasConfig.listaCarpetas.indexOfFirst { it.nombre == carpetaSeleccionada }
+                .coerceAtLeast(0)
+            val vistaInicial = llContenedor.getChildAt(indiceInicial) ?: return@post
+
+            val layoutParams = indicador.layoutParams
+            layoutParams.width = vistaInicial.width
+            layoutParams.height = vistaInicial.height
+            indicador.layoutParams = layoutParams
+
+            indicador.translationX = vistaInicial.x
+            indicador.translationY = vistaInicial.y
+            indicador.visibility = View.VISIBLE
+        }
+    }
+
+    private fun animarSelectorHacia(
+        vistaDestino: View,
+        indicador: View,
+        hsv: HorizontalScrollView?
+    ) {
+        animadorSelector?.cancel()
+
+        val inicioX = indicador.translationX
+        val finX = vistaDestino.x
+
+        val inicioAncho = indicador.width
+        val finAncho = vistaDestino.width
+
+        val inicioAlto = indicador.height
+        val finAlto = vistaDestino.height
+
+        animadorSelector = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 240L
+            interpolator = DecelerateInterpolator(1.5f)
+            addUpdateListener { animator ->
+                val fraction = animator.animatedFraction
+                indicador.translationX = inicioX + (finX - inicioX) * fraction
+
+                val anchoActual = (inicioAncho + (finAncho - inicioAncho) * fraction).toInt()
+                val altoActual = (inicioAlto + (finAlto - inicioAlto) * fraction).toInt()
+
+                val params = indicador.layoutParams
+                if (params.width != anchoActual || params.height != altoActual) {
+                    params.width = anchoActual
+                    params.height = altoActual
+                    indicador.layoutParams = params
+                }
+            }
+            start()
+        }
+
+        hsv?.let { scroll ->
+            scroll.post {
+                val centroX = (vistaDestino.left + vistaDestino.right) / 2 - scroll.width / 2
+                scroll.smoothScrollTo(centroX.coerceAtLeast(0), 0)
+            }
+        }
+    }
+
+    private fun actualizarColorTexto(tvNombre: TextView, estaSeleccionada: Boolean) {
+        if (estaSeleccionada) {
+            tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+        } else {
+            tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        }
     }
 
     private fun mostrarBottomSheetOpciones() {
@@ -195,40 +317,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             .replace(R.id.fragmentContainer, fragment)
             .addToBackStack(null)
             .commit()
-    }
-
-    private fun configurarBotonesCarpetas(view: View) {
-        val llContenedor = view.findViewById<LinearLayout>(R.id.llCarpetasDashboard)
-        llContenedor.removeAllViews()
-
-        val vistasCarpetas = mutableListOf<View>()
-
-        CarpetasConfig.listaCarpetas.forEach { carpetaInfo ->
-            val itemView = layoutInflater.inflate(R.layout.item_carpeta_dashboard, llContenedor, false)
-
-            val ivIcono = itemView.findViewById<ImageView>(R.id.ivIconoCarpeta)
-            val tvNombre = itemView.findViewById<TextView>(R.id.tvNombreCarpeta)
-
-            ivIcono.setImageResource(carpetaInfo.iconoRes)
-            tvNombre.text = carpetaInfo.nombre
-            tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-
-            itemView.alpha = if (carpetaInfo.nombre == carpetaSeleccionada) 1.0f else 0.5f
-
-            itemView.setOnClickListener {
-                carpetaSeleccionada = carpetaInfo.nombre
-                vistasCarpetas.forEach { vista ->
-                    val tv = vista.findViewById<TextView>(R.id.tvNombreCarpeta)
-                    vista.alpha = if (tv.text.toString() == carpetaSeleccionada) 1.0f else 0.5f
-                }
-                filtrarYOrdenarLista()
-
-                view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
-            }
-
-            vistasCarpetas.add(itemView)
-            llContenedor.addView(itemView)
-        }
     }
 
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
