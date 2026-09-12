@@ -282,7 +282,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         if (estaSeleccionada) {
             tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
         } else {
-            tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            tvNombre.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_light))
         }
     }
 
