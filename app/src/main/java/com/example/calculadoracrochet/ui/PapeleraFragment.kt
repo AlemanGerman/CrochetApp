@@ -42,10 +42,18 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                 }
             },
             onRestaurarIndividual = { proyecto ->
-                viewModel.restaurarProyectos(listOf(proyecto)) { restaurado ->
-                    if (!isAdded) return@restaurarProyectos
-                    if (restaurado) {
-                        Toast.makeText(requireContext(), "Proyecto restaurado", Toast.LENGTH_SHORT).show()
+                DialogUtils.mostrarAlerta(
+                    context = requireContext(),
+                    titulo = "Restaurar proyecto",
+                    mensaje = "¿Deseas restaurar '${proyecto.nombre}' a tu lista de proyectos?",
+                    textoConfirmar = "Restaurar",
+                    iconoResId = null
+                ) {
+                    viewModel.restaurarProyectos(listOf(proyecto)) { restaurado ->
+                        if (!isAdded) return@restaurarProyectos
+                        if (restaurado) {
+                            Toast.makeText(requireContext(), "Proyecto restaurado", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             },
@@ -96,16 +104,34 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
 
         view.findViewById<MaterialButton>(R.id.btnRestaurarSeleccionados).setOnClickListener {
             val seleccionados = adapter.seleccionados.toList()
-            viewModel.restaurarProyectos(seleccionados) { exito ->
-                if (!isAdded) return@restaurarProyectos
-                if (exito == true) {
-                    Toast.makeText(requireContext(), "${seleccionados.size} proyectos restaurados", Toast.LENGTH_SHORT).show()
+            if (seleccionados.isEmpty()) return@setOnClickListener
+
+            val mensaje = if (seleccionados.size == 1) {
+                "¿Deseas restaurar '${seleccionados.first().nombre}' a tu lista de proyectos?"
+            } else {
+                "¿Deseas restaurar estos ${seleccionados.size} proyectos a tu lista de proyectos?"
+            }
+
+            DialogUtils.mostrarAlerta(
+                context = requireContext(),
+                titulo = "Restaurar proyectos",
+                mensaje = mensaje,
+                textoConfirmar = "Restaurar",
+                iconoResId = null
+            ) {
+                viewModel.restaurarProyectos(seleccionados) { exito ->
+                    if (!isAdded) return@restaurarProyectos
+                    if (exito == true) {
+                        Toast.makeText(requireContext(), "${seleccionados.size} proyectos restaurados", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
 
         view.findViewById<MaterialButton>(R.id.btnEliminarSeleccionados).setOnClickListener {
             val seleccionados = adapter.seleccionados.toList()
+            if (seleccionados.isEmpty()) return@setOnClickListener
+
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
                 titulo = "Eliminar seleccionados",
