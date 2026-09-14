@@ -1,5 +1,7 @@
 package com.example.calculadoracrochet.ui
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.res.ColorStateList
@@ -28,6 +30,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
@@ -101,13 +104,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
-        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
+        val lottieGanchillo = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
+        if (lottieGanchillo != null && !lottieGanchillo.isAnimating && lottieGanchillo.tag != "animando_mes") {
             lottieGanchillo.post {
-                lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-                lottieGanchillo.pauseAnimation()
-                lottieGanchillo.progress = 0f
-                lottieGanchillo.visibility = View.VISIBLE
+                if (lottieGanchillo.tag != "animando_mes") {
+                    lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+                    lottieGanchillo.pauseAnimation()
+                    lottieGanchillo.progress = 0f
+                    lottieGanchillo.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -301,6 +306,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             navegarHaciaFragmento(PapeleraFragment())
         }
 
+        sheetView.findViewById<View>(R.id.itemOpcionMes).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaMesFragmentConAnimacion()
+        }
+
         bottomSheetDialog.show()
     }
 
@@ -317,6 +327,55 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             .replace(R.id.fragmentContainer, fragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun navegarHaciaMesFragmentConAnimacion() {
+        val lottie = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
+        if (lottie == null) {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, MesFragment())
+                .addToBackStack(null)
+                .commit()
+            return
+        }
+
+        lottie.tag = "animando_mes"
+        lottie.visibility = View.VISIBLE
+        lottie.setAnimation(R.raw.animacion_mes)
+        lottie.repeatCount = 0
+        lottie.speed = 1f
+        lottie.progress = 0f
+        lottie.removeAllAnimatorListeners()
+
+        lottie.addAnimatorListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                lottie.removeAllAnimatorListeners()
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, MesFragment())
+                    .addToBackStack(null)
+                    .commit()
+
+                val duracion = if (lottie.duration > 0) lottie.duration else 750L
+                val animadorReversa = ValueAnimator.ofFloat(1f, 0f).apply {
+                    duration = duracion
+                    addUpdateListener { va ->
+                        lottie.progress = va.animatedValue as Float
+                    }
+                    addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(anim: Animator) {
+                            lottie.tag = ""
+                            lottie.visibility = View.GONE
+                        }
+                    })
+                }
+
+                lottie.post {
+                    animadorReversa.start()
+                }
+            }
+        })
+        lottie.playAnimation()
     }
 
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {

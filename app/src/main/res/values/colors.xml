@@ -20,4 +20,7 @@
     <color name="purple_mina">#bd81cd</color>
 
     <color name="splash_screen">#ba7cc9</color>
+
+    <color name="c_color">#190d7d</color>
+    <color name="g_color">#b10e3e</color>
 </resources>
