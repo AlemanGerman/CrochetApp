@@ -12,6 +12,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.DatePicker
 import android.widget.EditText
@@ -306,7 +307,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             navegarHaciaFragmento(PapeleraFragment())
         }
 
-        sheetView.findViewById<View>(R.id.itemOpcionMes).setOnClickListener {
+        sheetView.findViewById<View>(R.id.itemOpcionMes).setOnClickListener { btnMes ->
+            btnMes.isEnabled = false
+            sheetView.findViewById<View>(R.id.itemOpcionEstadisticas)?.isEnabled = false
+            sheetView.findViewById<View>(R.id.itemOpcionPapelera)?.isEnabled = false
+
+            view?.findViewById<View>(R.id.btnNuevoProyecto)?.isEnabled = false
+            view?.findViewById<View>(R.id.btnOpciones)?.isEnabled = false
+            view?.findViewById<View>(R.id.btnOrdenarFechas)?.isEnabled = false
+
+            requireActivity().window.setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            )
+
             bottomSheetDialog.dismiss()
             navegarHaciaMesFragmentConAnimacion()
         }
@@ -332,6 +346,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun navegarHaciaMesFragmentConAnimacion() {
         val lottie = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
         if (lottie == null) {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, MesFragment())
                 .addToBackStack(null)
@@ -366,6 +381,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                         override fun onAnimationEnd(anim: Animator) {
                             lottie.tag = ""
                             lottie.visibility = View.GONE
+                            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        }
+
+                        override fun onAnimationCancel(anim: Animator) {
+                            lottie.tag = ""
+                            lottie.visibility = View.GONE
+                            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         }
                     })
                 }
@@ -373,6 +395,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 lottie.post {
                     animadorReversa.start()
                 }
+            }
+
+            override fun onAnimationCancel(animation: Animator) {
+                lottie.tag = ""
+                lottie.visibility = View.GONE
+                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }
         })
         lottie.playAnimation()

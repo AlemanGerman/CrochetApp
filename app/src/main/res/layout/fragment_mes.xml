@@ -74,7 +74,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Para mi niña especial <3"
+                            android:text="Para mi niña especial &lt;3"
                             android:textSize="11sp"
                             android:textStyle="bold"
                             android:textColor="@color/purple_primary"
@@ -87,7 +87,7 @@
                         android:id="@+id/tvTituloCarta"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Feliz primer mes de muchos"
+                        android:text="Feliz Primer Mes de Muchos"
                         android:textColor="@color/purple_primary"
                         android:textSize="21sp"
                         android:textStyle="bold"
@@ -129,7 +129,7 @@
                         android:textColor="#2E2836"
                         android:textSize="15.5sp"
                         android:lineSpacingExtra="9dp"
-                        android:fontFamily="serif"
+                        android:fontFamily="@font/fuente"
                         android:text="@string/carta" />
 
                     <View
@@ -151,19 +151,11 @@
                             android:id="@+id/tvFirmaCarta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Con mucho amor, Germán"
+                            android:text="Con mucho amor, Germán &lt;3 "
                             android:textColor="@color/purple_primary"
                             android:textSize="16sp"
                             android:textStyle="italic|bold"
                             android:fontFamily="serif" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=" <3"
-                            android:textSize="14sp"
-                            android:textColor="@color/purple_primary"
-                            android:layout_marginStart="4dp" />
                     </LinearLayout>
 
                 </LinearLayout>

@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Mina Crochet</string>
-    <string name="carta">
-        Quisiera poder hacerte saber todo lo que me haces sentir al estar junto a ti
 
-        Gracias a eso, ahora todas las canciones de amor parecieran ser sobre ti.
-        He pasado 20 veranos en toda mi vida, y podrán pasar 100 más, y jamás olvidaré este, tú hiciste que este sea el mejor verano de mi vida.
+    <string name="carta"><b>Cada Momento</b> que estás junto a mí, quisiera que fuera eterno, las horas contigo parecen segundos y a la vez…\n\n<b>Cada Momento</b> junto a ti, se siente como si hubiéramos pasado meses juntos. Es raro porque…\n\n<b>Cada Momento</b> que estoy contigo, me doy cuenta de que podría verte todos los días y, aun así, fascinarme cada vez más y más por ti. Quisiera poder hacerte saber todo lo que me haces sentir, porque…\n\n<b>Cada Momento</b> a tu lado, me hace sentir tan fuerte y tan débil a la vez; tan enamorado y asustado al mismo tiempo; tan motivado y desesperado que…\n\n<b>Cada Momento</b> que paso contigo, noto que todas las canciones de amor ahora son sobre ti y que…\n\n<b>Cada Momento</b> que te pienso, me alegra el solo recordar que soy tu novio y que tú eres mi novia. El simple hecho de que seamos pareja me sigue volando la cabeza hasta el día de hoy, ya que…\n\n<b>Cada Momento</b> en el que te recuerdo, me enorgullece muchísimo la persona que eres. Es incomparable el sentimiento que tengo al hablarle a los demás sobre ti, y es que…\n\n<b>Cada Momento</b> que te veo, desearía que pudieras verte desde mis ojos, para que así te des cuenta de que tú eres perfecta.\n\nHe pasado 20 veranos en toda mi vida y podrán pasar 100 más, y jamás olvidaré este verano. Tú hiciste que este sea el mejor verano de mi vida.\n\n<i><b>Cada Momento junto a ti, es mi momento favorito.</b></i>
     </string>
+
+    <string name="texto_corazon">&lt;3</string>
+
 </resources>

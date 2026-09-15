@@ -18,12 +18,6 @@ class MesFragment : Fragment(R.layout.fragment_mes) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnRegresar = view.findViewById<ImageButton>(R.id.btnRegresarMes)
-
-        btnRegresar.setOnClickListener {
-            regresarAlDashboardConAnimacion()
-        }
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 regresarAlDashboardConAnimacion()
