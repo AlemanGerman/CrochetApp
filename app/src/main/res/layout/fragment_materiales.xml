@@ -132,7 +132,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Accesorios Extra (Ojos, Relleno...)"
+                                android:text="Accesorios Extra (Ojos, Relleno…)"
                                 android:textSize="18sp"
                                 android:textColor="@color/purple_primary"
                                 android:textStyle="bold"

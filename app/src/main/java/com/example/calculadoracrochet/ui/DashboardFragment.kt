@@ -4,12 +4,14 @@ import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.DatePicker
 import android.widget.EditText
@@ -17,7 +19,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RadioGroup
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -29,6 +31,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
@@ -38,23 +41,18 @@ import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.firebase.firestore.FirebaseFirestore
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import coil.request.CachePolicy
-enum class TipoOrden {
-    FECHA_RECIENTE,
-    FECHA_ANTIGUA,
-    PRECIO_MAYOR,
-    PRECIO_MENOR,
-    FOTO_CON,
-    FOTO_SIN,
-    NOMBRE_AZ,
-    NOMBRE_ZA
+
+enum class CriterioOrden {
+    FECHA,
+    PRECIO,
+    FOTO,
+    NOMBRE
 }
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
@@ -62,7 +60,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private val viewModel: MinaViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
 
-    private var ordenActual: TipoOrden = TipoOrden.FECHA_RECIENTE
+    private var criterioActual: CriterioOrden = CriterioOrden.FECHA
+    private var esOrdenDescendente: Boolean = true
     private var carpetaSeleccionada = "Todos"
 
     private var proyectoEditandoID: String? = null
@@ -160,11 +159,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        val btnOrdenar = view.findViewById<MaterialButton>(R.id.btnOrdenarFechas)
-        btnOrdenar.setOnClickListener {
-            mostrarBottomSheetOrdenar()
+        view.findViewById<MaterialButton>(R.id.btnTipoOrden).setOnClickListener { vistaBoton ->
+            mostrarMenuCriterio(vistaBoton)
         }
-        actualizarIconoBotonOrdenar()
+
+        val btnDireccion = view.findViewById<MaterialButton>(R.id.btnDireccionOrden)
+        btnDireccion.setIconResource(R.drawable.ic_flecha_abajo)
+        actualizarRotacionFlecha(animar = false)
+
+        btnDireccion.setOnClickListener {
+            esOrdenDescendente = !esOrdenDescendente
+            actualizarRotacionFlecha(animar = true)
+            filtrarYOrdenarLista()
+            view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+        }
 
         view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
             mostrarBottomSheetOpciones()
@@ -180,58 +188,79 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         filtrarYOrdenarLista()
     }
 
-    private fun mostrarBottomSheetOrdenar() {
-        val bottomSheetDialog = BottomSheetDialog(requireContext())
-        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_ordenar, null)
-        bottomSheetDialog.setContentView(sheetView)
+    private fun actualizarRotacionFlecha(animar: Boolean = true) {
+        val btnDireccion = view?.findViewById<MaterialButton>(R.id.btnDireccionOrden) ?: return
+        val anguloDestino = if (esOrdenDescendente) 0f else 180f
 
-        val rgOpciones = sheetView.findViewById<RadioGroup>(R.id.rgOpcionesOrden)
-
-        val idMarcado = when (ordenActual) {
-            TipoOrden.FECHA_RECIENTE -> R.id.rbFechaReciente
-            TipoOrden.FECHA_ANTIGUA -> R.id.rbFechaAntigua
-            TipoOrden.PRECIO_MAYOR -> R.id.rbPrecioMayor
-            TipoOrden.PRECIO_MENOR -> R.id.rbPrecioMenor
-            TipoOrden.FOTO_CON -> R.id.rbFotoCon
-            TipoOrden.FOTO_SIN -> R.id.rbFotoSin
-            TipoOrden.NOMBRE_AZ -> R.id.rbNombreAZ
-            TipoOrden.NOMBRE_ZA -> R.id.rbNombreZA
+        if (animar) {
+            btnDireccion.animate()
+                .rotation(anguloDestino)
+                .setDuration(260L)
+                .setInterpolator(DecelerateInterpolator(1.6f))
+                .start()
+        } else {
+            btnDireccion.rotation = anguloDestino
         }
-        sheetView.findViewById<MaterialRadioButton>(idMarcado)?.isChecked = true
-
-        rgOpciones.setOnCheckedChangeListener { _, checkedId ->
-            ordenActual = when (checkedId) {
-                R.id.rbFechaReciente -> TipoOrden.FECHA_RECIENTE
-                R.id.rbFechaAntigua -> TipoOrden.FECHA_ANTIGUA
-                R.id.rbPrecioMayor -> TipoOrden.PRECIO_MAYOR
-                R.id.rbPrecioMenor -> TipoOrden.PRECIO_MENOR
-                R.id.rbFotoCon -> TipoOrden.FOTO_CON
-                R.id.rbFotoSin -> TipoOrden.FOTO_SIN
-                R.id.rbNombreAZ -> TipoOrden.NOMBRE_AZ
-                R.id.rbNombreZA -> TipoOrden.NOMBRE_ZA
-                else -> TipoOrden.FECHA_RECIENTE
-            }
-
-            actualizarIconoBotonOrdenar()
-            filtrarYOrdenarLista()
-            view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
-            bottomSheetDialog.dismiss()
-        }
-
-        bottomSheetDialog.show()
     }
 
-    private fun actualizarIconoBotonOrdenar() {
-        val btnOrdenar = view?.findViewById<MaterialButton>(R.id.btnOrdenarFechas) ?: return
-        val esOrdenDescendente = when (ordenActual) {
-            TipoOrden.FECHA_RECIENTE,
-            TipoOrden.PRECIO_MAYOR,
-            TipoOrden.FOTO_CON,
-            TipoOrden.NOMBRE_AZ -> true
-            else -> false
+    private fun mostrarMenuCriterio(anchorView: View) {
+        val inflater = LayoutInflater.from(requireContext())
+        val menuView = inflater.inflate(R.layout.popup_ordenar, null)
+
+        val popupWindow = PopupWindow(
+            menuView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = 16f
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            isOutsideTouchable = true
         }
-        val iconRes = if (esOrdenDescendente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
-        btnOrdenar.setIconResource(iconRes)
+
+        val mapaChecks = mapOf(
+            CriterioOrden.FECHA to menuView.findViewById<View>(R.id.checkCriterioFecha),
+            CriterioOrden.PRECIO to menuView.findViewById<View>(R.id.checkCriterioPrecio),
+            CriterioOrden.FOTO to menuView.findViewById<View>(R.id.checkCriterioFoto),
+            CriterioOrden.NOMBRE to menuView.findViewById<View>(R.id.checkCriterioNombre)
+        )
+
+        val mapaTextos = mapOf(
+            CriterioOrden.FECHA to menuView.findViewById<TextView>(R.id.tvCriterioFecha),
+            CriterioOrden.PRECIO to menuView.findViewById<TextView>(R.id.tvCriterioPrecio),
+            CriterioOrden.FOTO to menuView.findViewById<TextView>(R.id.tvCriterioFoto),
+            CriterioOrden.NOMBRE to menuView.findViewById<TextView>(R.id.tvCriterioNombre)
+        )
+
+        mapaChecks[criterioActual]?.visibility = View.VISIBLE
+        mapaTextos[criterioActual]?.apply {
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+            setTypeface(typeface, Typeface.BOLD)
+        }
+
+        fun seleccionarCriterio(nuevoCriterio: CriterioOrden) {
+            if (criterioActual != nuevoCriterio) {
+                criterioActual = nuevoCriterio
+                filtrarYOrdenarLista()
+                view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+            }
+            popupWindow.dismiss()
+        }
+
+        menuView.findViewById<View>(R.id.opcCriterioFecha).setOnClickListener { seleccionarCriterio(CriterioOrden.FECHA) }
+        menuView.findViewById<View>(R.id.opcCriterioPrecio).setOnClickListener { seleccionarCriterio(CriterioOrden.PRECIO) }
+        menuView.findViewById<View>(R.id.opcCriterioFoto).setOnClickListener { seleccionarCriterio(CriterioOrden.FOTO) }
+        menuView.findViewById<View>(R.id.opcCriterioNombre).setOnClickListener { seleccionarCriterio(CriterioOrden.NOMBRE) }
+
+        menuView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val anchoMenu = menuView.measuredWidth
+        val anchoBoton = anchorView.width
+        val offsetX = -(anchoMenu - anchoBoton)
+
+        popupWindow.showAsDropDown(anchorView, offsetX, 12)
     }
 
     private fun filtrarYOrdenarLista() {
@@ -250,48 +279,52 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         }
 
-        listaResultante = when (ordenActual) {
-            TipoOrden.FECHA_RECIENTE -> {
-                listaResultante.sortedByDescending { it.fechaGuardado }
+        listaResultante = when (criterioActual) {
+            CriterioOrden.FECHA -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedByDescending { it.fechaGuardado }
+                } else {
+                    listaResultante.sortedBy { it.fechaGuardado }
+                }
             }
-            TipoOrden.FECHA_ANTIGUA -> {
-                listaResultante.sortedBy { it.fechaGuardado }
+            CriterioOrden.PRECIO -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { it.precioFinal }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { it.precioFinal }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
             }
-            TipoOrden.PRECIO_MAYOR -> {
-                listaResultante.sortedWith(
-                    compareByDescending<ProyectoCrochet> { it.precioFinal }
-                        .thenByDescending { it.fechaGuardado }
-                )
+            CriterioOrden.FOTO -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
             }
-            TipoOrden.PRECIO_MENOR -> {
-                listaResultante.sortedWith(
-                    compareBy<ProyectoCrochet> { it.precioFinal }
-                        .thenByDescending { it.fechaGuardado }
-                )
-            }
-            TipoOrden.FOTO_CON -> {
-                listaResultante.sortedWith(
-                    compareByDescending<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
-                        .thenByDescending { it.fechaGuardado }
-                )
-            }
-            TipoOrden.FOTO_SIN -> {
-                listaResultante.sortedWith(
-                    compareBy<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
-                        .thenByDescending { it.fechaGuardado }
-                )
-            }
-            TipoOrden.NOMBRE_AZ -> {
-                listaResultante.sortedWith(
-                    compareBy<ProyectoCrochet> { it.nombre.lowercase().trim() }
-                        .thenByDescending { it.fechaGuardado }
-                )
-            }
-            TipoOrden.NOMBRE_ZA -> {
-                listaResultante.sortedWith(
-                    compareByDescending<ProyectoCrochet> { it.nombre.lowercase().trim() }
-                        .thenByDescending { it.fechaGuardado }
-                )
+            CriterioOrden.NOMBRE -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
             }
         }
 
@@ -349,7 +382,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         llContenedor.post {
             if (!isAdded) return@post
             val indiceInicial = CarpetasConfig.listaCarpetas.indexOfFirst { it.nombre == carpetaSeleccionada }
-                .coerceAtLeast(0)
+            .coerceAtLeast(0)
             val vistaInicial = llContenedor.getChildAt(indiceInicial) ?: return@post
 
             val layoutParams = indicador.layoutParams
@@ -437,15 +470,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
 
         parentFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left,
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-            .replace(R.id.fragmentContainer, fragment)
-            .addToBackStack(null)
-            .commit()
+        .setCustomAnimations(
+            R.anim.slide_in_right,
+            R.anim.slide_out_left,
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
+        )
+        .replace(R.id.fragmentContainer, fragment)
+        .addToBackStack(null)
+        .commit()
     }
 
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {

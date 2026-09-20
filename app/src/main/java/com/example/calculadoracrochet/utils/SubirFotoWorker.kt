@@ -126,7 +126,7 @@ class SubirFotoWorker(
             Log.d("SubirFotoWorker", "Fotos sincronizadas y cacheadas en carpeta: $carpetaLegible")
             Result.success()
         } catch (e: Exception) {
-            Log.e("SubirFotoWorker", "Error subiendo fotos a Storage, reintentando...", e)
+            Log.e("SubirFotoWorker", "Error subiendo fotos a Storage, reintentando…", e)
             Result.retry()
         }
     }
