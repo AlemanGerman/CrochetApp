@@ -13,8 +13,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.DatePicker
 import android.widget.EditText
@@ -34,8 +34,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.airbnb.lottie.LottieAnimationView
 import coil.request.CachePolicy
+import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
@@ -388,7 +388,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         llContenedor.post {
             if (!isAdded) return@post
             val indiceInicial = CarpetasConfig.listaCarpetas.indexOfFirst { it.nombre == carpetaSeleccionada }
-            .coerceAtLeast(0)
+                .coerceAtLeast(0)
             val vistaInicial = llContenedor.getChildAt(indiceInicial) ?: return@post
 
             val layoutParams = indicador.layoutParams
@@ -476,6 +476,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
             view?.findViewById<View>(R.id.btnNuevoProyecto)?.isEnabled = false
             view?.findViewById<View>(R.id.btnOpciones)?.isEnabled = false
+            view?.findViewById<View>(R.id.btnTipoOrden)?.isEnabled = false
+            view?.findViewById<View>(R.id.btnDireccionOrden)?.isEnabled = false
 
             requireActivity().window.setFlags(
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -493,21 +495,23 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
 
         parentFragmentManager.beginTransaction()
-        .setCustomAnimations(
-            R.anim.slide_in_right,
-            R.anim.slide_out_left,
-            R.anim.slide_in_left,
-            R.anim.slide_out_right
-        )
-        .replace(R.id.fragmentContainer, fragment)
-        .addToBackStack(null)
-        .commit()
+            .setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            )
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun navegarHaciaMesFragmentConAnimacion() {
         val lottie = requireActivity().findViewById<LottieAnimationView>(R.id.lottieGanchillo)
+        val ventana = activity?.window
+
         if (lottie == null) {
-            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            ventana?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, MesFragment())
                 .addToBackStack(null)
@@ -542,13 +546,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                         override fun onAnimationEnd(anim: Animator) {
                             lottie.tag = ""
                             lottie.visibility = View.GONE
-                            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                            ventana?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         }
 
                         override fun onAnimationCancel(anim: Animator) {
                             lottie.tag = ""
                             lottie.visibility = View.GONE
-                            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                            ventana?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         }
                     })
                 }
@@ -561,7 +565,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             override fun onAnimationCancel(animation: Animator) {
                 lottie.tag = ""
                 lottie.visibility = View.GONE
-                activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                ventana?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }
         })
         lottie.playAnimation()
@@ -614,38 +618,37 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
 
-        val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
-                proyecto.fotoUri != "null" &&
-                proyecto.fotoUri != "undefined"
-
-        if (tieneFoto) {
-            cvFotoContenedor.visibility = View.VISIBLE
-            ivFoto.load(proyecto.fotoUri) {
-                crossfade(true)
-                memoryCachePolicy(CachePolicy.ENABLED)
-                diskCachePolicy(CachePolicy.ENABLED)
-                networkCachePolicy(CachePolicy.ENABLED)
-                error(android.R.drawable.ic_menu_camera)
-            }
-        } else {
-            cvFotoContenedor.visibility = View.GONE
-        }
-
+        // Carga de imagen unificada con políticas de caché y placeholder
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE
-            if (!proyecto.fotoUri.isNullOrEmpty()) {
-                ivFoto.load(proyecto.fotoUri) { crossfade(true) }
+            val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
+                    proyecto.fotoUri != "null" &&
+                    proyecto.fotoUri != "undefined"
+
+            if (tieneFoto) {
                 ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
                 ivFoto.imageTintList = null
+                ivFoto.load(proyecto.fotoUri) {
+                    crossfade(true)
+                    memoryCachePolicy(CachePolicy.ENABLED)
+                    diskCachePolicy(CachePolicy.ENABLED)
+                    networkCachePolicy(CachePolicy.ENABLED)
+                    error(R.drawable.ic_photo)
+                }
             } else {
                 ivFoto.setImageResource(R.drawable.ic_photo)
+                ivFoto.scaleType = ImageView.ScaleType.CENTER_INSIDE
                 ivFoto.imageTintList = ColorStateList.valueOf(Color.GRAY)
             }
         }
         refrescarImagenLocal()
 
         cvFotoContenedor.setOnClickListener {
-            if (proyecto.fotoUri.isNullOrEmpty()) {
+            val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
+                    proyecto.fotoUri != "null" &&
+                    proyecto.fotoUri != "undefined"
+
+            if (!tieneFoto) {
                 proyectoEditando = proyecto
                 proyectoEditandoID = proyecto.id
                 vistaFotoEnEdicion = WeakReference(ivFoto)
