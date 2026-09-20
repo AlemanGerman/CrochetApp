@@ -17,6 +17,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -37,6 +38,7 @@ import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.firebase.firestore.FirebaseFirestore
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
@@ -44,11 +46,23 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+enum class TipoOrden {
+    FECHA_RECIENTE,
+    FECHA_ANTIGUA,
+    PRECIO_MAYOR,
+    PRECIO_MENOR,
+    FOTO_CON,
+    FOTO_SIN,
+    NOMBRE_AZ,
+    NOMBRE_ZA
+}
+
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
-    private var ordenMasReciente = true
+
+    private var ordenActual: TipoOrden = TipoOrden.FECHA_RECIENTE
     private var carpetaSeleccionada = "Todos"
 
     private var proyectoEditandoID: String? = null
@@ -148,12 +162,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val btnOrdenar = view.findViewById<MaterialButton>(R.id.btnOrdenarFechas)
         btnOrdenar.setOnClickListener {
-            ordenMasReciente = !ordenMasReciente
-            val iconRes = if (ordenMasReciente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
-            btnOrdenar.setIconResource(iconRes)
-            filtrarYOrdenarLista()
-            view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+            mostrarBottomSheetOrdenar()
         }
+        actualizarIconoBotonOrdenar()
 
         view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
             mostrarBottomSheetOpciones()
@@ -167,6 +178,124 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         configurarDockCarpetas(view)
 
         filtrarYOrdenarLista()
+    }
+
+    private fun mostrarBottomSheetOrdenar() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_ordenar, null)
+        bottomSheetDialog.setContentView(sheetView)
+
+        val rgOpciones = sheetView.findViewById<RadioGroup>(R.id.rgOpcionesOrden)
+
+        val idMarcado = when (ordenActual) {
+            TipoOrden.FECHA_RECIENTE -> R.id.rbFechaReciente
+            TipoOrden.FECHA_ANTIGUA -> R.id.rbFechaAntigua
+            TipoOrden.PRECIO_MAYOR -> R.id.rbPrecioMayor
+            TipoOrden.PRECIO_MENOR -> R.id.rbPrecioMenor
+            TipoOrden.FOTO_CON -> R.id.rbFotoCon
+            TipoOrden.FOTO_SIN -> R.id.rbFotoSin
+            TipoOrden.NOMBRE_AZ -> R.id.rbNombreAZ
+            TipoOrden.NOMBRE_ZA -> R.id.rbNombreZA
+        }
+        sheetView.findViewById<MaterialRadioButton>(idMarcado)?.isChecked = true
+
+        rgOpciones.setOnCheckedChangeListener { _, checkedId ->
+            ordenActual = when (checkedId) {
+                R.id.rbFechaReciente -> TipoOrden.FECHA_RECIENTE
+                R.id.rbFechaAntigua -> TipoOrden.FECHA_ANTIGUA
+                R.id.rbPrecioMayor -> TipoOrden.PRECIO_MAYOR
+                R.id.rbPrecioMenor -> TipoOrden.PRECIO_MENOR
+                R.id.rbFotoCon -> TipoOrden.FOTO_CON
+                R.id.rbFotoSin -> TipoOrden.FOTO_SIN
+                R.id.rbNombreAZ -> TipoOrden.NOMBRE_AZ
+                R.id.rbNombreZA -> TipoOrden.NOMBRE_ZA
+                else -> TipoOrden.FECHA_RECIENTE
+            }
+
+            actualizarIconoBotonOrdenar()
+            filtrarYOrdenarLista()
+            view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
+    }
+
+    private fun actualizarIconoBotonOrdenar() {
+        val btnOrdenar = view?.findViewById<MaterialButton>(R.id.btnOrdenarFechas) ?: return
+        val esOrdenDescendente = when (ordenActual) {
+            TipoOrden.FECHA_RECIENTE,
+            TipoOrden.PRECIO_MAYOR,
+            TipoOrden.FOTO_CON,
+            TipoOrden.NOMBRE_AZ -> true
+            else -> false
+        }
+        val iconRes = if (esOrdenDescendente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
+        btnOrdenar.setIconResource(iconRes)
+    }
+
+    private fun filtrarYOrdenarLista() {
+        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
+        val textoBusqueda = etBuscar?.text?.toString()?.lowercase()?.trim() ?: ""
+
+        var listaResultante = viewModel.historialProyectos.filter { proyecto ->
+            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
+            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
+            noEliminado && coincideNombre
+        }
+
+        if (carpetaSeleccionada != "Todos") {
+            listaResultante = listaResultante.filter { proyecto ->
+                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
+            }
+        }
+
+        listaResultante = when (ordenActual) {
+            TipoOrden.FECHA_RECIENTE -> {
+                listaResultante.sortedByDescending { it.fechaGuardado }
+            }
+            TipoOrden.FECHA_ANTIGUA -> {
+                listaResultante.sortedBy { it.fechaGuardado }
+            }
+            TipoOrden.PRECIO_MAYOR -> {
+                listaResultante.sortedWith(
+                    compareByDescending<ProyectoCrochet> { it.precioFinal }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+            TipoOrden.PRECIO_MENOR -> {
+                listaResultante.sortedWith(
+                    compareBy<ProyectoCrochet> { it.precioFinal }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+            TipoOrden.FOTO_CON -> {
+                listaResultante.sortedWith(
+                    compareByDescending<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+            TipoOrden.FOTO_SIN -> {
+                listaResultante.sortedWith(
+                    compareBy<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+            TipoOrden.NOMBRE_AZ -> {
+                listaResultante.sortedWith(
+                    compareBy<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+            TipoOrden.NOMBRE_ZA -> {
+                listaResultante.sortedWith(
+                    compareByDescending<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                        .thenByDescending { it.fechaGuardado }
+                )
+            }
+        }
+
+        adapter.actualizarLista(listaResultante)
     }
 
     private fun configurarDockCarpetas(view: View) {
@@ -356,30 +485,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         dialog.show()
-    }
-
-    private fun filtrarYOrdenarLista() {
-        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
-        val textoBusqueda = etBuscar?.text?.toString()?.lowercase() ?: ""
-
-        var listaResultante = viewModel.historialProyectos.filter { proyecto ->
-            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
-            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
-            noEliminado && coincideNombre
-        }
-
-        if (carpetaSeleccionada != "Todos") {
-            listaResultante = listaResultante.filter { proyecto ->
-                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
-            }
-        }
-
-        listaResultante = if (ordenMasReciente) {
-            listaResultante.sortedByDescending { it.fechaGuardado }
-        } else {
-            listaResultante.sortedBy { it.fechaGuardado }
-        }
-        adapter.actualizarLista(listaResultante)
     }
 
     private fun mostrarDetalleProyecto(proyecto: ProyectoCrochet) {
