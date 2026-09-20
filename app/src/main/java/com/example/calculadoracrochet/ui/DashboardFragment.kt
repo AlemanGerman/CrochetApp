@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
@@ -13,6 +14,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.DatePicker
 import android.widget.EditText
@@ -20,6 +22,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -32,11 +35,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
+import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -48,11 +52,20 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+enum class CriterioOrden {
+    FECHA,
+    PRECIO,
+    FOTO,
+    NOMBRE
+}
+
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
-    private var ordenMasReciente = true
+
+    private var criterioActual: CriterioOrden = CriterioOrden.FECHA
+    private var esOrdenDescendente: Boolean = true
     private var carpetaSeleccionada = "Todos"
 
     private var proyectoEditandoID: String? = null
@@ -152,11 +165,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        val btnOrdenar = view.findViewById<MaterialButton>(R.id.btnOrdenarFechas)
-        btnOrdenar.setOnClickListener {
-            ordenMasReciente = !ordenMasReciente
-            val iconRes = if (ordenMasReciente) R.drawable.ic_flecha_abajo else R.drawable.ic_flecha_arriba
-            btnOrdenar.setIconResource(iconRes)
+        view.findViewById<MaterialButton>(R.id.btnTipoOrden).setOnClickListener { vistaBoton ->
+            mostrarMenuCriterio(vistaBoton)
+        }
+
+        val btnDireccion = view.findViewById<MaterialButton>(R.id.btnDireccionOrden)
+        btnDireccion.setIconResource(R.drawable.ic_flecha_abajo)
+        actualizarRotacionFlecha(animar = false)
+
+        btnDireccion.setOnClickListener {
+            esOrdenDescendente = !esOrdenDescendente
+            actualizarRotacionFlecha(animar = true)
             filtrarYOrdenarLista()
             view.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
         }
@@ -173,6 +192,149 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         configurarDockCarpetas(view)
 
         filtrarYOrdenarLista()
+    }
+
+    private fun actualizarRotacionFlecha(animar: Boolean = true) {
+        val btnDireccion = view?.findViewById<MaterialButton>(R.id.btnDireccionOrden) ?: return
+        val anguloDestino = if (esOrdenDescendente) 0f else 180f
+
+        if (animar) {
+            btnDireccion.animate()
+                .rotation(anguloDestino)
+                .setDuration(260L)
+                .setInterpolator(DecelerateInterpolator(1.6f))
+                .start()
+        } else {
+            btnDireccion.rotation = anguloDestino
+        }
+    }
+
+    private fun mostrarMenuCriterio(anchorView: View) {
+        val inflater = LayoutInflater.from(requireContext())
+        val menuView = inflater.inflate(R.layout.popup_ordenar, null)
+
+        val popupWindow = PopupWindow(
+            menuView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = 16f
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            isOutsideTouchable = true
+        }
+
+        val mapaChecks = mapOf(
+            CriterioOrden.FECHA to menuView.findViewById<View>(R.id.checkCriterioFecha),
+            CriterioOrden.PRECIO to menuView.findViewById<View>(R.id.checkCriterioPrecio),
+            CriterioOrden.FOTO to menuView.findViewById<View>(R.id.checkCriterioFoto),
+            CriterioOrden.NOMBRE to menuView.findViewById<View>(R.id.checkCriterioNombre)
+        )
+
+        val mapaTextos = mapOf(
+            CriterioOrden.FECHA to menuView.findViewById<TextView>(R.id.tvCriterioFecha),
+            CriterioOrden.PRECIO to menuView.findViewById<TextView>(R.id.tvCriterioPrecio),
+            CriterioOrden.FOTO to menuView.findViewById<TextView>(R.id.tvCriterioFoto),
+            CriterioOrden.NOMBRE to menuView.findViewById<TextView>(R.id.tvCriterioNombre)
+        )
+
+        mapaChecks[criterioActual]?.visibility = View.VISIBLE
+        mapaTextos[criterioActual]?.apply {
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+            setTypeface(typeface, Typeface.BOLD)
+        }
+
+        fun seleccionarCriterio(nuevoCriterio: CriterioOrden) {
+            if (criterioActual != nuevoCriterio) {
+                criterioActual = nuevoCriterio
+                filtrarYOrdenarLista()
+                view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+            }
+            popupWindow.dismiss()
+        }
+
+        menuView.findViewById<View>(R.id.opcCriterioFecha).setOnClickListener { seleccionarCriterio(CriterioOrden.FECHA) }
+        menuView.findViewById<View>(R.id.opcCriterioPrecio).setOnClickListener { seleccionarCriterio(CriterioOrden.PRECIO) }
+        menuView.findViewById<View>(R.id.opcCriterioFoto).setOnClickListener { seleccionarCriterio(CriterioOrden.FOTO) }
+        menuView.findViewById<View>(R.id.opcCriterioNombre).setOnClickListener { seleccionarCriterio(CriterioOrden.NOMBRE) }
+
+        menuView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val anchoMenu = menuView.measuredWidth
+        val anchoBoton = anchorView.width
+        val offsetX = -(anchoMenu - anchoBoton)
+
+        popupWindow.showAsDropDown(anchorView, offsetX, 12)
+    }
+
+    private fun filtrarYOrdenarLista() {
+        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
+        val textoBusqueda = etBuscar?.text?.toString()?.lowercase()?.trim() ?: ""
+
+        var listaResultante = viewModel.historialProyectos.filter { proyecto ->
+            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
+            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
+            noEliminado && coincideNombre
+        }
+
+        if (carpetaSeleccionada != "Todos") {
+            listaResultante = listaResultante.filter { proyecto ->
+                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
+            }
+        }
+
+        listaResultante = when (criterioActual) {
+            CriterioOrden.FECHA -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedByDescending { it.fechaGuardado }
+                } else {
+                    listaResultante.sortedBy { it.fechaGuardado }
+                }
+            }
+            CriterioOrden.PRECIO -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { it.precioFinal }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { it.precioFinal }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
+            }
+            CriterioOrden.FOTO -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { !it.fotoUri.isNullOrEmpty() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
+            }
+            CriterioOrden.NOMBRE -> {
+                if (esOrdenDescendente) {
+                    listaResultante.sortedWith(
+                        compareBy<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                } else {
+                    listaResultante.sortedWith(
+                        compareByDescending<ProyectoCrochet> { it.nombre.lowercase().trim() }
+                            .thenByDescending { it.fechaGuardado }
+                    )
+                }
+            }
+        }
+
+        adapter.actualizarLista(listaResultante)
     }
 
     private fun configurarDockCarpetas(view: View) {
@@ -226,7 +388,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         llContenedor.post {
             if (!isAdded) return@post
             val indiceInicial = CarpetasConfig.listaCarpetas.indexOfFirst { it.nombre == carpetaSeleccionada }
-                .coerceAtLeast(0)
+            .coerceAtLeast(0)
             val vistaInicial = llContenedor.getChildAt(indiceInicial) ?: return@post
 
             val layoutParams = indicador.layoutParams
@@ -314,7 +476,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
             view?.findViewById<View>(R.id.btnNuevoProyecto)?.isEnabled = false
             view?.findViewById<View>(R.id.btnOpciones)?.isEnabled = false
-            view?.findViewById<View>(R.id.btnOrdenarFechas)?.isEnabled = false
 
             requireActivity().window.setFlags(
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -332,15 +493,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
 
         parentFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left,
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-            .replace(R.id.fragmentContainer, fragment)
-            .addToBackStack(null)
-            .commit()
+        .setCustomAnimations(
+            R.anim.slide_in_right,
+            R.anim.slide_out_left,
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
+        )
+        .replace(R.id.fragmentContainer, fragment)
+        .addToBackStack(null)
+        .commit()
     }
 
     private fun navegarHaciaMesFragmentConAnimacion() {
@@ -445,30 +606,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         dialog.show()
     }
 
-    private fun filtrarYOrdenarLista() {
-        val etBuscar = view?.findViewById<EditText>(R.id.etBuscarProyecto)
-        val textoBusqueda = etBuscar?.text?.toString()?.lowercase() ?: ""
-
-        var listaResultante = viewModel.historialProyectos.filter { proyecto ->
-            val noEliminado = proyecto.fechaEliminado == null && !proyecto.eliminado
-            val coincideNombre = proyecto.nombre.lowercase().contains(textoBusqueda)
-            noEliminado && coincideNombre
-        }
-
-        if (carpetaSeleccionada != "Todos") {
-            listaResultante = listaResultante.filter { proyecto ->
-                (proyecto.carpetas ?: emptyList()).contains(carpetaSeleccionada)
-            }
-        }
-
-        listaResultante = if (ordenMasReciente) {
-            listaResultante.sortedByDescending { it.fechaGuardado }
-        } else {
-            listaResultante.sortedBy { it.fechaGuardado }
-        }
-        adapter.actualizarLista(listaResultante)
-    }
-
     private fun mostrarDetalleProyecto(proyecto: ProyectoCrochet) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_detalle_proyecto, null)
         val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
@@ -476,6 +613,23 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
+
+        val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
+                proyecto.fotoUri != "null" &&
+                proyecto.fotoUri != "undefined"
+
+        if (tieneFoto) {
+            cvFotoContenedor.visibility = View.VISIBLE
+            ivFoto.load(proyecto.fotoUri) {
+                crossfade(true)
+                memoryCachePolicy(CachePolicy.ENABLED)
+                diskCachePolicy(CachePolicy.ENABLED)
+                networkCachePolicy(CachePolicy.ENABLED)
+                error(android.R.drawable.ic_menu_camera)
+            }
+        } else {
+            cvFotoContenedor.visibility = View.GONE
+        }
 
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE

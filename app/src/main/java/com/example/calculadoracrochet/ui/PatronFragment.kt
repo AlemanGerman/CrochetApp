@@ -9,13 +9,13 @@ import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
 import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
 
 
     private var ultimoRetrocesoTiempo: Long = 0L

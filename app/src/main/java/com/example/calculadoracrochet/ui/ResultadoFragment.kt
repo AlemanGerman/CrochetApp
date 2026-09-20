@@ -19,7 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
@@ -34,7 +34,7 @@ import java.util.Date
 import java.util.Locale
 
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
 
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
