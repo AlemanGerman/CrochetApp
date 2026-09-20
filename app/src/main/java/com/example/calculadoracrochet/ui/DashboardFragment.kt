@@ -45,7 +45,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
+import coil.request.CachePolicy
 enum class TipoOrden {
     FECHA_RECIENTE,
     FECHA_ANTIGUA,
@@ -494,6 +494,23 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
+
+        val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
+                proyecto.fotoUri != "null" &&
+                proyecto.fotoUri != "undefined"
+
+        if (tieneFoto) {
+            cvFotoContenedor.visibility = View.VISIBLE
+            ivFoto.load(proyecto.fotoUri) {
+                crossfade(true)
+                memoryCachePolicy(CachePolicy.ENABLED)
+                diskCachePolicy(CachePolicy.ENABLED)
+                networkCachePolicy(CachePolicy.ENABLED)
+                error(android.R.drawable.ic_menu_camera)
+            }
+        } else {
+            cvFotoContenedor.visibility = View.GONE
+        }
 
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE

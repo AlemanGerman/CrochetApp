@@ -19,14 +19,9 @@ import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizador
 import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageMetadata
 import java.io.File
-import java.text.Normalizer
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -114,7 +109,6 @@ class MinaViewModel : ViewModel() {
     }
 
     fun cargarProyectosDeLaNube() {
-        val appContext = FirebaseApp.getInstance().applicationContext
         db.collection("proyectos_mina")
             .addSnapshotListener { documentos, error ->
                 if (error != null) {
@@ -134,10 +128,9 @@ class MinaViewModel : ViewModel() {
                         }
                         if (proyecto != null) {
                             listaProcesada.add(proyecto)
-                            precargarEnCoil(appContext, FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri))
                         }
                     } catch (e: Exception) {
-                        Log.e("Firebase", "Error al procesar proyecto con ID: ${documento.id}", e)
+                        Log.e("Firebase", "Error al procesar proyecto: ${documento.id}", e)
                     }
                 }
 
@@ -248,7 +241,7 @@ class MinaViewModel : ViewModel() {
             borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
         }
 
-        precargarEnCoil(context, fotoParaGuardar)
+        precargarLocalEnCoil(context, fotoParaGuardar)
     }
 
     fun moverAPapelera(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
@@ -378,7 +371,7 @@ class MinaViewModel : ViewModel() {
 
                     encolarSubidaFoto(contextoApp, idProyecto, proyecto.nombre, fotosPersistentes, urlsABorrar)
                     borrarArchivosLocalesSiExisten(fotoAnterior)
-                    precargarEnCoil(contextoApp, nuevaFotoLocal)
+                    precargarLocalEnCoil(contextoApp, nuevaFotoLocal)
 
                     onComplete(true)
                 } else {
@@ -525,29 +518,22 @@ class MinaViewModel : ViewModel() {
         }
     }
 
-    private fun precargarEnCoil(context: Context, fotoRemota: FotoRemota) {
+    private fun precargarLocalEnCoil(context: Context, fotoLocal: FotoRemota) {
         try {
             val loader = context.imageLoader
-            fotoRemota.principal?.takeIf { it.isNotBlank() }?.let { url ->
-                loader.enqueue(
-                    ImageRequest.Builder(context)
-                        .data(url)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                )
-            }
-            fotoRemota.miniatura?.takeIf { it.isNotBlank() && it != fotoRemota.principal }?.let { urlMin ->
-                loader.enqueue(
-                    ImageRequest.Builder(context)
-                        .data(urlMin)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                )
-            }
+            listOfNotNull(fotoLocal.principal, fotoLocal.miniatura)
+                .filter { it.startsWith("file://") }
+                .forEach { uriFile ->
+                    loader.enqueue(
+                        ImageRequest.Builder(context)
+                            .data(uriFile)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build()
+                    )
+                }
         } catch (e: Exception) {
-            Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
+            Log.w("Firebase", "No se pudo precargar la foto local en Coil", e)
         }
     }
 

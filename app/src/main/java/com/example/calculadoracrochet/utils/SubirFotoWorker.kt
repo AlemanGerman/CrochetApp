@@ -5,6 +5,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import coil.imageLoader
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -45,6 +48,7 @@ class SubirFotoWorker(
 
             val storage = FirebaseStorage.getInstance()
             val db = FirebaseFirestore.getInstance()
+
             val nombreLimpio = limpiarNombreParaStorage(nombreProyecto)
             val idCorto = proyectoId.replace("-", "").take(8)
             val carpetaLegible = "${nombreLimpio}_$idCorto"
@@ -54,9 +58,11 @@ class SubirFotoWorker(
                 .setContentType("image/jpeg")
                 .setCacheControl("public,max-age=31536000,immutable")
                 .build()
+
             val refPrincipal = storage.reference.child("fotos_proyectos/$carpetaLegible/${nombreLimpio}_${hashFoto}_foto.jpg")
             refPrincipal.putFile(Uri.fromFile(archivoPrincipal), metadata).await()
             val urlPrincipal = refPrincipal.downloadUrl.await().toString()
+
             val urlMiniatura = if (!rutaMiniatura.isNullOrBlank()) {
                 val archivoMiniatura = File(rutaMiniatura)
                 if (archivoMiniatura.exists()) {
@@ -69,6 +75,7 @@ class SubirFotoWorker(
             } else {
                 urlPrincipal
             }
+
             db.collection("proyectos_mina")
                 .document(proyectoId)
                 .set(
@@ -79,13 +86,36 @@ class SubirFotoWorker(
                     SetOptions.merge()
                 )
                 .await()
+
+            val loader = applicationContext.imageLoader
+            loader.execute(
+                ImageRequest.Builder(applicationContext)
+                    .data(urlMiniatura)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .build()
+            )
+
+            if (urlPrincipal != urlMiniatura) {
+                loader.execute(
+                    ImageRequest.Builder(applicationContext)
+                        .data(urlPrincipal)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                )
+            }
+
             for (url in urlsAnteriores) {
-                if (url.startsWith("http")) {
+                if (url.startsWith("http") && url != urlPrincipal && url != urlMiniatura) {
                     try {
-                        storage.getReferenceFromUrl(url).delete().await()
+                        val refVieja = EliminarFotoWorker.obtenerReferenciaStorage(storage, url)
+                            ?: storage.getReferenceFromUrl(url)
+                        refVieja.delete().await()
                     } catch (_: Exception) {}
                 }
             }
+
             try {
                 archivoPrincipal.delete()
                 if (!rutaMiniatura.isNullOrBlank()) {
@@ -93,7 +123,7 @@ class SubirFotoWorker(
                 }
             } catch (_: Exception) {}
 
-            Log.d("SubirFotoWorker", "Fotos sincronizadas en Storage en carpeta: $carpetaLegible")
+            Log.d("SubirFotoWorker", "Fotos sincronizadas y cacheadas en carpeta: $carpetaLegible")
             Result.success()
         } catch (e: Exception) {
             Log.e("SubirFotoWorker", "Error subiendo fotos a Storage, reintentando...", e)
