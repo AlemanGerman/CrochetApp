@@ -19,9 +19,14 @@ import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizador
 import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
 import java.io.File
+import java.text.Normalizer
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -68,7 +73,7 @@ private data class FotosLocalesPersistentes(
     val miniatura: File?
 )
 
-class CalculadoraViewModel : ViewModel() {
+class MinaViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val hiloFotos = Executors.newSingleThreadExecutor()
@@ -123,7 +128,6 @@ class CalculadoraViewModel : ViewModel() {
                     try {
                         val proyecto = documento.toObject(ProyectoCrochet::class.java)?.apply {
                             id = documento.id
-                            // Protección contra deserialización nula de Firebase
                             carpetas = carpetas ?: emptyList()
                             listaEstambres = listaEstambres ?: emptyList()
                             listaAccesorios = listaAccesorios ?: emptyList()
@@ -141,7 +145,6 @@ class CalculadoraViewModel : ViewModel() {
 
                 historialProyectos.clear()
                 historialProyectos.addAll(listaProcesada)
-                // Se envía una copia inmutable para notificar correctamente a los observadores
                 proyectosEnVivo.postValue(historialProyectos.toList())
             }
     }
@@ -240,7 +243,7 @@ class CalculadoraViewModel : ViewModel() {
             val urlsAnteriores = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
                 .filter { it.startsWith("http") && it !in listOfNotNull(fotoParaGuardar.principal, fotoParaGuardar.miniatura) }
 
-            encolarSubidaFoto(context, idProyecto, rutasFisicasParaSubir, urlsAnteriores)
+            encolarSubidaFoto(context, idProyecto, nombre, rutasFisicasParaSubir, urlsAnteriores)
         } else if (fotoParaGuardar != fotoAnterior) {
             borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
         }
@@ -373,7 +376,7 @@ class CalculadoraViewModel : ViewModel() {
                     val urlsABorrar = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
                         .filter { it.startsWith("http") }
 
-                    encolarSubidaFoto(contextoApp, idProyecto, fotosPersistentes, urlsABorrar)
+                    encolarSubidaFoto(contextoApp, idProyecto, proyecto.nombre, fotosPersistentes, urlsABorrar)
                     borrarArchivosLocalesSiExisten(fotoAnterior)
                     precargarEnCoil(contextoApp, nuevaFotoLocal)
 
@@ -447,6 +450,7 @@ class CalculadoraViewModel : ViewModel() {
     private fun encolarSubidaFoto(
         context: Context,
         idProyecto: String,
+        nombreProyecto: String,
         fotos: FotosLocalesPersistentes,
         urlsAnteriores: List<String> = emptyList()
     ) {
@@ -456,6 +460,7 @@ class CalculadoraViewModel : ViewModel() {
 
         val datos = Data.Builder()
             .putString(SubirFotoWorker.KEY_PROYECTO_ID, idProyecto)
+            .putString(SubirFotoWorker.KEY_NOMBRE_PROYECTO, nombreProyecto)
             .putString(SubirFotoWorker.KEY_RUTA_PRINCIPAL, fotos.principal.absolutePath)
             .putString(SubirFotoWorker.KEY_RUTA_MINIATURA, fotos.miniatura?.absolutePath)
             .putStringArray(SubirFotoWorker.KEY_URLS_ANTERIORES, urlsAnteriores.toTypedArray())

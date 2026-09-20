@@ -12,6 +12,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
 import kotlinx.coroutines.tasks.await
 import java.io.File
+import java.text.Normalizer
 import java.util.UUID
 
 class SubirFotoWorker(
@@ -21,6 +22,7 @@ class SubirFotoWorker(
 
     override suspend fun doWork(): Result {
         val proyectoId = inputData.getString(KEY_PROYECTO_ID) ?: return Result.failure()
+        val nombreProyecto = inputData.getString(KEY_NOMBRE_PROYECTO) ?: "proyecto"
         val rutaPrincipal = inputData.getString(KEY_RUTA_PRINCIPAL) ?: return Result.failure()
         val rutaMiniatura = inputData.getString(KEY_RUTA_MINIATURA)
         val urlsAnteriores = inputData.getStringArray(KEY_URLS_ANTERIORES)?.toList() ?: emptyList()
@@ -43,21 +45,22 @@ class SubirFotoWorker(
 
             val storage = FirebaseStorage.getInstance()
             val db = FirebaseFirestore.getInstance()
+            val nombreLimpio = limpiarNombreParaStorage(nombreProyecto)
+            val idCorto = proyectoId.replace("-", "").take(8)
+            val carpetaLegible = "${nombreLimpio}_$idCorto"
+            val hashFoto = UUID.randomUUID().toString().take(6)
 
-            val rutaBase = "fotos_proyectos/$proyectoId/${UUID.randomUUID()}"
             val metadata = StorageMetadata.Builder()
                 .setContentType("image/jpeg")
                 .setCacheControl("public,max-age=31536000,immutable")
                 .build()
-
-            val refPrincipal = storage.reference.child("${rutaBase}_foto.jpg")
+            val refPrincipal = storage.reference.child("fotos_proyectos/$carpetaLegible/${nombreLimpio}_${hashFoto}_foto.jpg")
             refPrincipal.putFile(Uri.fromFile(archivoPrincipal), metadata).await()
             val urlPrincipal = refPrincipal.downloadUrl.await().toString()
-
             val urlMiniatura = if (!rutaMiniatura.isNullOrBlank()) {
                 val archivoMiniatura = File(rutaMiniatura)
                 if (archivoMiniatura.exists()) {
-                    val refMiniatura = storage.reference.child("${rutaBase}_miniatura.jpg")
+                    val refMiniatura = storage.reference.child("fotos_proyectos/$carpetaLegible/${nombreLimpio}_${hashFoto}_miniatura.jpg")
                     refMiniatura.putFile(Uri.fromFile(archivoMiniatura), metadata).await()
                     refMiniatura.downloadUrl.await().toString()
                 } else {
@@ -66,7 +69,6 @@ class SubirFotoWorker(
             } else {
                 urlPrincipal
             }
-
             db.collection("proyectos_mina")
                 .document(proyectoId)
                 .set(
@@ -77,7 +79,6 @@ class SubirFotoWorker(
                     SetOptions.merge()
                 )
                 .await()
-
             for (url in urlsAnteriores) {
                 if (url.startsWith("http")) {
                     try {
@@ -85,7 +86,6 @@ class SubirFotoWorker(
                     } catch (_: Exception) {}
                 }
             }
-
             try {
                 archivoPrincipal.delete()
                 if (!rutaMiniatura.isNullOrBlank()) {
@@ -93,7 +93,7 @@ class SubirFotoWorker(
                 }
             } catch (_: Exception) {}
 
-            Log.d("SubirFotoWorker", "Fotos sincronizadas en Storage para: $proyectoId")
+            Log.d("SubirFotoWorker", "Fotos sincronizadas en Storage en carpeta: $carpetaLegible")
             Result.success()
         } catch (e: Exception) {
             Log.e("SubirFotoWorker", "Error subiendo fotos a Storage, reintentando...", e)
@@ -101,8 +101,19 @@ class SubirFotoWorker(
         }
     }
 
+    private fun limpiarNombreParaStorage(nombre: String): String {
+        val normalizado = Normalizer.normalize(nombre, Normalizer.Form.NFD)
+            .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+        val limpio = normalizado.lowercase()
+            .replace(Regex("[^a-z0-9_-]"), "_")
+            .replace(Regex("_+"), "_")
+            .trim('_')
+        return if (limpio.isBlank()) "proyecto" else limpio.take(30)
+    }
+
     companion object {
         const val KEY_PROYECTO_ID = "key_proyecto_id"
+        const val KEY_NOMBRE_PROYECTO = "key_nombre_proyecto"
         const val KEY_RUTA_PRINCIPAL = "key_ruta_principal"
         const val KEY_RUTA_MINIATURA = "key_ruta_miniatura"
         const val KEY_URLS_ANTERIORES = "key_urls_anteriores"

@@ -12,13 +12,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.PapeleraAdapter
 import com.example.calculadoracrochet.utils.DialogUtils
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
 
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
     private lateinit var adapter: PapeleraAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

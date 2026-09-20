@@ -33,7 +33,7 @@ import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -59,7 +59,7 @@ enum class TipoOrden {
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
 
     private var ordenActual: TipoOrden = TipoOrden.FECHA_RECIENTE
