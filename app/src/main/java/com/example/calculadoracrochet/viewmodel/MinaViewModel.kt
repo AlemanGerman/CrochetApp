@@ -68,7 +68,7 @@ private data class FotosLocalesPersistentes(
     val miniatura: File?
 )
 
-class CalculadoraViewModel : ViewModel() {
+class MinaViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val hiloFotos = Executors.newSingleThreadExecutor()
@@ -109,7 +109,6 @@ class CalculadoraViewModel : ViewModel() {
     }
 
     fun cargarProyectosDeLaNube() {
-        val appContext = FirebaseApp.getInstance().applicationContext
         db.collection("proyectos_mina")
             .addSnapshotListener { documentos, error ->
                 if (error != null) {
@@ -123,17 +122,15 @@ class CalculadoraViewModel : ViewModel() {
                     try {
                         val proyecto = documento.toObject(ProyectoCrochet::class.java)?.apply {
                             id = documento.id
-                            // Protección contra deserialización nula de Firebase
                             carpetas = carpetas ?: emptyList()
                             listaEstambres = listaEstambres ?: emptyList()
                             listaAccesorios = listaAccesorios ?: emptyList()
                         }
                         if (proyecto != null) {
                             listaProcesada.add(proyecto)
-                            precargarEnCoil(appContext, FotoRemota(proyecto.fotoUri, proyecto.fotoMiniaturaUri))
                         }
                     } catch (e: Exception) {
-                        Log.e("Firebase", "Error al procesar proyecto con ID: ${documento.id}", e)
+                        Log.e("Firebase", "Error al procesar proyecto: ${documento.id}", e)
                     }
                 }
 
@@ -141,7 +138,6 @@ class CalculadoraViewModel : ViewModel() {
 
                 historialProyectos.clear()
                 historialProyectos.addAll(listaProcesada)
-                // Se envía una copia inmutable para notificar correctamente a los observadores
                 proyectosEnVivo.postValue(historialProyectos.toList())
             }
     }
@@ -240,12 +236,12 @@ class CalculadoraViewModel : ViewModel() {
             val urlsAnteriores = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
                 .filter { it.startsWith("http") && it !in listOfNotNull(fotoParaGuardar.principal, fotoParaGuardar.miniatura) }
 
-            encolarSubidaFoto(context, idProyecto, rutasFisicasParaSubir, urlsAnteriores)
+            encolarSubidaFoto(context, idProyecto, nombre, rutasFisicasParaSubir, urlsAnteriores)
         } else if (fotoParaGuardar != fotoAnterior) {
             borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
         }
 
-        precargarEnCoil(context, fotoParaGuardar)
+        precargarLocalEnCoil(context, fotoParaGuardar)
     }
 
     fun moverAPapelera(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
@@ -373,9 +369,9 @@ class CalculadoraViewModel : ViewModel() {
                     val urlsABorrar = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
                         .filter { it.startsWith("http") }
 
-                    encolarSubidaFoto(contextoApp, idProyecto, fotosPersistentes, urlsABorrar)
+                    encolarSubidaFoto(contextoApp, idProyecto, proyecto.nombre, fotosPersistentes, urlsABorrar)
                     borrarArchivosLocalesSiExisten(fotoAnterior)
-                    precargarEnCoil(contextoApp, nuevaFotoLocal)
+                    precargarLocalEnCoil(contextoApp, nuevaFotoLocal)
 
                     onComplete(true)
                 } else {
@@ -447,6 +443,7 @@ class CalculadoraViewModel : ViewModel() {
     private fun encolarSubidaFoto(
         context: Context,
         idProyecto: String,
+        nombreProyecto: String,
         fotos: FotosLocalesPersistentes,
         urlsAnteriores: List<String> = emptyList()
     ) {
@@ -456,6 +453,7 @@ class CalculadoraViewModel : ViewModel() {
 
         val datos = Data.Builder()
             .putString(SubirFotoWorker.KEY_PROYECTO_ID, idProyecto)
+            .putString(SubirFotoWorker.KEY_NOMBRE_PROYECTO, nombreProyecto)
             .putString(SubirFotoWorker.KEY_RUTA_PRINCIPAL, fotos.principal.absolutePath)
             .putString(SubirFotoWorker.KEY_RUTA_MINIATURA, fotos.miniatura?.absolutePath)
             .putStringArray(SubirFotoWorker.KEY_URLS_ANTERIORES, urlsAnteriores.toTypedArray())
@@ -520,29 +518,22 @@ class CalculadoraViewModel : ViewModel() {
         }
     }
 
-    private fun precargarEnCoil(context: Context, fotoRemota: FotoRemota) {
+    private fun precargarLocalEnCoil(context: Context, fotoLocal: FotoRemota) {
         try {
             val loader = context.imageLoader
-            fotoRemota.principal?.takeIf { it.isNotBlank() }?.let { url ->
-                loader.enqueue(
-                    ImageRequest.Builder(context)
-                        .data(url)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                )
-            }
-            fotoRemota.miniatura?.takeIf { it.isNotBlank() && it != fotoRemota.principal }?.let { urlMin ->
-                loader.enqueue(
-                    ImageRequest.Builder(context)
-                        .data(urlMin)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                )
-            }
+            listOfNotNull(fotoLocal.principal, fotoLocal.miniatura)
+                .filter { it.startsWith("file://") }
+                .forEach { uriFile ->
+                    loader.enqueue(
+                        ImageRequest.Builder(context)
+                            .data(uriFile)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build()
+                    )
+                }
         } catch (e: Exception) {
-            Log.w("Firebase", "No se pudo precargar la foto en Coil", e)
+            Log.w("Firebase", "No se pudo precargar la foto local en Coil", e)
         }
     }
 

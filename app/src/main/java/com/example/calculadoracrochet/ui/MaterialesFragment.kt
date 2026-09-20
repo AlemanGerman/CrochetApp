@@ -13,13 +13,13 @@ import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
     private var ultimoClicTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -12,13 +12,13 @@ import androidx.fragment.app.activityViewModels
 import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.viewmodel.CalculadoraViewModel
+import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
-    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val viewModel: MinaViewModel by activityViewModels()
     private var ultimoRetrocesoTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
