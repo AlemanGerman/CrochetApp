@@ -473,6 +473,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             btnMes.isEnabled = false
             sheetView.findViewById<View>(R.id.itemOpcionEstadisticas)?.isEnabled = false
             sheetView.findViewById<View>(R.id.itemOpcionPapelera)?.isEnabled = false
+            sheetView.findViewById<View>(R.id.itemOpcionGirasol)?.isEnabled = false
 
             view?.findViewById<View>(R.id.btnNuevoProyecto)?.isEnabled = false
             view?.findViewById<View>(R.id.btnOpciones)?.isEnabled = false
@@ -486,6 +487,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
             bottomSheetDialog.dismiss()
             navegarHaciaMesFragmentConAnimacion()
+        }
+
+        sheetView.findViewById<View>(R.id.itemOpcionGirasol).setOnClickListener {
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(GirasolFragment())
         }
 
         bottomSheetDialog.show()
@@ -618,7 +624,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
 
-        // Carga de imagen unificada con políticas de caché y placeholder
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE
             val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
