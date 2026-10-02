@@ -5,8 +5,9 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -68,7 +69,8 @@ private data class FotosLocalesPersistentes(
     val miniatura: File?
 )
 
-class MinaViewModel : ViewModel() {
+@OptIn(coil.annotation.ExperimentalCoilApi::class)
+class MinaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = FirebaseFirestore.getInstance()
     private val hiloFotos = Executors.newSingleThreadExecutor()
@@ -139,6 +141,7 @@ class MinaViewModel : ViewModel() {
                 historialProyectos.clear()
                 historialProyectos.addAll(listaProcesada)
                 proyectosEnVivo.postValue(historialProyectos.toList())
+                precargarFotosFaltantes(getApplication(), listaProcesada)
             }
     }
 
@@ -488,6 +491,13 @@ class MinaViewModel : ViewModel() {
         val urlsABorrar = urlsCandidatas.filter { it !in urlsEnUso }
         if (urlsABorrar.isEmpty()) return
 
+        val diskCache = getApplication<Application>().imageLoader.diskCache
+        urlsABorrar.forEach { url ->
+            try {
+                diskCache?.remove(url)
+            } catch (_: Exception) {}
+        }
+
         val appContext = FirebaseApp.getInstance().applicationContext
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -534,6 +544,43 @@ class MinaViewModel : ViewModel() {
                 }
         } catch (e: Exception) {
             Log.w("Firebase", "No se pudo precargar la foto local en Coil", e)
+        }
+    }
+
+    fun precargarFotosFaltantes(context: Context, proyectos: List<ProyectoCrochet>) {
+        hiloFotos.execute {
+            try {
+                val loader = context.imageLoader
+                val diskCache = loader.diskCache
+                val urlsParaDescargar = mutableSetOf<String>()
+
+                for (proyecto in proyectos) {
+                    if (proyecto.eliminado || proyecto.fechaEliminado != null) continue
+                    val urls = listOfNotNull(proyecto.fotoMiniaturaUri, proyecto.fotoUri)
+                    for (url in urls) {
+                        if (url.startsWith("http")) {
+                            val enDisco = diskCache?.openSnapshot(url)?.use { true } ?: false
+                            if (!enDisco) {
+                                urlsParaDescargar.add(url)
+                            }
+                        }
+                    }
+                }
+
+                for (url in urlsParaDescargar) {
+                    val request = ImageRequest.Builder(context)
+                        .data(url)
+                        .diskCacheKey(url)
+                        .memoryCacheKey(url)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .networkCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                    loader.enqueue(request)
+                }
+            } catch (e: Exception) {
+                Log.w("Firebase", "Error al precargar fotos faltantes", e)
+            }
         }
     }
 

@@ -542,6 +542,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 ivFoto.imageTintList = null
                 ivFoto.load(proyecto.fotoUri) {
                     crossfade(true)
+                    if (!proyecto.fotoMiniaturaUri.isNullOrBlank()) {
+                        placeholderMemoryCacheKey(proyecto.fotoMiniaturaUri)
+                    }
                     memoryCachePolicy(CachePolicy.ENABLED)
                     diskCachePolicy(CachePolicy.ENABLED)
                     networkCachePolicy(CachePolicy.ENABLED)
@@ -602,7 +605,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     proyecto.fotoUri != "undefined"
 
             if (tieneFoto) {
-                mostrarFotoGrande(proyecto.fotoUri)
+                mostrarFotoGrande(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
             } else {
                 proyectoEditando = proyecto
                 proyectoEditandoID = proyecto.id
@@ -758,7 +761,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         dialog.show()
     }
 
-    private fun mostrarFotoGrande(fotoUri: String?) {
+    private fun mostrarFotoGrande(fotoUri: String?, miniaturaUri: String? = null) {
         if (fotoUri.isNullOrBlank()) return
         val (dialog, view) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_foto_zoom)
         val zoomView = view.findViewById<ZoomableImageView>(R.id.ivFotoZoom)
@@ -766,6 +769,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         zoomView.load(fotoUri) {
             crossfade(true)
+            if (!miniaturaUri.isNullOrBlank()) {
+                placeholderMemoryCacheKey(miniaturaUri)
+            }
             memoryCachePolicy(CachePolicy.ENABLED)
             diskCachePolicy(CachePolicy.ENABLED)
             networkCachePolicy(CachePolicy.ENABLED)
