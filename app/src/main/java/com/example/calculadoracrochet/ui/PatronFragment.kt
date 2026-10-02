@@ -96,6 +96,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             }
 
             if (todoCorrecto) {
+                viewModel.guardarBorrador()
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(
                         R.anim.slide_in_right,

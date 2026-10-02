@@ -158,8 +158,12 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             tvNombre.text = proyecto.nombre
             tvValor.text = textoValor
 
-            if (!proyecto.fotoUri.isNullOrEmpty()) {
-                iv.load(proyecto.fotoUri) { crossfade(true) }
+            val fotoParaMostrar = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
+            if (!fotoParaMostrar.isNullOrEmpty()) {
+                iv.load(fotoParaMostrar) {
+                    crossfade(true)
+                    error(R.drawable.ic_photo)
+                }
                 iv.scaleType = ImageView.ScaleType.CENTER_CROP
                 iv.setPadding(0, 0, 0, 0)
                 iv.imageTintList = null

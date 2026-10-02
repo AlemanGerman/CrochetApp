@@ -94,6 +94,7 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
                 viewModel.costoManoObra = pagoPorHora * horasTotales
                 viewModel.pagoPorHoraTemp = pagoPorHora
                 viewModel.horasTrabajadasTemp = horasTotales
+                viewModel.guardarBorrador()
 
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(

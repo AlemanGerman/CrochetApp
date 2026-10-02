@@ -40,6 +40,8 @@
                     android:textColor="@color/gray_text"
                     android:textColorHint="@color/gray_hint"
                     android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:nextFocusForward="@+id/etCostoTotalAcc"
                     android:inputType="textCapSentences"/>
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -70,6 +72,8 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/gray_text"
                 android:textColorHint="@color/gray_hint"
+                android:imeOptions="actionNext"
+                android:nextFocusForward="@+id/etCantidadTotalAcc"
                 android:inputType="numberDecimal"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -97,6 +101,8 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/gray_text"
                     android:textColorHint="@color/gray_hint"
+                    android:imeOptions="actionNext"
+                    android:nextFocusForward="@+id/etCantidadUsadaAcc"
                     android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -117,6 +123,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/gray_text"
                     android:textColorHint="@color/gray_hint"
+                    android:imeOptions="actionDone"
                     android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>

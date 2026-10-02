@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -16,6 +17,7 @@ import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
+import java.util.Locale
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
@@ -39,7 +41,17 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
             if (viewModel.listaAccesoriosGuardados.isNotEmpty()) {
                 viewModel.listaAccesoriosGuardados.forEach {
-                    agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
+                    if (it.esCalculado) {
+                        agregarFilaAccesorioCalculado(
+                            llContenedorExtra,
+                            it.nombre,
+                            it.costoPaquete,
+                            it.cantidadTotal,
+                            it.cantidadUsada
+                        )
+                    } else {
+                        agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
+                    }
                 }
             }
         }
@@ -138,7 +150,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     val strNombreMat = fila.findViewById<EditText>(R.id.etNombreMaterial).text.toString().trim()
                     val strCostoMat = etCostoDirecto.text.toString()
 
-                    accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat))
+                    accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat, esCalculado = false))
                     val costoMaterial = strCostoMat.toDoubleOrNull() ?: -1.0
 
                     if (strNombreMat.isEmpty()) { tilNombreMaterial?.error = "Ingresa un nombre"; todoCorrecto = false } else { tilNombreMaterial?.error = null }
@@ -169,7 +181,16 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     if (costoTotal > 0 && cantTotal > 0 && cantUsada > 0) {
                         val costoFinal = (costoTotal / cantTotal) * cantUsada
                         costoTotalAccesorios += costoFinal
-                        accesoriosTemp.add(AccesorioGuardado(strNombre, costoFinal.toString()))
+                        accesoriosTemp.add(
+                            AccesorioGuardado(
+                                nombre = strNombre,
+                                costo = String.format(Locale.US, "%.2f", costoFinal),
+                                esCalculado = true,
+                                costoPaquete = strCosto,
+                                cantidadTotal = strTotales,
+                                cantidadUsada = strUsados
+                            )
+                        )
                     }
                 }
             }
@@ -180,6 +201,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 viewModel.listaEstambresGuardados.addAll(estambresTemp)
                 viewModel.listaAccesoriosGuardados.clear()
                 viewModel.listaAccesoriosGuardados.addAll(accesoriosTemp)
+                viewModel.guardarBorrador()
 
                 requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
 
@@ -197,10 +219,30 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
     }
 
-    private fun agregarFilaAccesorioCalculado(contenedor: LinearLayout, nombreSugerido: String) {
+    private fun agregarFilaAccesorioCalculado(
+        contenedor: LinearLayout,
+        nombreSugerido: String = "",
+        costoPaquete: String = "",
+        cantidadTotal: String = "",
+        cantidadUsada: String = ""
+    ) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_accesorio_calculado, contenedor, false)
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreAccCalc)
+        val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoTotalAcc)
+        val etTotales = vistaFila.findViewById<EditText>(R.id.etCantidadTotalAcc)
+        val etUsados = vistaFila.findViewById<EditText>(R.id.etCantidadUsadaAcc)
+
         if (nombreSugerido.isNotEmpty()) etNombre.setText(nombreSugerido)
+        if (costoPaquete.isNotEmpty()) etCosto.setText(costoPaquete)
+        if (cantidadTotal.isNotEmpty()) etTotales.setText(cantidadTotal)
+        if (cantidadUsada.isNotEmpty()) etUsados.setText(cantidadUsada)
+
+        etTotales.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etUsados.requestFocus()
+                true
+            } else false
+        }
 
         vistaFila.findViewById<ImageButton>(R.id.btnEliminarAccCalc).setOnClickListener {
             val nombre = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
@@ -214,10 +256,21 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
     private fun agregarFilaEstambre(contenedor: LinearLayout, nombre: String, costo: String, totales: String, usados: String) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_estambre, contenedor, false)
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreEstambre)
+        val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoMadeja)
+        val etTotales = vistaFila.findViewById<EditText>(R.id.etGramosTotales)
+        val etUsados = vistaFila.findViewById<EditText>(R.id.etGramosUsados)
+
         etNombre.setText(nombre)
-        vistaFila.findViewById<EditText>(R.id.etCostoMadeja).setText(costo)
-        vistaFila.findViewById<EditText>(R.id.etGramosTotales).setText(totales)
-        vistaFila.findViewById<EditText>(R.id.etGramosUsados).setText(usados)
+        etCosto.setText(costo)
+        etTotales.setText(totales)
+        etUsados.setText(usados)
+
+        etTotales.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etUsados.requestFocus()
+                true
+            } else false
+        }
 
         vistaFila.findViewById<ImageButton>(R.id.btnEliminarEstambre).setOnClickListener {
             val nombreActual = etNombre.text.toString().trim().ifEmpty { "sin nombre" }

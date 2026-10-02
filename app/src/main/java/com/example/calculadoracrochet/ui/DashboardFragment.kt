@@ -751,6 +751,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.listaEstambresGuardados.addAll(proyecto.listaEstambres ?: emptyList())
             viewModel.listaAccesoriosGuardados.clear()
             viewModel.listaAccesoriosGuardados.addAll(proyecto.listaAccesorios ?: emptyList())
+            viewModel.guardarBorrador()
 
             dialog.dismiss()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())

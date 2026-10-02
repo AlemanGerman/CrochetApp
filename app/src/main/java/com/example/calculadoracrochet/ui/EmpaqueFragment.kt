@@ -72,6 +72,7 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
             if (todoCorrecto) {
                 viewModel.costoEmpaque = costoCaja
                 viewModel.margenGanancia = margen
+                viewModel.guardarBorrador()
 
                 (requireActivity() as MainActivity).navegarConGanchillo(ResultadoFragment())
             }

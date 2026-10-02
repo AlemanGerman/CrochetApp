@@ -1,13 +1,13 @@
 package com.example.calculadoracrochet.viewmodel
 
-import android.content.Context
-import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -22,9 +22,13 @@ import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.Executors
 
 data class EstambreGuardado(
     var nombre: String = "",
@@ -35,7 +39,11 @@ data class EstambreGuardado(
 
 data class AccesorioGuardado(
     var nombre: String = "",
-    var costo: String = ""
+    var costo: String = "",
+    var esCalculado: Boolean = false,
+    var costoPaquete: String = "",
+    var cantidadTotal: String = "",
+    var cantidadUsada: String = ""
 )
 
 data class ProyectoCrochet(
@@ -73,8 +81,6 @@ private data class FotosLocalesPersistentes(
 class MinaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = FirebaseFirestore.getInstance()
-    private val hiloFotos = Executors.newSingleThreadExecutor()
-    private val handlerPrincipal = Handler(Looper.getMainLooper())
 
     var costoMateriales: Double = 0.0
     var costoDiseno: Double = 0.0
@@ -107,6 +113,7 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         get() = historialProyectos.filter { it.fechaEliminado != null || it.eliminado }
 
     init {
+        restaurarBorrador()
         cargarProyectosDeLaNube()
     }
 
@@ -157,9 +164,9 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         val contextoApp = context.applicationContext
 
         if (fotoUri.esUriLocal()) {
-            hiloFotos.execute {
+            viewModelScope.launch(Dispatchers.IO) {
                 val fotosPersistentes = procesarYGuardarFotoLocal(contextoApp, idNuevo, Uri.parse(fotoUri))
-                handlerPrincipal.post {
+                withContext(Dispatchers.Main) {
                     if (fotosPersistentes != null) {
                         val fotoLocal = FotoRemota(
                             principal = "file://${fotosPersistentes.principal.absolutePath}",
@@ -172,7 +179,8 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
                             nombre,
                             fotoParaGuardar = fotoLocal,
                             rutasFisicasParaSubir = fotosPersistentes,
-                            fotoAnterior = fotoAnterior
+                            fotoAnterior = fotoAnterior,
+                            onComplete = onComplete
                         )
                     } else {
                         guardarEnFirestoreYEncolar(
@@ -181,11 +189,10 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
                             nombre,
                             fotoParaGuardar = FotoRemota(null, null),
                             rutasFisicasParaSubir = null,
-                            fotoAnterior = fotoAnterior
+                            fotoAnterior = fotoAnterior,
+                            onComplete = onComplete
                         )
                     }
-                    limpiarCalculoActual()
-                    onComplete(true)
                 }
             }
         } else {
@@ -197,10 +204,9 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
                 nombre,
                 fotoParaGuardar = fotoRemota,
                 rutasFisicasParaSubir = null,
-                fotoAnterior = fotoAnterior
+                fotoAnterior = fotoAnterior,
+                onComplete = onComplete
             )
-            limpiarCalculoActual()
-            onComplete(true)
         }
     }
 
@@ -210,7 +216,8 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         nombre: String,
         fotoParaGuardar: FotoRemota,
         rutasFisicasParaSubir: FotosLocalesPersistentes?,
-        fotoAnterior: FotoRemota
+        fotoAnterior: FotoRemota,
+        onComplete: (Boolean) -> Unit
     ) {
         val nuevoProyecto = ProyectoCrochet(
             id = idProyecto,
@@ -234,17 +241,24 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         )
 
         db.collection("proyectos_mina").document(nuevoProyecto.id).set(nuevoProyecto)
+            .addOnSuccessListener {
+                if (rutasFisicasParaSubir != null) {
+                    val urlsAnteriores = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
+                        .filter { it.startsWith("http") && it !in listOfNotNull(fotoParaGuardar.principal, fotoParaGuardar.miniatura) }
 
-        if (rutasFisicasParaSubir != null) {
-            val urlsAnteriores = listOfNotNull(fotoAnterior.principal, fotoAnterior.miniatura)
-                .filter { it.startsWith("http") && it !in listOfNotNull(fotoParaGuardar.principal, fotoParaGuardar.miniatura) }
+                    encolarSubidaFoto(context, idProyecto, nombre, rutasFisicasParaSubir, urlsAnteriores)
+                } else if (fotoParaGuardar != fotoAnterior) {
+                    borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
+                }
 
-            encolarSubidaFoto(context, idProyecto, nombre, rutasFisicasParaSubir, urlsAnteriores)
-        } else if (fotoParaGuardar != fotoAnterior) {
-            borrarFotosSiNoSeUsan(fotoAnterior, idProyectoExcluido = idProyecto)
-        }
-
-        precargarLocalEnCoil(context, fotoParaGuardar)
+                precargarLocalEnCoil(context, fotoParaGuardar)
+                limpiarCalculoActual()
+                onComplete(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error al guardar proyecto", e)
+                onComplete(false)
+            }
     }
 
     fun moverAPapelera(proyecto: ProyectoCrochet, onComplete: ((Boolean) -> Unit)? = null) {
@@ -348,9 +362,9 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         val idProyecto = proyecto.id
         val contextoApp = context.applicationContext
 
-        hiloFotos.execute {
+        viewModelScope.launch(Dispatchers.IO) {
             val fotosPersistentes = procesarYGuardarFotoLocal(contextoApp, idProyecto, Uri.parse(fotoLocal))
-            handlerPrincipal.post {
+            withContext(Dispatchers.Main) {
                 if (fotosPersistentes != null) {
                     val nuevaFotoLocal = FotoRemota(
                         principal = "file://${fotosPersistentes.principal.absolutePath}",
@@ -483,36 +497,38 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
             .filter { it.startsWith("http") }
         if (urlsCandidatas.isEmpty()) return
 
-        val urlsEnUso = historialProyectos
-            .filter { it.id != idProyectoExcluido }
-            .flatMap { listOfNotNull(it.fotoUri, it.fotoMiniaturaUri) }
-            .toSet()
+        viewModelScope.launch(Dispatchers.IO) {
+            val urlsEnUso = historialProyectos
+                .filter { it.id != idProyectoExcluido }
+                .flatMap { listOfNotNull(it.fotoUri, it.fotoMiniaturaUri) }
+                .toSet()
 
-        val urlsABorrar = urlsCandidatas.filter { it !in urlsEnUso }
-        if (urlsABorrar.isEmpty()) return
+            val urlsABorrar = urlsCandidatas.filter { it !in urlsEnUso }
+            if (urlsABorrar.isEmpty()) return@launch
 
-        val diskCache = getApplication<Application>().imageLoader.diskCache
-        urlsABorrar.forEach { url ->
-            try {
-                diskCache?.remove(url)
-            } catch (_: Exception) {}
+            val diskCache = getApplication<Application>().imageLoader.diskCache
+            urlsABorrar.forEach { url ->
+                try {
+                    diskCache?.remove(url)
+                } catch (_: Exception) {}
+            }
+
+            val appContext = FirebaseApp.getInstance().applicationContext
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val datos = Data.Builder()
+                .putStringArray(EliminarFotoWorker.KEY_URLS, urlsABorrar.toTypedArray())
+                .build()
+
+            val request = OneTimeWorkRequestBuilder<EliminarFotoWorker>()
+                .setConstraints(constraints)
+                .setInputData(datos)
+                .build()
+
+            WorkManager.getInstance(appContext).enqueue(request)
         }
-
-        val appContext = FirebaseApp.getInstance().applicationContext
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val datos = Data.Builder()
-            .putStringArray(EliminarFotoWorker.KEY_URLS, urlsABorrar.toTypedArray())
-            .build()
-
-        val request = OneTimeWorkRequestBuilder<EliminarFotoWorker>()
-            .setConstraints(constraints)
-            .setInputData(datos)
-            .build()
-
-        WorkManager.getInstance(appContext).enqueue(request)
     }
 
     private fun borrarArchivosLocalesSiExisten(fotos: FotoRemota) {
@@ -548,7 +564,7 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun precargarFotosFaltantes(context: Context, proyectos: List<ProyectoCrochet>) {
-        hiloFotos.execute {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val loader = context.imageLoader
                 val diskCache = loader.diskCache
@@ -593,6 +609,117 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
             .addOnSuccessListener { Log.d("Firebase", "Carpetas actualizadas") }
     }
 
+    private fun obtenerPrefs(): SharedPreferences =
+        getApplication<Application>().getSharedPreferences("crochet_borrador", Context.MODE_PRIVATE)
+
+    fun guardarBorrador() {
+        val prefs = obtenerPrefs().edit()
+        prefs.putFloat("costoMateriales", costoMateriales.toFloat())
+        prefs.putFloat("costoDiseno", costoDiseno.toFloat())
+        prefs.putFloat("costoManoObra", costoManoObra.toFloat())
+        prefs.putFloat("costoEmpaque", costoEmpaque.toFloat())
+        prefs.putFloat("margenGanancia", margenGanancia.toFloat())
+        prefs.putFloat("horasTrabajadasTemp", horasTrabajadasTemp.toFloat())
+        prefs.putFloat("pagoPorHoraTemp", pagoPorHoraTemp.toFloat())
+        prefs.putString("nombreTemp", nombreTemp)
+        prefs.putString("fotoUriTemp", fotoUriTemp)
+        prefs.putString("fotoMiniaturaUriTemp", fotoMiniaturaUriTemp)
+        prefs.putString("idProyectoEnEdicion", idProyectoEnEdicion)
+        prefs.putLong("fechaEnEdicion", fechaEnEdicion ?: -1L)
+        prefs.putStringSet("carpetasTemp", carpetasTemp.toSet())
+
+        val arrEstambres = JSONArray()
+        for (est in listaEstambresGuardados) {
+            val obj = JSONObject()
+            obj.put("nombre", est.nombre)
+            obj.put("costo", est.costo)
+            obj.put("totales", est.totales)
+            obj.put("usados", est.usados)
+            arrEstambres.put(obj)
+        }
+        prefs.putString("estambres", arrEstambres.toString())
+
+        val arrAccesorios = JSONArray()
+        for (acc in listaAccesoriosGuardados) {
+            val obj = JSONObject()
+            obj.put("nombre", acc.nombre)
+            obj.put("costo", acc.costo)
+            obj.put("esCalculado", acc.esCalculado)
+            obj.put("costoPaquete", acc.costoPaquete)
+            obj.put("cantidadTotal", acc.cantidadTotal)
+            obj.put("cantidadUsada", acc.cantidadUsada)
+            arrAccesorios.put(obj)
+        }
+        prefs.putString("accesorios", arrAccesorios.toString())
+        prefs.apply()
+    }
+
+    fun restaurarBorrador() {
+        val prefs = obtenerPrefs()
+        if (!prefs.contains("costoMateriales") && !prefs.contains("horasTrabajadasTemp")) return
+
+        costoMateriales = prefs.getFloat("costoMateriales", 0f).toDouble()
+        costoDiseno = prefs.getFloat("costoDiseno", 0f).toDouble()
+        costoManoObra = prefs.getFloat("costoManoObra", 0f).toDouble()
+        costoEmpaque = prefs.getFloat("costoEmpaque", 0f).toDouble()
+        margenGanancia = prefs.getFloat("margenGanancia", 0f).toDouble()
+        horasTrabajadasTemp = prefs.getFloat("horasTrabajadasTemp", 0f).toDouble()
+        pagoPorHoraTemp = prefs.getFloat("pagoPorHoraTemp", 0f).toDouble()
+        nombreTemp = prefs.getString("nombreTemp", "") ?: ""
+        fotoUriTemp = prefs.getString("fotoUriTemp", null)
+        fotoMiniaturaUriTemp = prefs.getString("fotoMiniaturaUriTemp", null)
+        idProyectoEnEdicion = prefs.getString("idProyectoEnEdicion", null)
+        val fEd = prefs.getLong("fechaEnEdicion", -1L)
+        fechaEnEdicion = if (fEd != -1L) fEd else null
+        carpetasTemp.clear()
+        carpetasTemp.addAll(prefs.getStringSet("carpetasTemp", emptySet()) ?: emptySet())
+
+        val strEstambres = prefs.getString("estambres", null)
+        if (!strEstambres.isNullOrEmpty()) {
+            listaEstambresGuardados.clear()
+            try {
+                val arr = JSONArray(strEstambres)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    listaEstambresGuardados.add(
+                        EstambreGuardado(
+                            nombre = obj.optString("nombre"),
+                            costo = obj.optString("costo"),
+                            totales = obj.optString("totales"),
+                            usados = obj.optString("usados")
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
+        }
+
+        val strAccesorios = prefs.getString("accesorios", null)
+        if (!strAccesorios.isNullOrEmpty()) {
+            listaAccesoriosGuardados.clear()
+            try {
+                val arr = JSONArray(strAccesorios)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    listaAccesoriosGuardados.add(
+                        AccesorioGuardado(
+                            nombre = obj.optString("nombre"),
+                            costo = obj.optString("costo"),
+                            esCalculado = obj.optBoolean("esCalculado", false),
+                            costoPaquete = obj.optString("costoPaquete"),
+                            cantidadTotal = obj.optString("cantidadTotal"),
+                            cantidadUsada = obj.optString("cantidadUsada")
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
+        }
+        calcularTotal()
+    }
+
+    fun limpiarBorrador() {
+        obtenerPrefs().edit().clear().apply()
+    }
+
     fun limpiarCalculoActual() {
         costoMateriales = 0.0
         costoDiseno = 0.0
@@ -610,10 +737,6 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         listaEstambresGuardados.clear()
         listaAccesoriosGuardados.clear()
         carpetasTemp.clear()
-    }
-
-    override fun onCleared() {
-        hiloFotos.shutdownNow()
-        super.onCleared()
+        limpiarBorrador()
     }
 }
