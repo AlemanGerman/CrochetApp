@@ -2,16 +2,25 @@ package com.example.calculadoracrochet.utils
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.drawable.ColorDrawable
+import android.media.ExifInterface
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.EncuadreImageView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 object DialogUtils {
 
@@ -130,5 +139,105 @@ object DialogUtils {
         }
 
         dialog.show()
+    }
+
+    fun mostrarModalEncuadre(
+        context: Context,
+        uriOrigen: Uri,
+        onFotoEncuadrada: (Uri) -> Unit
+    ) {
+        val bitmap = cargarBitmapParaEncuadre(context, uriOrigen)
+        if (bitmap == null) {
+            onFotoEncuadrada(uriOrigen)
+            return
+        }
+
+        val (dialog, view) = crearDialogBase(context, R.layout.dialog_ajustar_foto)
+        val ivEncuadre = view.findViewById<EncuadreImageView>(R.id.ivEncuadre)
+        val btnCancelar = view.findViewById<MaterialButton>(R.id.btnCancelarEncuadre)
+        val btnAceptar = view.findViewById<MaterialButton>(R.id.btnAceptarEncuadre)
+
+        ivEncuadre.setSourceBitmap(bitmap)
+
+        btnCancelar.setOnClickListener { dialog.dismiss() }
+
+        btnAceptar.setOnClickListener {
+            val recortado = ivEncuadre.recortarBitmap() ?: bitmap
+            val uriGuardada = guardarBitmapEncuadrado(context, recortado)
+            dialog.dismiss()
+            if (uriGuardada != null) {
+                onFotoEncuadrada(uriGuardada)
+            } else {
+                onFotoEncuadrada(uriOrigen)
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun cargarBitmapParaEncuadre(context: Context, uri: Uri): Bitmap? {
+        val temp = File(context.cacheDir, "temp_crop_${UUID.randomUUID()}.tmp")
+        try {
+            if (uri.scheme == "file") {
+                File(uri.path ?: "").copyTo(temp, overwrite = true)
+            } else {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    temp.outputStream().use { output -> input.copyTo(output) }
+                } ?: return null
+            }
+
+            val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(temp.absolutePath, boundsOptions)
+            val maxLado = maxOf(boundsOptions.outWidth, boundsOptions.outHeight)
+            var muestra = 1
+            while (maxLado / muestra > 2048) {
+                muestra *= 2
+            }
+
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = muestra
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            val decodificado = BitmapFactory.decodeFile(temp.absolutePath, decodeOptions) ?: return null
+
+            val exif = ExifInterface(temp.absolutePath)
+            val orientacion = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            val matriz = Matrix().apply {
+                when (orientacion) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> postRotate(90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> postRotate(180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> postRotate(270f)
+                    ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> postScale(-1f, 1f)
+                    ExifInterface.ORIENTATION_FLIP_VERTICAL -> postScale(1f, -1f)
+                }
+            }
+
+            return if (!matriz.isIdentity) {
+                val rotado = Bitmap.createBitmap(decodificado, 0, 0, decodificado.width, decodificado.height, matriz, true)
+                if (rotado !== decodificado) decodificado.recycle()
+                rotado
+            } else {
+                decodificado
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        } finally {
+            if (temp.exists()) temp.delete()
+        }
+    }
+
+    private fun guardarBitmapEncuadrado(context: Context, bitmap: Bitmap): Uri? {
+        val dir = File(context.cacheDir, "fotos_encuadradas").apply { mkdirs() }
+        val archivo = File(dir, "crop_${UUID.randomUUID()}.jpg")
+        try {
+            FileOutputStream(archivo).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
+            }
+            return Uri.fromFile(archivo)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 }

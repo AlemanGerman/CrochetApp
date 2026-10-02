@@ -77,31 +77,33 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             val referenciaVista = vistaFotoEnEdicion
             val fotoAnterior = proyectoActual?.fotoUri
 
-            try {
-                referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.apply {
-                    setImageURI(uri)
-                    imageTintList = null
-                    scaleType = ImageView.ScaleType.CENTER_CROP
+            DialogUtils.mostrarModalEncuadre(contexto, uri) { uriEncuadrada ->
+                try {
+                    referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.apply {
+                        setImageURI(uriEncuadrada)
+                        imageTintList = null
+                        scaleType = ImageView.ScaleType.CENTER_CROP
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
 
-            if (proyectoActual != null) {
-                viewModel.actualizarFotoProyecto(contexto, proyectoActual, uri.toString()) { actualizada ->
-                    if (!isAdded) return@actualizarFotoProyecto
+                if (proyectoActual != null) {
+                    viewModel.actualizarFotoProyecto(contexto, proyectoActual, uriEncuadrada.toString()) { actualizada ->
+                        if (!isAdded) return@actualizarFotoProyecto
 
-                    if (actualizada) {
-                        filtrarYOrdenarLista()
-                    } else {
-                        referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.load(fotoAnterior) {
-                            crossfade(true)
+                        if (actualizada) {
+                            filtrarYOrdenarLista()
+                        } else {
+                            referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.load(fotoAnterior) {
+                                crossfade(true)
+                            }
+                            Toast.makeText(
+                                requireContext(),
+                                "No se pudo respaldar la foto. Inténtalo de nuevo.",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
-                        Toast.makeText(
-                            requireContext(),
-                            "No se pudo respaldar la foto. Inténtalo de nuevo.",
-                            Toast.LENGTH_LONG
-                        ).show()
                     }
                 }
             }

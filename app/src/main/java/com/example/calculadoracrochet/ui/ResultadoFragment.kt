@@ -21,6 +21,7 @@ import coil.load
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -41,11 +42,13 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            uriFotoSeleccionada = uri.toString()
-            try {
-                ivPreviewModal?.setImageURI(uri)
-                ivPreviewModal?.imageTintList = null
-            } catch (e: Exception) { e.printStackTrace() }
+            DialogUtils.mostrarModalEncuadre(requireContext(), uri) { uriEncuadrada ->
+                uriFotoSeleccionada = uriEncuadrada.toString()
+                try {
+                    ivPreviewModal?.setImageURI(uriEncuadrada)
+                    ivPreviewModal?.imageTintList = null
+                } catch (e: Exception) { e.printStackTrace() }
+            }
         }
     }
 
