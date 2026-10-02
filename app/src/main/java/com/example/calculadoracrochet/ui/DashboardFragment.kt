@@ -623,6 +623,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         val cvFotoContenedor = dialogView.findViewById<View>(R.id.cvDetalleFotoContenedor)
         val ivFoto = dialogView.findViewById<ImageView>(R.id.ivDetalleFoto)
+        val btnEditarFoto = dialogView.findViewById<View>(R.id.btnEditarFotoDetalle)
 
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE
@@ -648,7 +649,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
         refrescarImagenLocal()
 
-        cvFotoContenedor.setOnClickListener {
+        btnEditarFoto?.setOnClickListener {
             val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
                     proyecto.fotoUri != "null" &&
                     proyecto.fotoUri != "undefined"
@@ -686,6 +687,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                         }
                     }
                 )
+            }
+        }
+
+        cvFotoContenedor.setOnClickListener {
+            val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
+                    proyecto.fotoUri != "null" &&
+                    proyecto.fotoUri != "undefined"
+
+            if (tieneFoto) {
+                mostrarFotoGrande(proyecto.fotoUri)
+            } else {
+                proyectoEditando = proyecto
+                proyectoEditandoID = proyecto.id
+                vistaFotoEnEdicion = WeakReference(ivFoto)
+                pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
             }
         }
 
@@ -833,6 +849,24 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener { prepararProyectoParaEdicion(true) }
         dialogView.findViewById<View>(R.id.btnOpcionesDetalle)?.setOnClickListener { prepararProyectoParaEdicion(false) }
+        dialog.show()
+    }
+
+    private fun mostrarFotoGrande(fotoUri: String?) {
+        if (fotoUri.isNullOrBlank()) return
+        val (dialog, view) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_foto_zoom)
+        val zoomView = view.findViewById<ZoomableImageView>(R.id.ivFotoZoom)
+        val btnCerrar = view.findViewById<MaterialButton>(R.id.btnCerrarZoom)
+
+        zoomView.load(fotoUri) {
+            crossfade(true)
+            memoryCachePolicy(CachePolicy.ENABLED)
+            diskCachePolicy(CachePolicy.ENABLED)
+            networkCachePolicy(CachePolicy.ENABLED)
+            error(R.drawable.ic_photo)
+        }
+
+        btnCerrar.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 }
