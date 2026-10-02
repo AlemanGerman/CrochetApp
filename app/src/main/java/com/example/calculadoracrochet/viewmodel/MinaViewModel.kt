@@ -50,6 +50,7 @@ data class ProyectoCrochet(
     var costoManoObra: Double = 0.0,
     var costoEmpaque: Double = 0.0,
     var margenGanancia: Double = 0.0,
+    var ajusteRedondeo: Double = 0.0,
     var precioFinal: Double = 0.0,
     var horasTrabajadas: Double = 0.0,
     var pagoPorHora: Double = 0.0,
@@ -79,6 +80,7 @@ class MinaViewModel : ViewModel() {
     var costoManoObra: Double = 0.0
     var costoEmpaque: Double = 0.0
     var margenGanancia: Double = 0.0
+    var ajusteRedondeo: Double = 0.0
     var precioFinalSugerdio: Double = 0.0
 
     var horasTrabajadasTemp: Double = 0.0
@@ -145,7 +147,10 @@ class MinaViewModel : ViewModel() {
     fun calcularTotal() {
         val subtotal = costoMateriales + costoDiseno + costoManoObra + costoEmpaque
         val gananciaExtra = subtotal * (margenGanancia / 100)
-        precioFinalSugerdio = subtotal + gananciaExtra
+        val totalExacto = subtotal + gananciaExtra
+        val totalRedondeado = kotlin.math.ceil(totalExacto / 5.0) * 5.0
+        ajusteRedondeo = totalRedondeado - totalExacto
+        precioFinalSugerdio = totalRedondeado
     }
 
     fun guardarProyecto(context: Context, nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
@@ -222,6 +227,7 @@ class MinaViewModel : ViewModel() {
             costoManoObra = costoManoObra,
             costoEmpaque = costoEmpaque,
             margenGanancia = margenGanancia,
+            ajusteRedondeo = ajusteRedondeo,
             precioFinal = precioFinalSugerdio,
             horasTrabajadas = horasTrabajadasTemp,
             pagoPorHora = pagoPorHoraTemp,
@@ -552,6 +558,7 @@ class MinaViewModel : ViewModel() {
         costoManoObra = 0.0
         costoEmpaque = 0.0
         margenGanancia = 0.0
+        ajusteRedondeo = 0.0
         precioFinalSugerdio = 0.0
         horasTrabajadasTemp = 0.0
         pagoPorHoraTemp = 0.0
