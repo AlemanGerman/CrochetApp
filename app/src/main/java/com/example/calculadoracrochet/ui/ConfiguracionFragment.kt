@@ -40,6 +40,9 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
     private var switchVibracion: SwitchMaterial? = null
     private var tvEstadoVibracion: TextView? = null
 
+    private var switchColorDinamico: SwitchMaterial? = null
+    private var tvEstadoColorDinamico: TextView? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -47,6 +50,7 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
         configurarBotonVolver(view)
         configurarSeccionRedondeo()
         configurarSeccionVibracion()
+        configurarSeccionColorDinamico()
         actualizarSimulacion()
     }
 
@@ -61,6 +65,9 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
 
         switchVibracion = view.findViewById(R.id.switchVibracion)
         tvEstadoVibracion = view.findViewById(R.id.tvEstadoVibracion)
+
+        switchColorDinamico = view.findViewById(R.id.switchColorDinamico)
+        tvEstadoColorDinamico = view.findViewById(R.id.tvEstadoColorDinamico)
     }
 
     private fun configurarBotonVolver(view: View) {
@@ -187,6 +194,30 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
         } else {
             tvEstadoVibracion?.text = "Desactivada"
             tvEstadoVibracion?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+        }
+    }
+
+    private fun configurarSeccionColorDinamico() {
+        val context = requireContext()
+        val activo = PreferenciasApp.isColorDinamicoTarjetasActivo(context)
+
+        switchColorDinamico?.isChecked = activo
+        actualizarEstadoTextoColorDinamico(activo)
+
+        switchColorDinamico?.setOnCheckedChangeListener { _, isChecked ->
+            switchColorDinamico?.hapticSeleccion()
+            PreferenciasApp.setColorDinamicoTarjetasActivo(requireContext(), isChecked)
+            actualizarEstadoTextoColorDinamico(isChecked)
+        }
+    }
+
+    private fun actualizarEstadoTextoColorDinamico(activo: Boolean) {
+        if (activo) {
+            tvEstadoColorDinamico?.text = "Activo"
+            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+        } else {
+            tvEstadoColorDinamico?.text = "Desactivado"
+            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_hint))
         }
     }
 

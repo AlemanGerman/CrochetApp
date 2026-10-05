@@ -116,6 +116,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         vistaFotoEnEdicion = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::adapter.isInitialized) {
+            adapter.notifyDataSetChanged()
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

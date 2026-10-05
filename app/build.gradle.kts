@@ -50,6 +50,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
 
     implementation("androidx.fragment:fragment-ktx:1.8.2")
+    implementation("androidx.palette:palette-ktx:1.0.0")
     implementation("io.coil-kt:coil:2.4.0")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)

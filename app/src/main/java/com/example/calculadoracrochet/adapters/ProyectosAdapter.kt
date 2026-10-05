@@ -1,6 +1,8 @@
 package com.example.calculadoracrochet.adapters
 
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,9 +16,12 @@ import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.ColorExtractorHelper
+import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
@@ -31,6 +36,7 @@ class ProyectosAdapter(
 ) : RecyclerView.Adapter<ProyectosAdapter.ProyectoViewHolder>() {
 
     class ProyectoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val cardView: MaterialCardView = view as MaterialCardView
         val tvNombre: TextView = view.findViewById(R.id.tvNombreProyecto)
         val tvPrecio: TextView = view.findViewById(R.id.tvPrecioProyecto)
         val tvFecha: TextView = view.findViewById(R.id.tvFecha)
@@ -40,6 +46,28 @@ class ProyectosAdapter(
 
         val cgCarpetasProyecto: ChipGroup = view.findViewById(R.id.cgCarpetasProyecto)
         val btnEditarCarpeta: ImageButton = view.findViewById(R.id.btnEditarCarpeta)
+
+        var idProyectoActual: String? = null
+    }
+
+    private fun restablecerColorDefecto(holder: ProyectoViewHolder) {
+        val context = holder.itemView.context
+        val purpleColor = ContextCompat.getColor(context, R.color.purple_primary)
+        holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+        holder.tvNombre.setTextColor(purpleColor)
+        holder.tvPrecio.setTextColor(ContextCompat.getColor(context, R.color.black))
+        holder.tvFecha.setTextColor(ContextCompat.getColor(context, R.color.gray_hint))
+        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(purpleColor)
+        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(purpleColor)
+    }
+
+    private fun aplicarColorDinamico(holder: ProyectoViewHolder, config: ColorExtractorHelper.ColorTarjetaConfig) {
+        holder.cardView.setCardBackgroundColor(config.backgroundColor)
+        holder.tvNombre.setTextColor(config.textColorPrimario)
+        holder.tvPrecio.setTextColor(config.textColorPrimario)
+        holder.tvFecha.setTextColor(config.textColorSecundario)
+        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(config.iconTint)
+        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(config.iconTint)
     }
 
     fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
@@ -55,6 +83,7 @@ class ProyectosAdapter(
 
     override fun onBindViewHolder(holder: ProyectoViewHolder, position: Int) {
         val proyecto = listaProyectos[position]
+        holder.idProyectoActual = proyecto.id
 
         holder.tvNombre.text = proyecto.nombre
         holder.tvPrecio.text = String.format("$%.2f", proyecto.precioFinal)
@@ -62,9 +91,25 @@ class ProyectosAdapter(
         val formatoFecha = SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
         holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
+        val context = holder.itemView.context
+        val colorDinamicoActivo = PreferenciasApp.isColorDinamicoTarjetasActivo(context)
+
         val tieneFotoValida = !proyecto.fotoUri.isNullOrBlank() &&
                 proyecto.fotoUri != "null" &&
                 proyecto.fotoUri != "undefined"
+
+        if (!colorDinamicoActivo || !tieneFotoValida) {
+            restablecerColorDefecto(holder)
+        } else {
+            val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
+            val claveCache = fotoParaDashboard ?: proyecto.id
+            val colorEnCache = ColorExtractorHelper.obtenerColorEnCache(claveCache)
+            if (colorEnCache != null) {
+                aplicarColorDinamico(holder, colorEnCache)
+            } else {
+                restablecerColorDefecto(holder)
+            }
+        }
 
         if (tieneFotoValida) {
             holder.ivImagen.scaleType = ImageView.ScaleType.CENTER_CROP
@@ -72,11 +117,27 @@ class ProyectosAdapter(
             holder.ivImagen.imageTintList = null
             holder.ivImagen.setBackgroundColor(Color.TRANSPARENT)
             val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
-                holder.ivImagen.load(fotoParaDashboard) {
+            val claveCache = fotoParaDashboard ?: proyecto.id
+            holder.ivImagen.load(fotoParaDashboard) {
                 crossfade(false)
                 memoryCachePolicy(CachePolicy.ENABLED)
                 diskCachePolicy(CachePolicy.ENABLED)
                 networkCachePolicy(CachePolicy.ENABLED)
+                allowHardware(false)
+                if (colorDinamicoActivo) {
+                    listener(
+                        onSuccess = { _, result ->
+                            val drawable = result.drawable
+                            if (drawable is BitmapDrawable) {
+                                ColorExtractorHelper.extraerColor(drawable.bitmap, claveCache) { config ->
+                                    if (holder.idProyectoActual == proyecto.id) {
+                                        aplicarColorDinamico(holder, config)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
             }
         } else {
             holder.ivImagen.scaleType = ImageView.ScaleType.FIT_CENTER

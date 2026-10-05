@@ -10,10 +10,12 @@ object PreferenciasApp {
     private const val KEY_REDONDEO_ACTIVO = "cfg_redondeo_activo"
     private const val KEY_MULTIPLO_REDONDEO = "cfg_multiplo_redondeo"
     private const val KEY_VIBRACION_ACTIVA = "cfg_vibracion_activa"
+    private const val KEY_COLOR_DINAMICO_TARJETAS = "cfg_color_dinamico_tarjetas"
 
     const val DEFAULT_REDONDEO_ACTIVO = true
     const val DEFAULT_MULTIPLO_REDONDEO = 5.0
     const val DEFAULT_VIBRACION_ACTIVA = true
+    const val DEFAULT_COLOR_DINAMICO_TARJETAS = true
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -42,6 +44,14 @@ object PreferenciasApp {
 
     fun setVibracionActiva(context: Context, activa: Boolean) {
         getPrefs(context).edit().putBoolean(KEY_VIBRACION_ACTIVA, activa).apply()
+    }
+
+    fun isColorDinamicoTarjetasActivo(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_COLOR_DINAMICO_TARJETAS, DEFAULT_COLOR_DINAMICO_TARJETAS)
+    }
+
+    fun setColorDinamicoTarjetasActivo(context: Context, activo: Boolean) {
+        getPrefs(context).edit().putBoolean(KEY_COLOR_DINAMICO_TARJETAS, activo).apply()
     }
 
     /**
