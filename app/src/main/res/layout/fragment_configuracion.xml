@@ -64,7 +64,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Personaliza tu experiencia y cálculos"
+                        android:text="Personaliza tu grandiosa app"
                         android:textSize="12sp"
                         android:textColor="#F3E8FF" />
                 </LinearLayout>
@@ -144,7 +144,7 @@
                                     android:id="@+id/tvEstadoRedondeo"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Activo (redondeo hacia arriba)"
+                                    android:text="Activo"
                                     android:textSize="12sp"
                                     android:textColor="@color/purple_primary" />
                             </LinearLayout>
@@ -162,7 +162,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="Redondea automáticamente el precio sugerido de venta para evitar dar cambio en centavos o cifras incómodas."
+                            android:text="Redondea automáticamente el precio sugerido para que no te dé ansiedad ver numeros inexactos."
                             android:textSize="12sp"
                             android:textColor="@color/gray_hint" />
 
@@ -191,76 +191,11 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Elige una opción rápida o escribe tu propio múltiplo:"
+                                android:text="Escribe tu propio múltiplo:"
                                 android:textSize="12sp"
                                 android:textColor="@color/gray_hint"
                                 android:layout_marginBottom="10dp" />
 
-                            <!-- Chips de selección rápida -->
-                            <HorizontalScrollView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:scrollbars="none"
-                                android:layout_marginBottom="12dp">
-
-                                <com.google.android.material.chip.ChipGroup
-                                    android:id="@+id/cgMultiplos"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:singleLine="true"
-                                    app:singleSelection="true">
-
-                                    <com.google.android.material.chip.Chip
-                                        android:id="@+id/chipMultiplo1"
-                                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="$1 (Entero)"
-                                        android:textColor="@color/gray_text"
-                                        app:chipStrokeColor="@color/purple_light"
-                                        app:chipStrokeWidth="1dp" />
-
-                                    <com.google.android.material.chip.Chip
-                                        android:id="@+id/chipMultiplo5"
-                                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="$5 (Default)"
-                                        android:textColor="@color/gray_text"
-                                        app:chipStrokeColor="@color/purple_light"
-                                        app:chipStrokeWidth="1dp" />
-
-                                    <com.google.android.material.chip.Chip
-                                        android:id="@+id/chipMultiplo10"
-                                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="$10"
-                                        android:textColor="@color/gray_text"
-                                        app:chipStrokeColor="@color/purple_light"
-                                        app:chipStrokeWidth="1dp" />
-
-                                    <com.google.android.material.chip.Chip
-                                        android:id="@+id/chipMultiplo20"
-                                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="$20"
-                                        android:textColor="@color/gray_text"
-                                        app:chipStrokeColor="@color/purple_light"
-                                        app:chipStrokeWidth="1dp" />
-
-                                    <com.google.android.material.chip.Chip
-                                        android:id="@+id/chipMultiplo50"
-                                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="$50"
-                                        android:textColor="@color/gray_text"
-                                        app:chipStrokeColor="@color/purple_light"
-                                        app:chipStrokeWidth="1dp" />
-                                </com.google.android.material.chip.ChipGroup>
-                            </HorizontalScrollView>
 
                             <!-- Campo Personalizado -->
                             <LinearLayout
@@ -300,6 +235,7 @@
                                     android:layout_height="56dp"
                                     android:layout_marginStart="8dp"
                                     android:text="Aplicar"
+                                    android:textColor="@color/white"
                                     android:backgroundTint="@color/purple_primary"
                                     app:cornerRadius="10dp" />
                             </LinearLayout>
@@ -324,7 +260,7 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="✨ Vista previa en tiempo real"
+                                        android:text="✨ Vista previa"
                                         android:textSize="12sp"
                                         android:textColor="@color/purple_primary"
                                         android:textStyle="bold"
@@ -426,64 +362,9 @@
                                 app:thumbTint="@color/purple_primary"
                                 app:trackTint="@color/purple_light" />
                         </LinearLayout>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Genera una sutil vibración táctil al tocar botones principales, cambiar opciones, filtrar y guardar tus creaciones."
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnProbarVibracion"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:layout_marginTop="14dp"
-                            android:text="Probar vibración táctil"
-                            android:textColor="@color/purple_primary"
-                            app:icon="@drawable/ic_vibracion"
-                            app:iconTint="@color/purple_primary"
-                            app:strokeColor="@color/purple_primary"
-                            app:cornerRadius="10dp" />
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- CARD 3: ACERCA DE LA APP -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#F0F0F0"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@color/white">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Calculadora Crochet 🧶"
-                            android:textSize="15sp"
-                            android:textColor="@color/gray_text"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tus preferencias se guardan automáticamente en tu dispositivo."
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </ScrollView>
