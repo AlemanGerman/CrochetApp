@@ -54,10 +54,16 @@ object HapticHelper {
         } catch (_: Exception) {}
     }
 
+    private fun estaHabilitado(view: View?, context: Context?): Boolean {
+        val ctx = context ?: view?.context ?: return true
+        return PreferenciasApp.isVibracionActiva(ctx)
+    }
+
     /**
      * Feedback para botones principales (CTA: "Nuevo Proyecto", "Guardar", "Siguiente").
      */
     fun clickPrincipal(view: View? = null, context: Context? = view?.context) {
+        if (!estaHabilitado(view, context)) return
         view?.isHapticFeedbackEnabled = true
         val handled = view?.performHapticFeedback(
             HapticFeedbackConstants.VIRTUAL_KEY,
@@ -82,6 +88,7 @@ object HapticHelper {
      * - Criterios de ordenación
      */
     fun seleccion(view: View? = null, context: Context? = view?.context) {
+        if (!estaHabilitado(view, context)) return
         view?.isHapticFeedbackEnabled = true
         val flag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             HapticFeedbackConstants.SEGMENT_TICK
@@ -108,6 +115,7 @@ object HapticHelper {
      * Ritmo doble pulso placentero: corto suave + corto marcado.
      */
     fun exito(view: View? = null, context: Context? = view?.context) {
+        if (!estaHabilitado(view, context)) return
         view?.isHapticFeedbackEnabled = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             view?.performHapticFeedback(
@@ -141,6 +149,7 @@ object HapticHelper {
      * - Vaciar papelera
      */
     fun advertenciaOEliminar(view: View? = null, context: Context? = view?.context) {
+        if (!estaHabilitado(view, context)) return
         view?.isHapticFeedbackEnabled = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             view?.performHapticFeedback(
@@ -164,6 +173,7 @@ object HapticHelper {
      * - Intentar guardar sin nombre
      */
     fun error(view: View? = null, context: Context? = view?.context) {
+        if (!estaHabilitado(view, context)) return
         view?.isHapticFeedbackEnabled = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             view?.performHapticFeedback(

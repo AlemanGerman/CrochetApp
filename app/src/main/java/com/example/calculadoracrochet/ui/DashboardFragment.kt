@@ -481,6 +481,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             navegarHaciaFragmento(EstadisticasFragment())
         }
 
+        sheetView.findViewById<View>(R.id.itemOpcionConfiguracion)?.setOnClickListener {
+            it.hapticClickPrincipal()
+            bottomSheetDialog.dismiss()
+            navegarHaciaFragmento(ConfiguracionFragment())
+        }
+
         sheetView.findViewById<View>(R.id.itemOpcionPapelera).setOnClickListener {
             it.hapticClickPrincipal()
             bottomSheetDialog.dismiss()

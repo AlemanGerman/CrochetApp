@@ -18,6 +18,7 @@ import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizador
+import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
 import com.google.firebase.FirebaseApp
@@ -158,9 +159,14 @@ class MinaViewModel(application: Application) : AndroidViewModel(application) {
         val subtotal = costoMateriales + costoDiseno + costoManoObra + costoEmpaque
         val gananciaExtra = subtotal * (margenGanancia / 100)
         val totalExacto = subtotal + gananciaExtra
-        val totalRedondeado = kotlin.math.ceil(totalExacto / 5.0) * 5.0
-        ajusteRedondeo = totalRedondeado - totalExacto
-        precioFinalSugerdio = totalRedondeado
+
+        val context = getApplication<Application>()
+        val activo = PreferenciasApp.isRedondeoActivo(context)
+        val multiplo = PreferenciasApp.getMultiploRedondeo(context)
+
+        val (precio, ajuste) = PreferenciasApp.calcularRedondeo(totalExacto, activo, multiplo)
+        precioFinalSugerdio = precio
+        ajusteRedondeo = ajuste
     }
 
     fun guardarProyecto(context: Context, nombre: String, fotoUri: String?, onComplete: (Boolean) -> Unit) {
