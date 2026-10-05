@@ -19,6 +19,10 @@ import com.example.calculadoracrochet.viewmodel.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
 import java.util.Locale
 
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticEliminar
+import com.example.calculadoracrochet.utils.hapticError
+
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
     private val viewModel: MinaViewModel by activityViewModels()
@@ -74,10 +78,12 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         })
 
         view.findViewById<View>(R.id.btnAnadirEstambre).setOnClickListener {
+            it.hapticClickPrincipal()
             agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
         }
 
         view.findViewById<View>(R.id.btnAnadirMaterial).setOnClickListener {
+            it.hapticClickPrincipal()
             DialogUtils.mostrarOpciones(
                 context = requireContext(),
                 titulo = "Añadir accesorio",
@@ -101,6 +107,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             val accesoriosTemp = mutableListOf<AccesorioGuardado>()
 
             if (llContenedorEstambres.childCount == 0) {
+                view.hapticError()
                 DialogUtils.mostrarAlerta(
                     context = requireContext(),
                     titulo = "Faltan materiales",
@@ -196,6 +203,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             }
 
             if (todoCorrecto) {
+                view.hapticClickPrincipal()
                 viewModel.costoMateriales = costoTotalEstambres + costoTotalAccesorios
                 viewModel.listaEstambresGuardados.clear()
                 viewModel.listaEstambresGuardados.addAll(estambresTemp)
@@ -215,6 +223,8 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     .replace(R.id.fragmentContainer, PatronFragment())
                     .addToBackStack(null)
                     .commit()
+            } else {
+                view.hapticError()
             }
         }
     }
@@ -245,6 +255,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
 
         vistaFila.findViewById<ImageButton>(R.id.btnEliminarAccCalc).setOnClickListener {
+            it.hapticEliminar()
             val nombre = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
             DialogUtils.mostrarAlerta(requireContext(), "Eliminar Accesorio", "¿Estás segura de que quieres eliminar '$nombre'?", "Sí, eliminar") {
                 contenedor.removeView(vistaFila)
@@ -273,6 +284,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         }
 
         vistaFila.findViewById<ImageButton>(R.id.btnEliminarEstambre).setOnClickListener {
+            it.hapticEliminar()
             val nombreActual = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
             DialogUtils.mostrarAlerta(requireContext(), "Eliminar estambre", "¿Estás segura de que quieres eliminar el estambre '$nombreActual'?", "Sí, eliminar") {
                 contenedor.removeView(vistaFila)
@@ -288,6 +300,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         vistaFila.findViewById<EditText>(R.id.etCostoMaterialExtra).setText(costo)
 
         vistaFila.findViewById<ImageButton>(R.id.btnEliminarMaterial).setOnClickListener {
+            it.hapticEliminar()
             val nombreActual = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
             DialogUtils.mostrarAlerta(requireContext(), "Eliminar accesorio", "¿Estás segura de que quieres eliminar '$nombreActual'?", "Sí, eliminar") {
                 contenedor.removeView(vistaFila)

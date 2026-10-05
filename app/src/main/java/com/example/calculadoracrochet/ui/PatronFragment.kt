@@ -13,10 +13,13 @@ import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticSeleccion
+
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
     private val viewModel: MinaViewModel by activityViewModels()
-
 
     private var ultimoRetrocesoTiempo: Long = 0L
 
@@ -50,6 +53,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
 
         tgComproPatron.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
+                tgComproPatron.hapticSeleccion()
                 if (checkedId == R.id.btnPatronSi) {
                     llCamposPatron.visibility = View.VISIBLE
                 } else {
@@ -96,6 +100,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             }
 
             if (todoCorrecto) {
+                view.hapticClickPrincipal()
                 viewModel.guardarBorrador()
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(
@@ -107,6 +112,8 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                     .replace(R.id.fragmentContainer, ManoObraFragment())
                     .addToBackStack(null)
                     .commit()
+            } else {
+                view.hapticError()
             }
         }
     }

@@ -23,6 +23,11 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.HapticHelper
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticExito
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -82,7 +87,10 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         if (viewModel.idProyectoEnEdicion != null) {
             btnCambiarFecha.visibility = View.VISIBLE
-            btnCambiarFecha.setOnClickListener { mostrarModalFecha { actualizarTextoFecha() } }
+            btnCambiarFecha.setOnClickListener {
+                it.hapticClickPrincipal()
+                mostrarModalFecha { actualizarTextoFecha() }
+            }
         } else {
             btnCambiarFecha.visibility = View.GONE
         }
@@ -120,6 +128,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         var matExpandido = false
         llFilaMateriales.setOnClickListener {
+            it.hapticSeleccion()
             matExpandido = !matExpandido
             tvDetalleMaterialesDesc.visibility = if (matExpandido) View.VISIBLE else View.GONE
         }
@@ -130,11 +139,15 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         var manoExpandida = false
         llFilaManoObra.setOnClickListener {
+            it.hapticSeleccion()
             manoExpandida = !manoExpandida
             tvDetalleManoObraDesc.visibility = if (manoExpandida) View.VISIBLE else View.GONE
         }
 
-        view.findViewById<View>(R.id.btnGuardar).setOnClickListener { mostrarModalGuardar() }
+        view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
+            it.hapticClickPrincipal()
+            mostrarModalGuardar()
+        }
     }
 
     private fun mostrarModalFecha(onFechaActualizada: () -> Unit) {
@@ -147,8 +160,12 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         viewModel.fechaEnEdicion?.let { calendario.timeInMillis = it }
         datePicker.updateDate(calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH))
 
-        dialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener { dialog.dismiss() }
+        dialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         dialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+            it.hapticClickPrincipal()
             val nuevaFecha = Calendar.getInstance()
             nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
             viewModel.fechaEnEdicion = nuevaFecha.timeInMillis
@@ -185,6 +202,9 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     setTextColor(ContextCompat.getColor(context, it.textColorRes))
                     setChipStrokeColorResource(it.colorRes)
                     chipStrokeWidth = 1f * resources.displayMetrics.density
+                }
+                setOnClickListener {
+                    hapticSeleccion()
                 }
             }
             if (viewModel.carpetasTemp.contains(nombreCarpeta)) chip.isChecked = true
@@ -233,13 +253,23 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             }
         }
 
-        btnElegirFoto?.setOnClickListener { gestionarClicFoto() }
-        ivPreviewModal?.setOnClickListener { gestionarClicFoto() }
-        btnCancelar?.setOnClickListener { dialog.dismiss() }
+        btnElegirFoto?.setOnClickListener {
+            it.hapticClickPrincipal()
+            gestionarClicFoto()
+        }
+        ivPreviewModal?.setOnClickListener {
+            it.hapticClickPrincipal()
+            gestionarClicFoto()
+        }
+        btnCancelar?.setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnConfirmar?.setOnClickListener {
             val nombre = etNombre?.text?.toString()?.trim() ?: ""
             if (nombre.isEmpty()) {
+                it.hapticError()
                 tilNombre?.error = "Ingresa un nombre"
                 return@setOnClickListener
             }
@@ -259,6 +289,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                         (requireActivity() as MainActivity).irAlDashboardConGanchillo()
                     }
                 } else {
+                    btnConfirmar.hapticError()
                     btnConfirmar.isEnabled = true
                     btnCancelar?.isEnabled = true
                     tilNombre?.error = "No se pudo respaldar la foto. Revisa tu conexión e inténtalo de nuevo."
@@ -270,6 +301,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private fun mostrarModalExito(onAnimacionTerminada: () -> Unit) {
         val context = context ?: return
+        HapticHelper.exito(context = context)
 
         val lottieView = LottieAnimationView(context).apply {
             setAnimation(R.raw.animacion_success)

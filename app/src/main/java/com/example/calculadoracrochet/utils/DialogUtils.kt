@@ -57,8 +57,18 @@ object DialogUtils {
             ivIcono.visibility = View.GONE
         }
 
-        view.findViewById<MaterialButton>(R.id.btnCancelar).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelar).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         btnConfirmar.setOnClickListener {
+            if (textoConfirmar.contains("Eliminar", ignoreCase = true) ||
+                textoConfirmar.contains("Vaciar", ignoreCase = true) ||
+                textoConfirmar.contains("Mover", ignoreCase = true)) {
+                it.hapticEliminar()
+            } else {
+                it.hapticClickPrincipal()
+            }
             accionConfirmar()
             dialog.dismiss()
         }
@@ -83,13 +93,18 @@ object DialogUtils {
         tilInput.hint = hint
         etInput.setText(textoActual)
 
-        view.findViewById<MaterialButton>(R.id.btnCancelarInput).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelarInput).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         view.findViewById<MaterialButton>(R.id.btnGuardarInput).setOnClickListener {
             val nuevoTexto = etInput.text.toString().trim()
             if (nuevoTexto.isNotEmpty()) {
+                it.hapticClickPrincipal()
                 accionGuardar(nuevoTexto)
                 dialog.dismiss()
             } else {
+                it.hapticError()
                 tilInput.error = "Este campo no puede estar vacío"
             }
         }
@@ -127,13 +142,22 @@ object DialogUtils {
             }
         }
 
-        view.findViewById<MaterialButton>(R.id.btnCancelarOpciones).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelarOpciones).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnOp1.setOnClickListener {
+            it.hapticClickPrincipal()
             accionOpcion1()
             dialog.dismiss()
         }
         btnOp2.setOnClickListener {
+            if (textoOpcion2.contains("Eliminar", ignoreCase = true)) {
+                it.hapticEliminar()
+            } else {
+                it.hapticClickPrincipal()
+            }
             accionOpcion2()
             dialog.dismiss()
         }
@@ -159,9 +183,13 @@ object DialogUtils {
 
         ivEncuadre.setSourceBitmap(bitmap)
 
-        btnCancelar.setOnClickListener { dialog.dismiss() }
+        btnCancelar.setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnAceptar.setOnClickListener {
+            it.hapticClickPrincipal()
             val recortado = ivEncuadre.recortarBitmap() ?: bitmap
             val uriGuardada = guardarBitmapEncuadrado(context, recortado)
             dialog.dismiss()

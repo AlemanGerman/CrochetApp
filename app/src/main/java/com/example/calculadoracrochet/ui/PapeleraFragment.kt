@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.PapeleraAdapter
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.HapticHelper
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -52,6 +55,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                     viewModel.restaurarProyectos(listOf(proyecto)) { restaurado ->
                         if (!isAdded) return@restaurarProyectos
                         if (restaurado) {
+                            HapticHelper.exito(context = requireContext())
                             Toast.makeText(requireContext(), "Proyecto restaurado", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -67,7 +71,9 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                 ) {
                     viewModel.eliminarProyecto(proyecto) { eliminado ->
                         if (!isAdded) return@eliminarProyecto
-                        if (!eliminado) {
+                        if (eliminado) {
+                            HapticHelper.advertenciaOEliminar(context = requireContext())
+                        } else {
                             Toast.makeText(requireContext(), "No se pudo eliminar el proyecto", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -81,11 +87,13 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
         }
 
         view.findViewById<ImageButton>(R.id.btnVolverPapelera).setOnClickListener {
+            it.hapticClickPrincipal()
             parentFragmentManager.popBackStack()
         }
 
         view.findViewById<MaterialButton>(R.id.btnVaciarPapelera).setOnClickListener {
             if (viewModel.papeleraProyectos.isEmpty()) return@setOnClickListener
+            it.hapticEliminar()
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
                 titulo = "Vaciar Papelera",
@@ -96,6 +104,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                 viewModel.vaciarPapelera { exito ->
                     if (!isAdded) return@vaciarPapelera
                     if (exito == true) {
+                        HapticHelper.advertenciaOEliminar(context = requireContext())
                         Toast.makeText(requireContext(), "Papelera vaciada", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -105,6 +114,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
         view.findViewById<MaterialButton>(R.id.btnRestaurarSeleccionados).setOnClickListener {
             val seleccionados = adapter.seleccionados.toList()
             if (seleccionados.isEmpty()) return@setOnClickListener
+            it.hapticClickPrincipal()
 
             val mensaje = if (seleccionados.size == 1) {
                 "¿Deseas restaurar '${seleccionados.first().nombre}' a tu lista de proyectos?"
@@ -122,6 +132,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                 viewModel.restaurarProyectos(seleccionados) { exito ->
                     if (!isAdded) return@restaurarProyectos
                     if (exito == true) {
+                        HapticHelper.exito(context = requireContext())
                         Toast.makeText(requireContext(), "${seleccionados.size} proyectos restaurados", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -131,6 +142,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
         view.findViewById<MaterialButton>(R.id.btnEliminarSeleccionados).setOnClickListener {
             val seleccionados = adapter.seleccionados.toList()
             if (seleccionados.isEmpty()) return@setOnClickListener
+            it.hapticEliminar()
 
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
@@ -142,6 +154,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
                 viewModel.eliminarProyectosPermanentes(seleccionados) { exito ->
                     if (!isAdded) return@eliminarProyectosPermanentes
                     if (exito == true) {
+                        HapticHelper.advertenciaOEliminar(context = requireContext())
                         Toast.makeText(requireContext(), "Proyectos eliminados permanentemente", Toast.LENGTH_SHORT).show()
                     }
                 }

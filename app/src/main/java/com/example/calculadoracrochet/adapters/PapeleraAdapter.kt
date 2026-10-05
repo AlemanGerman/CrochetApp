@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticEliminar
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.checkbox.MaterialCheckBox
 
@@ -98,12 +101,23 @@ class PapeleraAdapter(
             cbSeleccion.isChecked = seleccionados.contains(item)
 
             cbSeleccion.setOnCheckedChangeListener { _, isChecked ->
+                cbSeleccion.hapticSeleccion()
                 if (isChecked) seleccionados.add(item) else seleccionados.remove(item)
                 onSeleccionCambiada(seleccionados.size)
             }
 
-            btnRestaurar.setOnClickListener { onRestaurarIndividual(item) }
-            btnEliminar.setOnClickListener { onEliminarIndividual(item) }
+            itemView.setOnClickListener {
+                cbSeleccion.isChecked = !cbSeleccion.isChecked
+            }
+
+            btnRestaurar.setOnClickListener {
+                it.hapticClickPrincipal()
+                onRestaurarIndividual(item)
+            }
+            btnEliminar.setOnClickListener {
+                it.hapticEliminar()
+                onEliminarIndividual(item)
+            }
         }
     }
 }

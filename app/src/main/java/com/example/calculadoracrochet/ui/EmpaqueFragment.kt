@@ -12,6 +12,10 @@ import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputLayout
 
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticSeleccion
+
 class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
     private val viewModel: MinaViewModel by activityViewModels()
 
@@ -52,8 +56,14 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
             tvMargenLabel.text = "Margen de ganancia extra: ${margenSeguro.toInt()}%"
         }
 
-        sliderMargen.addOnChangeListener { _, value, _ ->
-            tvMargenLabel.text = "Margen de ganancia extra: ${value.toInt()}%"
+        var ultimoMargen = sliderMargen.value.toInt()
+        sliderMargen.addOnChangeListener { slider, value, fromUser ->
+            val margenEntero = value.toInt()
+            tvMargenLabel.text = "Margen de ganancia extra: $margenEntero%"
+            if (fromUser && margenEntero != ultimoMargen) {
+                ultimoMargen = margenEntero
+                slider.hapticSeleccion()
+            }
         }
 
         view.findViewById<View>(R.id.btnSiguienteEmpaque).setOnClickListener {
@@ -70,11 +80,14 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
             }
 
             if (todoCorrecto) {
+                view.hapticClickPrincipal()
                 viewModel.costoEmpaque = costoCaja
                 viewModel.margenGanancia = margen
                 viewModel.guardarBorrador()
 
                 (requireActivity() as MainActivity).navegarConGanchillo(ResultadoFragment())
+            } else {
+                view.hapticError()
             }
         }
     }

@@ -36,6 +36,9 @@ import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.adapters.ProyectosAdapter
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticEliminar
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -162,6 +165,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         })
 
         view.findViewById<MaterialButton>(R.id.btnTipoOrden).setOnClickListener { vistaBoton ->
+            vistaBoton.hapticClickPrincipal()
             mostrarMenuCriterio(vistaBoton)
         }
 
@@ -170,6 +174,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         actualizarRotacionFlecha(animar = false)
 
         btnDireccion.setOnClickListener {
+            btnDireccion.hapticSeleccion()
             esOrdenDescendente = !esOrdenDescendente
             actualizarRotacionFlecha(animar = true)
             filtrarYOrdenarLista()
@@ -177,10 +182,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
+            it.hapticClickPrincipal()
             mostrarBottomSheetOpciones()
         }
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
+            it.hapticClickPrincipal()
             viewModel.limpiarCalculoActual()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
@@ -249,10 +256,22 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             popupWindow.dismiss()
         }
 
-        menuView.findViewById<View>(R.id.opcCriterioFecha).setOnClickListener { seleccionarCriterio(CriterioOrden.FECHA) }
-        menuView.findViewById<View>(R.id.opcCriterioPrecio).setOnClickListener { seleccionarCriterio(CriterioOrden.PRECIO) }
-        menuView.findViewById<View>(R.id.opcCriterioFoto).setOnClickListener { seleccionarCriterio(CriterioOrden.FOTO) }
-        menuView.findViewById<View>(R.id.opcCriterioNombre).setOnClickListener { seleccionarCriterio(CriterioOrden.NOMBRE) }
+        menuView.findViewById<View>(R.id.opcCriterioFecha).setOnClickListener {
+            it.hapticSeleccion()
+            seleccionarCriterio(CriterioOrden.FECHA)
+        }
+        menuView.findViewById<View>(R.id.opcCriterioPrecio).setOnClickListener {
+            it.hapticSeleccion()
+            seleccionarCriterio(CriterioOrden.PRECIO)
+        }
+        menuView.findViewById<View>(R.id.opcCriterioFoto).setOnClickListener {
+            it.hapticSeleccion()
+            seleccionarCriterio(CriterioOrden.FOTO)
+        }
+        menuView.findViewById<View>(R.id.opcCriterioNombre).setOnClickListener {
+            it.hapticSeleccion()
+            seleccionarCriterio(CriterioOrden.NOMBRE)
+        }
 
         menuView.measure(
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -362,6 +381,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             actualizarColorTexto(tvNombre, esLaSeleccionada)
 
             itemView.setOnClickListener {
+                it.hapticSeleccion()
                 if (carpetaSeleccionada == carpetaInfo.nombre) return@setOnClickListener
 
                 carpetaSeleccionada = carpetaInfo.nombre
@@ -456,11 +476,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         bottomSheetDialog.setContentView(sheetView)
 
         sheetView.findViewById<View>(R.id.itemOpcionEstadisticas).setOnClickListener {
+            it.hapticClickPrincipal()
             bottomSheetDialog.dismiss()
             navegarHaciaFragmento(EstadisticasFragment())
         }
 
         sheetView.findViewById<View>(R.id.itemOpcionPapelera).setOnClickListener {
+            it.hapticClickPrincipal()
             bottomSheetDialog.dismiss()
             navegarHaciaFragmento(PapeleraFragment())
         }
@@ -502,16 +524,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     buttonTintList = ContextCompat.getColorStateList(context, it.colorRes)
                 }
                 isChecked = (proyecto.carpetas ?: emptyList()).contains(nombreCarpeta)
+                setOnCheckedChangeListener { _, _ ->
+                    hapticSeleccion()
+                }
             }
             checkboxesMap[nombreCarpeta] = cb
             llContenedor.addView(cb)
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnCancelarCarpetas).setOnClickListener {
+            it.hapticClickPrincipal()
             dialog.dismiss()
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnGuardarCarpetas).setOnClickListener {
+            it.hapticClickPrincipal()
             val nuevasCarpetas = checkboxesMap.filter { it.value.isChecked }.keys.toList()
             proyecto.carpetas = nuevasCarpetas
             viewModel.actualizarCarpetasProyecto(proyecto)
@@ -559,6 +586,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         refrescarImagenLocal()
 
         btnEditarFoto?.setOnClickListener {
+            it.hapticClickPrincipal()
             val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
                     proyecto.fotoUri != "null" &&
                     proyecto.fotoUri != "undefined"
@@ -600,6 +628,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         cvFotoContenedor.setOnClickListener {
+            it.hapticClickPrincipal()
             val tieneFoto = !proyecto.fotoUri.isNullOrBlank() &&
                     proyecto.fotoUri != "null" &&
                     proyecto.fotoUri != "undefined"
@@ -618,6 +647,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         tvNombre.text = proyecto.nombre
 
         tvNombre.setOnClickListener {
+            it.hapticClickPrincipal()
             DialogUtils.mostrarInput(
                 context = requireContext(),
                 titulo = "Cambiar nombre",
@@ -636,6 +666,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
         tvFecha.setOnClickListener {
+            it.hapticClickPrincipal()
             val (dialogFecha, fechaDialogView) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_seleccionar_fecha)
             val datePicker = fechaDialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
             val calendario = Calendar.getInstance()
@@ -647,8 +678,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 calendario.get(Calendar.DAY_OF_MONTH)
             )
 
-            fechaDialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener { dialogFecha.dismiss() }
+            fechaDialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
+                it.hapticClickPrincipal()
+                dialogFecha.dismiss()
+            }
             fechaDialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+                it.hapticClickPrincipal()
                 val nuevaFecha = Calendar.getInstance()
                 nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
                 val tiempoMs = nuevaFecha.timeInMillis
@@ -697,6 +732,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         var matExpandido = false
         llToggleMateriales.setOnClickListener {
+            it.hapticSeleccion()
             matExpandido = !matExpandido
             tvDesgloseMat.visibility = if (matExpandido) View.VISIBLE else View.GONE
         }
@@ -709,13 +745,18 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         var manoExpandida = false
         llToggleMano.setOnClickListener {
+            it.hapticSeleccion()
             manoExpandida = !manoExpandida
             tvDesgloseMano.visibility = if (manoExpandida) View.VISIBLE else View.GONE
         }
 
-        dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener { dialog.dismiss() }
+        dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
+            it.hapticEliminar()
             DialogUtils.mostrarAlerta(
                 context = requireContext(),
                 titulo = "Mover a la papelera",
@@ -766,8 +807,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
-        dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener { prepararProyectoParaEdicion(true) }
-        dialogView.findViewById<View>(R.id.btnOpcionesDetalle)?.setOnClickListener { prepararProyectoParaEdicion(false) }
+        dialogView.findViewById<MaterialButton>(R.id.btnDetalleDuplicar).setOnClickListener {
+            it.hapticClickPrincipal()
+            prepararProyectoParaEdicion(true)
+        }
+        dialogView.findViewById<View>(R.id.btnOpcionesDetalle)?.setOnClickListener {
+            it.hapticClickPrincipal()
+            prepararProyectoParaEdicion(false)
+        }
         dialog.show()
     }
 
@@ -788,7 +835,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             error(R.drawable.ic_photo)
         }
 
-        btnCerrar.setOnClickListener { dialog.dismiss() }
+        btnCerrar.setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         dialog.show()
     }
 }

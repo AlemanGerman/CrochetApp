@@ -14,6 +14,8 @@ import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -103,6 +105,7 @@ class ProyectosAdapter(
         }
 
         holder.itemView.setOnClickListener {
+            it.hapticClickPrincipal()
             onItemClick(proyecto)
         }
 
@@ -132,10 +135,12 @@ class ProyectosAdapter(
         }
 
         holder.btnAgregarCarpetaVacio.setOnClickListener {
+            it.hapticSeleccion()
             onEditCarpetaClick?.invoke(proyecto)
         }
 
         holder.btnEditarCarpeta.setOnClickListener {
+            it.hapticSeleccion()
             onEditCarpetaClick?.invoke(proyecto)
         }
     }
