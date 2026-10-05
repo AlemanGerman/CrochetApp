@@ -670,6 +670,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         val ganancia = subtotal * (proyecto.margenGanancia / 100)
         dialogView.findViewById<TextView>(R.id.tvDetalleGanancia).text = String.format("+ Ganancia Extra (%d%%): $%.2f", proyecto.margenGanancia.toInt(), ganancia)
 
+        val tvDetalleRedondeo = dialogView.findViewById<TextView>(R.id.tvDetalleRedondeo)
+        if (proyecto.ajusteRedondeo > 0.0) {
+            tvDetalleRedondeo?.visibility = View.VISIBLE
+            tvDetalleRedondeo?.text = String.format("+ Redondeo a favor: $%.2f", proyecto.ajusteRedondeo)
+        } else {
+            tvDetalleRedondeo?.visibility = View.GONE
+        }
+
         val llToggleMateriales = dialogView.findViewById<LinearLayout>(R.id.llToggleMateriales)
         val tvCostoMatResumen = dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen)
         val tvDesgloseMat = dialogView.findViewById<TextView>(R.id.tvDesgloseMateriales)
@@ -740,6 +748,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             viewModel.costoManoObra = proyecto.costoManoObra
             viewModel.costoEmpaque = proyecto.costoEmpaque
             viewModel.margenGanancia = proyecto.margenGanancia
+            viewModel.ajusteRedondeo = proyecto.ajusteRedondeo
             viewModel.horasTrabajadasTemp = proyecto.horasTrabajadas
             viewModel.pagoPorHoraTemp = proyecto.pagoPorHora
             viewModel.nombreTemp = proyecto.nombre

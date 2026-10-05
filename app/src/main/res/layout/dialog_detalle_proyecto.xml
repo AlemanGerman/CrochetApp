@@ -243,6 +243,18 @@
                 android:layout_marginBottom="8dp"/>
 
             <TextView
+                android:id="@+id/tvDetalleRedondeo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/purple_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="end"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"/>
+
+            <TextView
                 android:id="@+id/tvDetalleTotal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

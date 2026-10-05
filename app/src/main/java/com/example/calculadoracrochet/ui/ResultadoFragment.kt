@@ -1,6 +1,7 @@
 package com.example.calculadoracrochet.ui
 
 import android.animation.Animator
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -39,6 +40,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
+    private var btnSeleccionarFotoModal: MaterialButton? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -47,6 +49,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 try {
                     ivPreviewModal?.setImageURI(uriEncuadrada)
                     ivPreviewModal?.imageTintList = null
+                    btnSeleccionarFotoModal?.text = "Cambiar o eliminar foto"
                 } catch (e: Exception) { e.printStackTrace() }
             }
         }
@@ -94,6 +97,15 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         val tvLabelGanancia = view.findViewById<TextView>(R.id.tvLabelGanancia)
         tvLabelGanancia.text = String.format("GANANCIA EXTRA (%d%%):", viewModel.margenGanancia.toInt())
+
+        val llFilaRedondeo = view.findViewById<LinearLayout>(R.id.llFilaRedondeo)
+        val tvDesgloseRedondeo = view.findViewById<TextView>(R.id.tvDesgloseRedondeo)
+        if (viewModel.ajusteRedondeo > 0.0) {
+            llFilaRedondeo.visibility = View.VISIBLE
+            tvDesgloseRedondeo.text = String.format("$%.2f", viewModel.ajusteRedondeo)
+        } else {
+            llFilaRedondeo.visibility = View.GONE
+        }
 
         val llFilaMateriales = view.findViewById<LinearLayout>(R.id.llFilaMateriales)
         val tvDetalleMaterialesDesc = view.findViewById<TextView>(R.id.tvDetalleMaterialesDesc)
@@ -182,14 +194,47 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         if (viewModel.nombreTemp.isNotEmpty()) etNombre?.setText(viewModel.nombreTemp)
 
-        if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
-            uriFotoSeleccionada = viewModel.fotoUriTemp
-            ivPreviewModal?.load(viewModel.fotoUriTemp) { crossfade(true) }
-            ivPreviewModal?.imageTintList = null
+        btnSeleccionarFotoModal = btnElegirFoto
+
+        fun refrescarFotoModal() {
+            if (!uriFotoSeleccionada.isNullOrEmpty()) {
+                ivPreviewModal?.load(uriFotoSeleccionada) { crossfade(true) }
+                ivPreviewModal?.imageTintList = null
+                btnElegirFoto?.text = "Cambiar o eliminar foto"
+            } else {
+                ivPreviewModal?.setImageResource(R.drawable.ic_photo)
+                ivPreviewModal?.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+                btnElegirFoto?.text = "Añadir Foto (Opcional)"
+            }
         }
 
-        btnElegirFoto?.setOnClickListener { pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build()) }
-        ivPreviewModal?.setOnClickListener { pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build()) }
+        if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
+            uriFotoSeleccionada = viewModel.fotoUriTemp
+        }
+        refrescarFotoModal()
+
+        fun gestionarClicFoto() {
+            if (uriFotoSeleccionada.isNullOrEmpty()) {
+                pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
+            } else {
+                DialogUtils.mostrarOpciones(
+                    context = requireContext(),
+                    titulo = "Opciones de foto",
+                    textoOpcion1 = "Cambiar foto",
+                    textoOpcion2 = "Eliminar foto",
+                    accionOpcion1 = {
+                        pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
+                    },
+                    accionOpcion2 = {
+                        uriFotoSeleccionada = null
+                        refrescarFotoModal()
+                    }
+                )
+            }
+        }
+
+        btnElegirFoto?.setOnClickListener { gestionarClicFoto() }
+        ivPreviewModal?.setOnClickListener { gestionarClicFoto() }
         btnCancelar?.setOnClickListener { dialog.dismiss() }
 
         btnConfirmar?.setOnClickListener {
