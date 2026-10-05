@@ -53,21 +53,28 @@ class ProyectosAdapter(
     private fun restablecerColorDefecto(holder: ProyectoViewHolder) {
         val context = holder.itemView.context
         val purpleColor = ContextCompat.getColor(context, R.color.purple_primary)
-        holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+        val blanco = ContextCompat.getColor(context, R.color.white)
+        val colorStateBlanco = ColorStateList.valueOf(blanco)
+        holder.cardView.setCardBackgroundColor(colorStateBlanco)
+        holder.cardView.backgroundTintList = colorStateBlanco
         holder.tvNombre.setTextColor(purpleColor)
         holder.tvPrecio.setTextColor(ContextCompat.getColor(context, R.color.black))
         holder.tvFecha.setTextColor(ContextCompat.getColor(context, R.color.gray_hint))
         holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(purpleColor)
         holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(purpleColor)
+        holder.cardView.invalidate()
     }
 
     private fun aplicarColorDinamico(holder: ProyectoViewHolder, config: ColorExtractorHelper.ColorTarjetaConfig) {
-        holder.cardView.setCardBackgroundColor(config.backgroundColor)
+        val colorState = ColorStateList.valueOf(config.backgroundColor)
+        holder.cardView.setCardBackgroundColor(colorState)
+        holder.cardView.backgroundTintList = colorState
         holder.tvNombre.setTextColor(config.textColorPrimario)
         holder.tvPrecio.setTextColor(config.textColorPrimario)
         holder.tvFecha.setTextColor(config.textColorSecundario)
         holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(config.iconTint)
         holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(config.iconTint)
+        holder.cardView.invalidate()
     }
 
     fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
@@ -128,8 +135,24 @@ class ProyectosAdapter(
                     listener(
                         onSuccess = { _, result ->
                             val drawable = result.drawable
-                            if (drawable is BitmapDrawable) {
-                                ColorExtractorHelper.extraerColor(drawable.bitmap, claveCache) { config ->
+                            val bitmap = when (drawable) {
+                                is BitmapDrawable -> drawable.bitmap
+                                else -> {
+                                    try {
+                                        val w = drawable.intrinsicWidth.coerceAtLeast(1)
+                                        val h = drawable.intrinsicHeight.coerceAtLeast(1)
+                                        val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+                                        val canvas = android.graphics.Canvas(bmp)
+                                        drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                        drawable.draw(canvas)
+                                        bmp
+                                    } catch (_: Exception) {
+                                        null
+                                    }
+                                }
+                            }
+                            if (bitmap != null) {
+                                ColorExtractorHelper.extraerColor(bitmap, claveCache) { config ->
                                     if (holder.idProyectoActual == proyecto.id) {
                                         aplicarColorDinamico(holder, config)
                                     }
