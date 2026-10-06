@@ -235,7 +235,7 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
             val textoMultiplo = PreferenciasApp.formatearMultiplo(multiplo)
             tvSimulacionResultado?.text = String.format(
                 localeMx,
-                "Con redondeo (%s): $%,.2f (+ $%,.2f a tu favor)",
+                "Con redondeo (%s): $%,.2f\n(+ $%,.2f a tu favor)",
                 textoMultiplo,
                 precioRedondeado,
                 ajuste
