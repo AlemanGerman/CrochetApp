@@ -24,6 +24,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
+import com.example.calculadoracrochet.utils.comoDinero
 
 class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
 
@@ -226,26 +227,16 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
         val activo = PreferenciasApp.isRedondeoActivo(context)
         val multiplo = multiploSimulado ?: PreferenciasApp.getMultiploRedondeo(context)
 
-        val localeMx = Locale.forLanguageTag("es-MX")
         val totalBaseSimulado = 143.20
-        tvSimulacionBase?.text = String.format(localeMx, "Ejemplo sin redondeo: $%,.2f", totalBaseSimulado)
+        tvSimulacionBase?.text = "Ejemplo sin redondeo: ${totalBaseSimulado.comoDinero()}"
 
         if (activo) {
             val (precioRedondeado, ajuste) = PreferenciasApp.calcularRedondeo(totalBaseSimulado, activo, multiplo)
             val textoMultiplo = PreferenciasApp.formatearMultiplo(multiplo)
-            tvSimulacionResultado?.text = String.format(
-                localeMx,
-                "Con redondeo (%s): $%,.2f\n(+ $%,.2f a tu favor)",
-                textoMultiplo,
-                precioRedondeado,
-                ajuste
-            )
+            tvSimulacionResultado?.text =
+                "Con redondeo ($textoMultiplo): ${precioRedondeado.comoDinero()}\n(+ ${ajuste.comoDinero()} a tu favor)"
         } else {
-            tvSimulacionResultado?.text = String.format(
-                localeMx,
-                "Sin redondeo: $%,.2f (precio exacto)",
-                totalBaseSimulado
-            )
+            tvSimulacionResultado?.text = "Sin redondeo: ${totalBaseSimulado.comoDinero()} (precio exacto)"
         }
     }
 

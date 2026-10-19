@@ -1,6 +1,5 @@
 package com.example.calculadoracrochet.ui
 
-import android.app.AlertDialog
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -326,9 +325,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_editar_carpetas, null)
-        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val (dialog, dialogView) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_editar_carpetas)
 
         val llContenedor = dialogView.findViewById<LinearLayout>(R.id.llCarpetasContenedor)
         llContenedor.removeAllViews()

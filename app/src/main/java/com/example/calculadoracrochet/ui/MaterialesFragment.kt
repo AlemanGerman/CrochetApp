@@ -22,6 +22,11 @@ import java.util.Locale
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.validar
+import com.example.calculadoracrochet.utils.errorSiVacio
+import com.example.calculadoracrochet.utils.errorSiNoPositivo
+import com.example.calculadoracrochet.utils.errorCantidadUsada
+import com.example.calculadoracrochet.utils.aNumeroOInvalido
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
@@ -132,15 +137,14 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
                 estambresTemp.add(EstambreGuardado(strNombre, strCosto, strTotales, strUsados))
 
-                val costoMadeja = strCosto.toDoubleOrNull() ?: -1.0
-                val gramosTotales = strTotales.toDoubleOrNull() ?: -1.0
-                val gramosUsados = strUsados.toDoubleOrNull() ?: -1.0
+                val costoMadeja = strCosto.aNumeroOInvalido()
+                val gramosTotales = strTotales.aNumeroOInvalido()
+                val gramosUsados = strUsados.aNumeroOInvalido()
 
-                if (strNombre.isEmpty()) { tilNombre?.error = "Ingresa el color/marca"; todoCorrecto = false } else { tilNombre?.error = null }
-                if (costoMadeja <= 0.0) { tilCostoMadeja?.error = "Debe ser mayor a $0"; todoCorrecto = false } else { tilCostoMadeja?.error = null }
-                if (gramosTotales <= 0.0) { tilGramosTotales?.error = "Debe ser mayor a 0g"; todoCorrecto = false } else { tilGramosTotales?.error = null }
-                if (gramosUsados <= 0.0) { tilGramosUsados?.error = "Debe ser mayor a 0g"; todoCorrecto = false } else { tilGramosUsados?.error = null }
-                if (gramosUsados > gramosTotales && gramosTotales > 0) { tilGramosUsados?.error = "Excede el total"; todoCorrecto = false }
+                todoCorrecto = tilNombre.validar(errorSiVacio(strNombre, "Ingresa el color/marca")) && todoCorrecto
+                todoCorrecto = tilCostoMadeja.validar(errorSiNoPositivo(costoMadeja, "Debe ser mayor a $0")) && todoCorrecto
+                todoCorrecto = tilGramosTotales.validar(errorSiNoPositivo(gramosTotales, "Debe ser mayor a 0g")) && todoCorrecto
+                todoCorrecto = tilGramosUsados.validar(errorCantidadUsada(gramosUsados, gramosTotales, "Debe ser mayor a 0g")) && todoCorrecto
 
                 if (costoMadeja > 0 && gramosTotales > 0 && gramosUsados > 0) {
                     costoTotalEstambres += (costoMadeja / gramosTotales) * gramosUsados
@@ -158,10 +162,10 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     val strCostoMat = etCostoDirecto.text.toString()
 
                     accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat, esCalculado = false))
-                    val costoMaterial = strCostoMat.toDoubleOrNull() ?: -1.0
+                    val costoMaterial = strCostoMat.aNumeroOInvalido()
 
-                    if (strNombreMat.isEmpty()) { tilNombreMaterial?.error = "Ingresa un nombre"; todoCorrecto = false } else { tilNombreMaterial?.error = null }
-                    if (costoMaterial <= 0.0) { tilCostoMaterial?.error = "Debe ser mayor a $0"; todoCorrecto = false } else { tilCostoMaterial?.error = null }
+                    todoCorrecto = tilNombreMaterial.validar(errorSiVacio(strNombreMat, "Ingresa un nombre")) && todoCorrecto
+                    todoCorrecto = tilCostoMaterial.validar(errorSiNoPositivo(costoMaterial, "Debe ser mayor a $0")) && todoCorrecto
                     if (costoMaterial > 0.0) costoTotalAccesorios += costoMaterial
 
                 } else {
@@ -175,15 +179,14 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     val strTotales = fila.findViewById<EditText>(R.id.etCantidadTotalAcc).text.toString()
                     val strUsados = fila.findViewById<EditText>(R.id.etCantidadUsadaAcc).text.toString()
 
-                    val costoTotal = strCosto.toDoubleOrNull() ?: -1.0
-                    val cantTotal = strTotales.toDoubleOrNull() ?: -1.0
-                    val cantUsada = strUsados.toDoubleOrNull() ?: -1.0
+                    val costoTotal = strCosto.aNumeroOInvalido()
+                    val cantTotal = strTotales.aNumeroOInvalido()
+                    val cantUsada = strUsados.aNumeroOInvalido()
 
-                    if (strNombre.isEmpty()) { tilNombre?.error = "Falta nombre"; todoCorrecto = false } else { tilNombre?.error = null }
-                    if (costoTotal <= 0.0) { tilCostoTotal?.error = "Debe ser > $0"; todoCorrecto = false } else { tilCostoTotal?.error = null }
-                    if (cantTotal <= 0.0) { tilTotalCant?.error = "Debe ser > 0"; todoCorrecto = false } else { tilTotalCant?.error = null }
-                    if (cantUsada <= 0.0) { tilUsadaCant?.error = "Debe ser > 0"; todoCorrecto = false } else { tilUsadaCant?.error = null }
-                    if (cantUsada > cantTotal && cantTotal > 0) { tilUsadaCant?.error = "Excede el total"; todoCorrecto = false }
+                    todoCorrecto = tilNombre.validar(errorSiVacio(strNombre, "Falta nombre")) && todoCorrecto
+                    todoCorrecto = tilCostoTotal.validar(errorSiNoPositivo(costoTotal, "Debe ser > $0")) && todoCorrecto
+                    todoCorrecto = tilTotalCant.validar(errorSiNoPositivo(cantTotal, "Debe ser > 0")) && todoCorrecto
+                    todoCorrecto = tilUsadaCant.validar(errorCantidadUsada(cantUsada, cantTotal, "Debe ser > 0")) && todoCorrecto
 
                     if (costoTotal > 0 && cantTotal > 0 && cantUsada > 0) {
                         val costoFinal = (costoTotal / cantTotal) * cantUsada

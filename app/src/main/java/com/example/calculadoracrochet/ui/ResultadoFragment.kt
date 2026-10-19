@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -23,6 +22,11 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.LOCALE_MX
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.desgloseMateriales
+import com.example.calculadoracrochet.utils.hacerDesplegable
+import com.example.calculadoracrochet.data.CalculadoraPrecio
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
@@ -36,9 +40,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     private val viewModel: MinaViewModel by activityViewModels()
@@ -71,11 +73,16 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         viewModel.calcularTotal()
 
-        val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
-        val ganancia = subtotal * (viewModel.margenGanancia / 100)
+        val desglose = CalculadoraPrecio.desglosar(
+            viewModel.costoMateriales,
+            viewModel.costoDiseno,
+            viewModel.costoManoObra,
+            viewModel.costoEmpaque,
+            viewModel.margenGanancia
+        )
 
         val tvFechaTicket = view.findViewById<TextView>(R.id.tvFechaTicket)
-        val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", Locale("es", "MX"))
+        val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", LOCALE_MX)
 
         fun actualizarTextoFecha() {
             val fechaAUsar = viewModel.fechaEnEdicion ?: System.currentTimeMillis()
@@ -89,90 +96,55 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             btnCambiarFecha.visibility = View.VISIBLE
             btnCambiarFecha.setOnClickListener {
                 it.hapticClickPrincipal()
-                mostrarModalFecha { actualizarTextoFecha() }
+                DialogUtils.mostrarSelectorFecha(requireContext(), viewModel.fechaEnEdicion) { fechaMs ->
+                    viewModel.fechaEnEdicion = fechaMs
+                    actualizarTextoFecha()
+                }
             }
         } else {
             btnCambiarFecha.visibility = View.GONE
         }
 
-        view.findViewById<TextView>(R.id.tvPrecioFinal).text = String.format("$%.2f", viewModel.precioFinalSugerdio)
-        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = String.format("$%.2f", viewModel.costoMateriales)
-        view.findViewById<TextView>(R.id.tvDesglosePatron).text = String.format("$%.2f", viewModel.costoDiseno)
-        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = String.format("$%.2f", viewModel.costoManoObra)
-        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = String.format("$%.2f", viewModel.costoEmpaque)
-        view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = String.format("$%.2f", subtotal)
-        view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = String.format("$%.2f", ganancia)
+        view.findViewById<TextView>(R.id.tvPrecioFinal).text = viewModel.precioFinalSugerdio.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = viewModel.costoMateriales.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesglosePatron).text = viewModel.costoDiseno.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = viewModel.costoManoObra.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = viewModel.costoEmpaque.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = desglose.subtotal.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = desglose.ganancia.comoDinero()
 
         val tvLabelGanancia = view.findViewById<TextView>(R.id.tvLabelGanancia)
-        tvLabelGanancia.text = String.format("GANANCIA EXTRA (%d%%):", viewModel.margenGanancia.toInt())
+        tvLabelGanancia.text = "GANANCIA EXTRA (${viewModel.margenGanancia.toInt()}%):"
 
         val llFilaRedondeo = view.findViewById<LinearLayout>(R.id.llFilaRedondeo)
         val tvDesgloseRedondeo = view.findViewById<TextView>(R.id.tvDesgloseRedondeo)
         if (viewModel.ajusteRedondeo > 0.0) {
             llFilaRedondeo.visibility = View.VISIBLE
-            tvDesgloseRedondeo.text = String.format("$%.2f", viewModel.ajusteRedondeo)
+            tvDesgloseRedondeo.text = viewModel.ajusteRedondeo.comoDinero()
         } else {
             llFilaRedondeo.visibility = View.GONE
         }
 
         val llFilaMateriales = view.findViewById<LinearLayout>(R.id.llFilaMateriales)
         val tvDetalleMaterialesDesc = view.findViewById<TextView>(R.id.tvDetalleMaterialesDesc)
-        tvDetalleMaterialesDesc.text = buildString {
-            if (viewModel.listaEstambresGuardados.isEmpty() && viewModel.listaAccesoriosGuardados.isEmpty()) {
-                append("- Sin detalles agregados")
-            } else {
-                viewModel.listaEstambresGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
-                viewModel.listaAccesoriosGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
-            }
-        }.trimEnd()
-
-        var matExpandido = false
-        llFilaMateriales.setOnClickListener {
-            it.hapticSeleccion()
-            matExpandido = !matExpandido
-            tvDetalleMaterialesDesc.visibility = if (matExpandido) View.VISIBLE else View.GONE
-        }
+        tvDetalleMaterialesDesc.text = desgloseMateriales(
+            estambres = viewModel.listaEstambresGuardados,
+            accesorios = viewModel.listaAccesoriosGuardados,
+            vineta = "- ",
+            textoVacio = "- Sin detalles agregados"
+        )
+        llFilaMateriales.hacerDesplegable(tvDetalleMaterialesDesc)
 
         val llFilaManoObra = view.findViewById<LinearLayout>(R.id.llFilaManoObra)
         val tvDetalleManoObraDesc = view.findViewById<TextView>(R.id.tvDetalleManoObraDesc)
-        tvDetalleManoObraDesc.text = String.format("- Tiempo: %.2f hrs\n- Pago: $%.2f/hr", viewModel.horasTrabajadasTemp, viewModel.pagoPorHoraTemp)
-
-        var manoExpandida = false
-        llFilaManoObra.setOnClickListener {
-            it.hapticSeleccion()
-            manoExpandida = !manoExpandida
-            tvDetalleManoObraDesc.visibility = if (manoExpandida) View.VISIBLE else View.GONE
-        }
+        tvDetalleManoObraDesc.text = String.format(LOCALE_MX, "- Tiempo: %.2f hrs", viewModel.horasTrabajadasTemp) +
+            "\n- Pago: ${viewModel.pagoPorHoraTemp.comoDinero()}/hr"
+        llFilaManoObra.hacerDesplegable(tvDetalleManoObraDesc)
 
         view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
             it.hapticClickPrincipal()
             mostrarModalGuardar()
         }
-    }
-
-    private fun mostrarModalFecha(onFechaActualizada: () -> Unit) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_seleccionar_fecha, null)
-        val dialog = MaterialAlertDialogBuilder(requireContext()).setView(dialogView).create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val datePicker = dialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
-        val calendario = Calendar.getInstance()
-        viewModel.fechaEnEdicion?.let { calendario.timeInMillis = it }
-        datePicker.updateDate(calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH))
-
-        dialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
-            it.hapticClickPrincipal()
-            dialog.dismiss()
-        }
-        dialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
-            it.hapticClickPrincipal()
-            val nuevaFecha = Calendar.getInstance()
-            nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
-            viewModel.fechaEnEdicion = nuevaFecha.timeInMillis
-            onFechaActualizada()
-            dialog.dismiss()
-        }
-        dialog.show()
     }
 
     private fun mostrarModalGuardar() {

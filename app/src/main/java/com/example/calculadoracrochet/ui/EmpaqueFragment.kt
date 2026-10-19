@@ -15,6 +15,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.validar
 
 class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
     private val viewModel: MinaViewModel by activityViewModels()
@@ -70,14 +71,9 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
             val costoCaja = etCostoCaja.text.toString().toDoubleOrNull() ?: 0.0
             val margen = sliderMargen.value.toDouble()
 
-            var todoCorrecto = true
-
-            if (costoCaja < 0.0) {
-                tilCostoCaja.error = "El costo no puede ser negativo"
-                todoCorrecto = false
-            } else {
-                tilCostoCaja.error = null
-            }
+            val todoCorrecto = tilCostoCaja.validar(
+                if (costoCaja < 0.0) "El costo no puede ser negativo" else null
+            )
 
             if (todoCorrecto) {
                 view.hapticClickPrincipal()

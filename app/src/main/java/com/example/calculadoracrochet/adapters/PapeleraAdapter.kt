@@ -17,6 +17,7 @@ import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.example.calculadoracrochet.viewmodel.esRutaFotoValida
 
 class PapeleraAdapter(
     private var lista: List<ProyectoCrochet>,
@@ -57,8 +58,8 @@ class PapeleraAdapter(
         fun bind(item: ProyectoCrochet) {
             tvNombre.text = item.nombre
 
-            val fotoParaPapelera = item.fotoMiniaturaUri?.takeIf { it.isNotBlank() && it != "null" && it != "undefined" }
-                ?: item.fotoUri?.takeIf { it.isNotBlank() && it != "null" && it != "undefined" }
+            val fotoParaPapelera = item.fotoMiniaturaUri?.takeIf { it.esRutaFotoValida() }
+                ?: item.fotoUri?.takeIf { it.esRutaFotoValida() }
 
             if (fotoParaPapelera != null) {
                 ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP

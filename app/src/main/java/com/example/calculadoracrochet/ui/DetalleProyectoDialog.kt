@@ -3,12 +3,8 @@ package com.example.calculadoracrochet.ui
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.DatePicker
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -17,17 +13,18 @@ import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.data.CalculadoraPrecio
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.LOCALE_MX
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.desgloseMateriales
+import com.example.calculadoracrochet.utils.hacerDesplegable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
-import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.example.calculadoracrochet.viewmodel.tieneFoto
 import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 /**
  * Detail modal of a saved project: photo, rename, date change, cost breakdown,
@@ -40,13 +37,10 @@ class DetalleProyectoDialog(
     private val onSolicitarFoto: (proyecto: ProyectoCrochet, vistaFoto: ImageView) -> Unit
 ) {
 
-    private val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", Locale("es", "MX"))
+    private val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", LOCALE_MX)
 
     fun mostrar(proyecto: ProyectoCrochet) {
-        val contexto = fragment.requireContext()
-        val dialogView = LayoutInflater.from(contexto).inflate(R.layout.dialog_detalle_proyecto, null)
-        val dialog = AlertDialog.Builder(contexto).setView(dialogView).create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val (dialog, dialogView) = DialogUtils.crearDialogBase(fragment.requireContext(), R.layout.dialog_detalle_proyecto)
 
         configurarFoto(dialogView, proyecto)
         configurarNombre(dialogView, proyecto)
@@ -138,42 +132,18 @@ class DetalleProyectoDialog(
 
         tvFecha.setOnClickListener {
             it.hapticClickPrincipal()
-            val (dialogFecha, fechaDialogView) = DialogUtils.crearDialogBase(
-                fragment.requireContext(),
-                R.layout.dialog_seleccionar_fecha
-            )
-            val datePicker = fechaDialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
-            val calendario = Calendar.getInstance().apply { timeInMillis = proyecto.fechaGuardado }
-
-            datePicker.updateDate(
-                calendario.get(Calendar.YEAR),
-                calendario.get(Calendar.MONTH),
-                calendario.get(Calendar.DAY_OF_MONTH)
-            )
-
-            fechaDialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener { boton ->
-                boton.hapticClickPrincipal()
-                dialogFecha.dismiss()
-            }
-            fechaDialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener { boton ->
-                boton.hapticClickPrincipal()
-                val tiempoMs = Calendar.getInstance().apply {
-                    set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
-                }.timeInMillis
-
+            DialogUtils.mostrarSelectorFecha(fragment.requireContext(), proyecto.fechaGuardado) { tiempoMs ->
                 viewModel.actualizarFechaProyecto(proyecto, tiempoMs)
                 tvFecha.text = formatoFecha.format(Date(tiempoMs))
                 onProyectoModificado()
-                dialogFecha.dismiss()
             }
-            dialogFecha.show()
         }
     }
 
     private fun configurarDesglose(dialogView: View, proyecto: ProyectoCrochet) {
-        dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = String.format("Total: $%.2f", proyecto.precioFinal)
-        dialogView.findViewById<TextView>(R.id.tvDetallePatron).text = String.format("$%.2f", proyecto.costoDiseno)
-        dialogView.findViewById<TextView>(R.id.tvDetalleEmpaque).text = String.format("$%.2f", proyecto.costoEmpaque)
+        dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = "Total: ${proyecto.precioFinal.comoDinero()}"
+        dialogView.findViewById<TextView>(R.id.tvDetallePatron).text = proyecto.costoDiseno.comoDinero()
+        dialogView.findViewById<TextView>(R.id.tvDetalleEmpaque).text = proyecto.costoEmpaque.comoDinero()
 
         val desglose = CalculadoraPrecio.desglosar(
             proyecto.costoMateriales,
@@ -183,49 +153,31 @@ class DetalleProyectoDialog(
             proyecto.margenGanancia
         )
         dialogView.findViewById<TextView>(R.id.tvDetalleGanancia).text =
-            String.format("+ Ganancia Extra (%d%%): $%.2f", proyecto.margenGanancia.toInt(), desglose.ganancia)
+            "+ Ganancia Extra (${proyecto.margenGanancia.toInt()}%): ${desglose.ganancia.comoDinero()}"
 
         val tvDetalleRedondeo = dialogView.findViewById<TextView>(R.id.tvDetalleRedondeo)
         if (proyecto.ajusteRedondeo > 0.0) {
             tvDetalleRedondeo?.visibility = View.VISIBLE
-            tvDetalleRedondeo?.text = String.format("+ Redondeo a favor: $%.2f", proyecto.ajusteRedondeo)
+            tvDetalleRedondeo?.text = "+ Redondeo a favor: ${proyecto.ajusteRedondeo.comoDinero()}"
         } else {
             tvDetalleRedondeo?.visibility = View.GONE
         }
 
-        dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen).text =
-            String.format("$%.2f", proyecto.costoMateriales)
+        dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen).text = proyecto.costoMateriales.comoDinero()
         val tvDesgloseMat = dialogView.findViewById<TextView>(R.id.tvDesgloseMateriales)
-        val estambres = proyecto.listaEstambres ?: emptyList()
-        val accesorios = proyecto.listaAccesorios ?: emptyList()
-        tvDesgloseMat.text = buildString {
-            if (estambres.isEmpty() && accesorios.isEmpty()) {
-                append("Sin detalles guardados")
-            } else {
-                estambres.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
-                accesorios.forEach { appendLine("• ${it.nombre}: $${it.costo}") }
-            }
-        }.trimEnd()
-        configurarSeccionDesplegable(dialogView.findViewById(R.id.llToggleMateriales), tvDesgloseMat)
-
-        dialogView.findViewById<TextView>(R.id.tvCostoManoObraResumen).text =
-            String.format("$%.2f", proyecto.costoManoObra)
-        val tvDesgloseMano = dialogView.findViewById<TextView>(R.id.tvDesgloseManoObra)
-        tvDesgloseMano.text = String.format(
-            "• Horas invertidas: %.2f hrs\n• Cobro por hora: $%.2f",
-            proyecto.horasTrabajadas,
-            proyecto.pagoPorHora
+        tvDesgloseMat.text = desgloseMateriales(
+            estambres = proyecto.listaEstambres ?: emptyList(),
+            accesorios = proyecto.listaAccesorios ?: emptyList(),
+            vineta = "• ",
+            textoVacio = "Sin detalles guardados"
         )
-        configurarSeccionDesplegable(dialogView.findViewById(R.id.llToggleManoObra), tvDesgloseMano)
-    }
+        dialogView.findViewById<View>(R.id.llToggleMateriales).hacerDesplegable(tvDesgloseMat)
 
-    private fun configurarSeccionDesplegable(toggle: LinearLayout, contenido: View) {
-        var expandido = false
-        toggle.setOnClickListener {
-            it.hapticSeleccion()
-            expandido = !expandido
-            contenido.visibility = if (expandido) View.VISIBLE else View.GONE
-        }
+        dialogView.findViewById<TextView>(R.id.tvCostoManoObraResumen).text = proyecto.costoManoObra.comoDinero()
+        val tvDesgloseMano = dialogView.findViewById<TextView>(R.id.tvDesgloseManoObra)
+        tvDesgloseMano.text = String.format(LOCALE_MX, "• Horas invertidas: %.2f hrs", proyecto.horasTrabajadas) +
+            "\n• Cobro por hora: ${proyecto.pagoPorHora.comoDinero()}"
+        dialogView.findViewById<View>(R.id.llToggleManoObra).hacerDesplegable(tvDesgloseMano)
     }
 
     private fun configurarAcciones(dialogView: View, dialog: AlertDialog, proyecto: ProyectoCrochet) {

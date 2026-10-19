@@ -27,7 +27,9 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
+import com.example.calculadoracrochet.viewmodel.tieneFoto
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.LOCALE_MX
 
 class ProyectosAdapter(
     private var listaProyectos: List<ProyectoCrochet>,
@@ -93,17 +95,15 @@ class ProyectosAdapter(
         holder.idProyectoActual = proyecto.id
 
         holder.tvNombre.text = proyecto.nombre
-        holder.tvPrecio.text = String.format("$%.2f", proyecto.precioFinal)
+        holder.tvPrecio.text = proyecto.precioFinal.comoDinero()
 
-        val formatoFecha = SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
+        val formatoFecha = SimpleDateFormat("dd MMM yyyy", LOCALE_MX)
         holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
         val context = holder.itemView.context
         val colorDinamicoActivo = PreferenciasApp.isColorDinamicoTarjetasActivo(context)
 
-        val tieneFotoValida = !proyecto.fotoUri.isNullOrBlank() &&
-                proyecto.fotoUri != "null" &&
-                proyecto.fotoUri != "undefined"
+        val tieneFotoValida = proyecto.tieneFoto
 
         if (!colorDinamicoActivo || !tieneFotoValida) {
             restablecerColorDefecto(holder)

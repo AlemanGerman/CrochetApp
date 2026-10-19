@@ -16,6 +16,9 @@ import com.google.android.material.textfield.TextInputLayout
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.validar
+import com.example.calculadoracrochet.utils.errorSiNoPositivo
+import com.example.calculadoracrochet.utils.aNumeroOInvalido
 
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
@@ -74,22 +77,13 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                 val strCosto = etCostoPatron.text.toString().trim()
                 val strUnidades = etNumeroMunecos.text.toString().trim()
 
-                val costo = strCosto.toDoubleOrNull() ?: -1.0
+                val costo = strCosto.aNumeroOInvalido()
                 val unidades = strUnidades.toIntOrNull() ?: 0
 
-                if (costo <= 0.0) {
-                    tilCostoPatron.error = "El costo debe ser mayor a $0"
-                    todoCorrecto = false
-                } else {
-                    tilCostoPatron.error = null
-                }
-
-                if (unidades <= 0) {
-                    tilNumeroMunecos.error = "Debe ser un número entero mayor a 0"
-                    todoCorrecto = false
-                } else {
-                    tilNumeroMunecos.error = null
-                }
+                todoCorrecto = tilCostoPatron.validar(errorSiNoPositivo(costo, "El costo debe ser mayor a $0")) && todoCorrecto
+                todoCorrecto = tilNumeroMunecos.validar(
+                    errorSiNoPositivo(unidades.toDouble(), "Debe ser un número entero mayor a 0")
+                ) && todoCorrecto
 
                 if (todoCorrecto) {
                     viewModel.costoDiseno = costo / unidades.toDouble()
