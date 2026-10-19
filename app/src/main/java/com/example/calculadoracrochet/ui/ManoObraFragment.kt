@@ -17,6 +17,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticSeleccion
+
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
     private val viewModel: MinaViewModel by activityViewModels()
     private var ultimoRetrocesoTiempo: Long = 0L
@@ -45,6 +49,9 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
         val etPagoHora = view.findViewById<EditText>(R.id.etPagoHora)
         val timePickerHoras = view.findViewById<TimePicker>(R.id.timePickerHoras)
         timePickerHoras.setIs24HourView(true)
+        timePickerHoras.setOnTimeChangedListener { _, _, _ ->
+            timePickerHoras.hapticSeleccion()
+        }
         val colorMorado = ContextCompat.getColor(requireContext(), R.color.purple_primary)
 
         if (viewModel.pagoPorHoraTemp > 0.0) {
@@ -59,6 +66,7 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
         }
 
         view.findViewById<MaterialButton>(R.id.btnSalarioMinimo).setOnClickListener {
+            it.hapticSeleccion()
             etPagoHora.setText("39.38")
             cardPagoHora.strokeColor = colorMorado
             tvErrorPago.visibility = View.GONE
@@ -91,9 +99,11 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
             }
 
             if (todoCorrecto) {
+                view.hapticClickPrincipal()
                 viewModel.costoManoObra = pagoPorHora * horasTotales
                 viewModel.pagoPorHoraTemp = pagoPorHora
                 viewModel.horasTrabajadasTemp = horasTotales
+                viewModel.guardarBorrador()
 
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(
@@ -105,6 +115,8 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
                     .replace(R.id.fragmentContainer, EmpaqueFragment())
                     .addToBackStack(null)
                     .commit()
+            } else {
+                view.hapticError()
             }
         }
     }

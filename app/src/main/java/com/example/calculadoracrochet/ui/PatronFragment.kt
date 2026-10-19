@@ -13,10 +13,16 @@ import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.validar
+import com.example.calculadoracrochet.utils.errorSiNoPositivo
+import com.example.calculadoracrochet.utils.aNumeroOInvalido
+
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
     private val viewModel: MinaViewModel by activityViewModels()
-
 
     private var ultimoRetrocesoTiempo: Long = 0L
 
@@ -50,6 +56,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
 
         tgComproPatron.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
+                tgComproPatron.hapticSeleccion()
                 if (checkedId == R.id.btnPatronSi) {
                     llCamposPatron.visibility = View.VISIBLE
                 } else {
@@ -70,22 +77,13 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                 val strCosto = etCostoPatron.text.toString().trim()
                 val strUnidades = etNumeroMunecos.text.toString().trim()
 
-                val costo = strCosto.toDoubleOrNull() ?: -1.0
+                val costo = strCosto.aNumeroOInvalido()
                 val unidades = strUnidades.toIntOrNull() ?: 0
 
-                if (costo <= 0.0) {
-                    tilCostoPatron.error = "El costo debe ser mayor a $0"
-                    todoCorrecto = false
-                } else {
-                    tilCostoPatron.error = null
-                }
-
-                if (unidades <= 0) {
-                    tilNumeroMunecos.error = "Debe ser un número entero mayor a 0"
-                    todoCorrecto = false
-                } else {
-                    tilNumeroMunecos.error = null
-                }
+                todoCorrecto = tilCostoPatron.validar(errorSiNoPositivo(costo, "El costo debe ser mayor a $0")) && todoCorrecto
+                todoCorrecto = tilNumeroMunecos.validar(
+                    errorSiNoPositivo(unidades.toDouble(), "Debe ser un número entero mayor a 0")
+                ) && todoCorrecto
 
                 if (todoCorrecto) {
                     viewModel.costoDiseno = costo / unidades.toDouble()
@@ -96,6 +94,8 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             }
 
             if (todoCorrecto) {
+                view.hapticClickPrincipal()
+                viewModel.guardarBorrador()
                 parentFragmentManager.beginTransaction()
                     .setCustomAnimations(
                         R.anim.slide_in_right,
@@ -106,6 +106,8 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                     .replace(R.id.fragmentContainer, ManoObraFragment())
                     .addToBackStack(null)
                     .commit()
+            } else {
+                view.hapticError()
             }
         }
     }

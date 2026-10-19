@@ -1,6 +1,8 @@
 package com.example.calculadoracrochet.adapters
 
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,13 +16,20 @@ import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.ColorExtractorHelper
+import com.example.calculadoracrochet.utils.PreferenciasApp
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
+import com.example.calculadoracrochet.viewmodel.tieneFoto
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.LOCALE_MX
 
 class ProyectosAdapter(
     private var listaProyectos: List<ProyectoCrochet>,
@@ -29,6 +38,7 @@ class ProyectosAdapter(
 ) : RecyclerView.Adapter<ProyectosAdapter.ProyectoViewHolder>() {
 
     class ProyectoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val cardView: MaterialCardView = view as MaterialCardView
         val tvNombre: TextView = view.findViewById(R.id.tvNombreProyecto)
         val tvPrecio: TextView = view.findViewById(R.id.tvPrecioProyecto)
         val tvFecha: TextView = view.findViewById(R.id.tvFecha)
@@ -38,6 +48,35 @@ class ProyectosAdapter(
 
         val cgCarpetasProyecto: ChipGroup = view.findViewById(R.id.cgCarpetasProyecto)
         val btnEditarCarpeta: ImageButton = view.findViewById(R.id.btnEditarCarpeta)
+
+        var idProyectoActual: String? = null
+    }
+
+    private fun restablecerColorDefecto(holder: ProyectoViewHolder) {
+        val context = holder.itemView.context
+        val purpleColor = ContextCompat.getColor(context, R.color.purple_primary)
+        val blanco = ContextCompat.getColor(context, R.color.white)
+        val colorStateBlanco = ColorStateList.valueOf(blanco)
+        holder.cardView.setCardBackgroundColor(colorStateBlanco)
+        holder.cardView.backgroundTintList = colorStateBlanco
+        holder.tvNombre.setTextColor(purpleColor)
+        holder.tvPrecio.setTextColor(ContextCompat.getColor(context, R.color.black))
+        holder.tvFecha.setTextColor(ContextCompat.getColor(context, R.color.gray_hint))
+        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(purpleColor)
+        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(purpleColor)
+        holder.cardView.invalidate()
+    }
+
+    private fun aplicarColorDinamico(holder: ProyectoViewHolder, config: ColorExtractorHelper.ColorTarjetaConfig) {
+        val colorState = ColorStateList.valueOf(config.backgroundColor)
+        holder.cardView.setCardBackgroundColor(colorState)
+        holder.cardView.backgroundTintList = colorState
+        holder.tvNombre.setTextColor(config.textColorPrimario)
+        holder.tvPrecio.setTextColor(config.textColorPrimario)
+        holder.tvFecha.setTextColor(config.textColorSecundario)
+        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(config.iconTint)
+        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(config.iconTint)
+        holder.cardView.invalidate()
     }
 
     fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
@@ -53,16 +92,31 @@ class ProyectosAdapter(
 
     override fun onBindViewHolder(holder: ProyectoViewHolder, position: Int) {
         val proyecto = listaProyectos[position]
+        holder.idProyectoActual = proyecto.id
 
         holder.tvNombre.text = proyecto.nombre
-        holder.tvPrecio.text = String.format("$%.2f", proyecto.precioFinal)
+        holder.tvPrecio.text = proyecto.precioFinal.comoDinero()
 
-        val formatoFecha = SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
+        val formatoFecha = SimpleDateFormat("dd MMM yyyy", LOCALE_MX)
         holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
-        val tieneFotoValida = !proyecto.fotoUri.isNullOrBlank() &&
-                proyecto.fotoUri != "null" &&
-                proyecto.fotoUri != "undefined"
+        val context = holder.itemView.context
+        val colorDinamicoActivo = PreferenciasApp.isColorDinamicoTarjetasActivo(context)
+
+        val tieneFotoValida = proyecto.tieneFoto
+
+        if (!colorDinamicoActivo || !tieneFotoValida) {
+            restablecerColorDefecto(holder)
+        } else {
+            val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
+            val claveCache = fotoParaDashboard ?: proyecto.id
+            val colorEnCache = ColorExtractorHelper.obtenerColorEnCache(claveCache)
+            if (colorEnCache != null) {
+                aplicarColorDinamico(holder, colorEnCache)
+            } else {
+                restablecerColorDefecto(holder)
+            }
+        }
 
         if (tieneFotoValida) {
             holder.ivImagen.scaleType = ImageView.ScaleType.CENTER_CROP
@@ -70,11 +124,43 @@ class ProyectosAdapter(
             holder.ivImagen.imageTintList = null
             holder.ivImagen.setBackgroundColor(Color.TRANSPARENT)
             val fotoParaDashboard = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
-                holder.ivImagen.load(fotoParaDashboard) {
+            val claveCache = fotoParaDashboard ?: proyecto.id
+            holder.ivImagen.load(fotoParaDashboard) {
                 crossfade(false)
                 memoryCachePolicy(CachePolicy.ENABLED)
                 diskCachePolicy(CachePolicy.ENABLED)
                 networkCachePolicy(CachePolicy.ENABLED)
+                allowHardware(false)
+                if (colorDinamicoActivo) {
+                    listener(
+                        onSuccess = { _, result ->
+                            val drawable = result.drawable
+                            val bitmap = when (drawable) {
+                                is BitmapDrawable -> drawable.bitmap
+                                else -> {
+                                    try {
+                                        val w = drawable.intrinsicWidth.coerceAtLeast(1)
+                                        val h = drawable.intrinsicHeight.coerceAtLeast(1)
+                                        val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+                                        val canvas = android.graphics.Canvas(bmp)
+                                        drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                        drawable.draw(canvas)
+                                        bmp
+                                    } catch (_: Exception) {
+                                        null
+                                    }
+                                }
+                            }
+                            if (bitmap != null) {
+                                ColorExtractorHelper.extraerColor(bitmap, claveCache) { config ->
+                                    if (holder.idProyectoActual == proyecto.id) {
+                                        aplicarColorDinamico(holder, config)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
             }
         } else {
             holder.ivImagen.scaleType = ImageView.ScaleType.FIT_CENTER
@@ -103,6 +189,7 @@ class ProyectosAdapter(
         }
 
         holder.itemView.setOnClickListener {
+            it.hapticClickPrincipal()
             onItemClick(proyecto)
         }
 
@@ -132,10 +219,12 @@ class ProyectosAdapter(
         }
 
         holder.btnAgregarCarpetaVacio.setOnClickListener {
+            it.hapticSeleccion()
             onEditCarpetaClick?.invoke(proyecto)
         }
 
         holder.btnEditarCarpeta.setOnClickListener {
+            it.hapticSeleccion()
             onEditCarpetaClick?.invoke(proyecto)
         }
     }

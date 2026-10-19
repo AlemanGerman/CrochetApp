@@ -1,16 +1,23 @@
 package com.example.calculadoracrochet.adapters
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticEliminar
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.example.calculadoracrochet.viewmodel.esRutaFotoValida
 
 class PapeleraAdapter(
     private var lista: List<ProyectoCrochet>,
@@ -51,9 +58,36 @@ class PapeleraAdapter(
         fun bind(item: ProyectoCrochet) {
             tvNombre.text = item.nombre
 
-            if (!item.fotoUri.isNullOrEmpty()) {
-                ivFoto.load(item.fotoUri) { crossfade(true) }
+            val fotoParaPapelera = item.fotoMiniaturaUri?.takeIf { it.esRutaFotoValida() }
+                ?: item.fotoUri?.takeIf { it.esRutaFotoValida() }
+
+            if (fotoParaPapelera != null) {
+                ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
+                ivFoto.setPadding(0, 0, 0, 0)
+                ivFoto.imageTintList = null
+                ivFoto.setBackgroundColor(Color.TRANSPARENT)
+                ivFoto.load(fotoParaPapelera) {
+                    crossfade(false)
+                    memoryCachePolicy(CachePolicy.ENABLED)
+                    diskCachePolicy(CachePolicy.ENABLED)
+                    networkCachePolicy(CachePolicy.ENABLED)
+                    listener(
+                        onError = { _, _ ->
+                            ivFoto.scaleType = ImageView.ScaleType.FIT_CENTER
+                            val paddingPx = (10 * itemView.context.resources.displayMetrics.density).toInt()
+                            ivFoto.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                            ivFoto.setBackgroundColor(Color.parseColor("#F3E8FF"))
+                            ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.purple_primary)
+                            ivFoto.setImageResource(R.drawable.ic_sad)
+                        }
+                    )
+                }
             } else {
+                ivFoto.scaleType = ImageView.ScaleType.FIT_CENTER
+                val paddingPx = (10 * itemView.context.resources.displayMetrics.density).toInt()
+                ivFoto.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
+                ivFoto.setBackgroundColor(Color.parseColor("#F3E8FF"))
+                ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.purple_primary)
                 ivFoto.setImageResource(R.drawable.ic_sad)
             }
 
@@ -68,12 +102,23 @@ class PapeleraAdapter(
             cbSeleccion.isChecked = seleccionados.contains(item)
 
             cbSeleccion.setOnCheckedChangeListener { _, isChecked ->
+                cbSeleccion.hapticSeleccion()
                 if (isChecked) seleccionados.add(item) else seleccionados.remove(item)
                 onSeleccionCambiada(seleccionados.size)
             }
 
-            btnRestaurar.setOnClickListener { onRestaurarIndividual(item) }
-            btnEliminar.setOnClickListener { onEliminarIndividual(item) }
+            itemView.setOnClickListener {
+                cbSeleccion.isChecked = !cbSeleccion.isChecked
+            }
+
+            btnRestaurar.setOnClickListener {
+                it.hapticClickPrincipal()
+                onRestaurarIndividual(item)
+            }
+            btnEliminar.setOnClickListener {
+                it.hapticEliminar()
+                onEliminarIndividual(item)
+            }
         }
     }
 }

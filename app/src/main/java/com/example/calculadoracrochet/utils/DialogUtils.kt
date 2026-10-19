@@ -11,6 +11,7 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.calculadoracrochet.R
@@ -20,6 +21,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Calendar
 import java.util.UUID
 
 object DialogUtils {
@@ -29,6 +31,37 @@ object DialogUtils {
         val dialog = AlertDialog.Builder(context).setView(view).create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return Pair(dialog, view)
+    }
+
+    fun mostrarSelectorFecha(
+        context: Context,
+        fechaInicialMs: Long?,
+        onFechaSeleccionada: (Long) -> Unit
+    ) {
+        val (dialog, view) = crearDialogBase(context, R.layout.dialog_seleccionar_fecha)
+        val datePicker = view.findViewById<DatePicker>(R.id.datePickerSpinner)
+        val calendario = Calendar.getInstance()
+        fechaInicialMs?.let { calendario.timeInMillis = it }
+
+        datePicker.updateDate(
+            calendario.get(Calendar.YEAR),
+            calendario.get(Calendar.MONTH),
+            calendario.get(Calendar.DAY_OF_MONTH)
+        )
+
+        view.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
+        view.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
+            it.hapticClickPrincipal()
+            val nuevaFecha = Calendar.getInstance().apply {
+                set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
+            }
+            onFechaSeleccionada(nuevaFecha.timeInMillis)
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 
     fun mostrarAlerta(
@@ -57,8 +90,18 @@ object DialogUtils {
             ivIcono.visibility = View.GONE
         }
 
-        view.findViewById<MaterialButton>(R.id.btnCancelar).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelar).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         btnConfirmar.setOnClickListener {
+            if (textoConfirmar.contains("Eliminar", ignoreCase = true) ||
+                textoConfirmar.contains("Vaciar", ignoreCase = true) ||
+                textoConfirmar.contains("Mover", ignoreCase = true)) {
+                it.hapticEliminar()
+            } else {
+                it.hapticClickPrincipal()
+            }
             accionConfirmar()
             dialog.dismiss()
         }
@@ -83,13 +126,18 @@ object DialogUtils {
         tilInput.hint = hint
         etInput.setText(textoActual)
 
-        view.findViewById<MaterialButton>(R.id.btnCancelarInput).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelarInput).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
         view.findViewById<MaterialButton>(R.id.btnGuardarInput).setOnClickListener {
             val nuevoTexto = etInput.text.toString().trim()
             if (nuevoTexto.isNotEmpty()) {
+                it.hapticClickPrincipal()
                 accionGuardar(nuevoTexto)
                 dialog.dismiss()
             } else {
+                it.hapticError()
                 tilInput.error = "Este campo no puede estar vacío"
             }
         }
@@ -127,13 +175,22 @@ object DialogUtils {
             }
         }
 
-        view.findViewById<MaterialButton>(R.id.btnCancelarOpciones).setOnClickListener { dialog.dismiss() }
+        view.findViewById<MaterialButton>(R.id.btnCancelarOpciones).setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnOp1.setOnClickListener {
+            it.hapticClickPrincipal()
             accionOpcion1()
             dialog.dismiss()
         }
         btnOp2.setOnClickListener {
+            if (textoOpcion2.contains("Eliminar", ignoreCase = true)) {
+                it.hapticEliminar()
+            } else {
+                it.hapticClickPrincipal()
+            }
             accionOpcion2()
             dialog.dismiss()
         }
@@ -159,9 +216,13 @@ object DialogUtils {
 
         ivEncuadre.setSourceBitmap(bitmap)
 
-        btnCancelar.setOnClickListener { dialog.dismiss() }
+        btnCancelar.setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnAceptar.setOnClickListener {
+            it.hapticClickPrincipal()
             val recortado = ivEncuadre.recortarBitmap() ?: bitmap
             val uriGuardada = guardarBitmapEncuadrado(context, recortado)
             dialog.dismiss()

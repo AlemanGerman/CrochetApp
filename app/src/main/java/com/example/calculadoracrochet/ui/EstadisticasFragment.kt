@@ -16,7 +16,8 @@ import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
-import java.util.Locale
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.LOCALE_MX
 
 class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
@@ -41,7 +42,7 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
         rootView.findViewById<TextView>(R.id.tvNumeroProyectos)?.text =
             if (totalProyectos == 1) "1 creación" else "$totalProyectos creaciones"
         rootView.findViewById<TextView>(R.id.tvTotalVentas)?.text =
-            String.format(Locale("es", "MX"), "$%,.2f", totalVentas)
+            totalVentas.comoDinero()
 
         val masCostoso = proyectos.maxByOrNull { it.precioFinal }
         val masHoras = proyectos.maxByOrNull { it.horasTrabajadas }
@@ -51,7 +52,7 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             iv = rootView.findViewById(R.id.ivImgMasCostoso),
             tvNombre = rootView.findViewById(R.id.tvNombreMasCostoso),
             tvValor = rootView.findViewById(R.id.tvValorMasCostoso),
-            textoValor = masCostoso?.let { String.format(Locale("es", "MX"), "$%,.2f", it.precioFinal) } ?: "$0.00"
+            textoValor = (masCostoso?.precioFinal ?: 0.0).comoDinero()
         )
 
         configurarDestacado(
@@ -59,7 +60,7 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             iv = rootView.findViewById(R.id.ivImgMasHoras),
             tvNombre = rootView.findViewById(R.id.tvNombreMasHoras),
             tvValor = rootView.findViewById(R.id.tvValorMasHoras),
-            textoValor = masHoras?.let { String.format(Locale("es", "MX"), "%.1f hrs", it.horasTrabajadas) } ?: "0.0 hrs"
+            textoValor = masHoras?.let { String.format(LOCALE_MX, "%.1f hrs", it.horasTrabajadas) } ?: "0.0 hrs"
         )
 
         val llCarpetas = rootView.findViewById<LinearLayout>(R.id.llContenedorCarpetasStats)
@@ -158,8 +159,12 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             tvNombre.text = proyecto.nombre
             tvValor.text = textoValor
 
-            if (!proyecto.fotoUri.isNullOrEmpty()) {
-                iv.load(proyecto.fotoUri) { crossfade(true) }
+            val fotoParaMostrar = proyecto.fotoMiniaturaUri ?: proyecto.fotoUri
+            if (!fotoParaMostrar.isNullOrEmpty()) {
+                iv.load(fotoParaMostrar) {
+                    crossfade(true)
+                    error(R.drawable.ic_photo)
+                }
                 iv.scaleType = ImageView.ScaleType.CENTER_CROP
                 iv.setPadding(0, 0, 0, 0)
                 iv.imageTintList = null

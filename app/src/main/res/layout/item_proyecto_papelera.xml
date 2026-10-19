@@ -35,7 +35,7 @@
             app:shapeAppearanceOverlay="@style/RoundedSquare"
             android:layout_marginStart="8dp"
             tools:src="@drawable/ic_sad"
-            app:tint="@color/purple_primary"/>
+            tools:tint="@color/purple_primary"/>
 
         <LinearLayout
             android:layout_width="0dp"

@@ -1,13 +1,13 @@
 package com.example.calculadoracrochet.ui
 
 import android.animation.Animator
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -22,6 +22,16 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.LOCALE_MX
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.desgloseMateriales
+import com.example.calculadoracrochet.utils.hacerDesplegable
+import com.example.calculadoracrochet.data.CalculadoraPrecio
+import com.example.calculadoracrochet.utils.HapticHelper
+import com.example.calculadoracrochet.utils.hapticClickPrincipal
+import com.example.calculadoracrochet.utils.hapticError
+import com.example.calculadoracrochet.utils.hapticExito
+import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -30,15 +40,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
     private val viewModel: MinaViewModel by activityViewModels()
 
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
+    private var btnSeleccionarFotoModal: MaterialButton? = null
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -47,6 +56,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                 try {
                     ivPreviewModal?.setImageURI(uriEncuadrada)
                     ivPreviewModal?.imageTintList = null
+                    btnSeleccionarFotoModal?.text = "Cambiar o eliminar foto"
                 } catch (e: Exception) { e.printStackTrace() }
             }
         }
@@ -63,11 +73,16 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         viewModel.calcularTotal()
 
-        val subtotal = viewModel.costoMateriales + viewModel.costoDiseno + viewModel.costoManoObra + viewModel.costoEmpaque
-        val ganancia = subtotal * (viewModel.margenGanancia / 100)
+        val desglose = CalculadoraPrecio.desglosar(
+            viewModel.costoMateriales,
+            viewModel.costoDiseno,
+            viewModel.costoManoObra,
+            viewModel.costoEmpaque,
+            viewModel.margenGanancia
+        )
 
         val tvFechaTicket = view.findViewById<TextView>(R.id.tvFechaTicket)
-        val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", Locale("es", "MX"))
+        val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", LOCALE_MX)
 
         fun actualizarTextoFecha() {
             val fechaAUsar = viewModel.fechaEnEdicion ?: System.currentTimeMillis()
@@ -79,71 +94,57 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         if (viewModel.idProyectoEnEdicion != null) {
             btnCambiarFecha.visibility = View.VISIBLE
-            btnCambiarFecha.setOnClickListener { mostrarModalFecha { actualizarTextoFecha() } }
+            btnCambiarFecha.setOnClickListener {
+                it.hapticClickPrincipal()
+                DialogUtils.mostrarSelectorFecha(requireContext(), viewModel.fechaEnEdicion) { fechaMs ->
+                    viewModel.fechaEnEdicion = fechaMs
+                    actualizarTextoFecha()
+                }
+            }
         } else {
             btnCambiarFecha.visibility = View.GONE
         }
 
-        view.findViewById<TextView>(R.id.tvPrecioFinal).text = String.format("$%.2f", viewModel.precioFinalSugerdio)
-        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = String.format("$%.2f", viewModel.costoMateriales)
-        view.findViewById<TextView>(R.id.tvDesglosePatron).text = String.format("$%.2f", viewModel.costoDiseno)
-        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = String.format("$%.2f", viewModel.costoManoObra)
-        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = String.format("$%.2f", viewModel.costoEmpaque)
-        view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = String.format("$%.2f", subtotal)
-        view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = String.format("$%.2f", ganancia)
+        view.findViewById<TextView>(R.id.tvPrecioFinal).text = viewModel.precioFinalSugerdio.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = viewModel.costoMateriales.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesglosePatron).text = viewModel.costoDiseno.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = viewModel.costoManoObra.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = viewModel.costoEmpaque.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = desglose.subtotal.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = desglose.ganancia.comoDinero()
 
         val tvLabelGanancia = view.findViewById<TextView>(R.id.tvLabelGanancia)
-        tvLabelGanancia.text = String.format("GANANCIA EXTRA (%d%%):", viewModel.margenGanancia.toInt())
+        tvLabelGanancia.text = "GANANCIA EXTRA (${viewModel.margenGanancia.toInt()}%):"
+
+        val llFilaRedondeo = view.findViewById<LinearLayout>(R.id.llFilaRedondeo)
+        val tvDesgloseRedondeo = view.findViewById<TextView>(R.id.tvDesgloseRedondeo)
+        if (viewModel.ajusteRedondeo > 0.0) {
+            llFilaRedondeo.visibility = View.VISIBLE
+            tvDesgloseRedondeo.text = viewModel.ajusteRedondeo.comoDinero()
+        } else {
+            llFilaRedondeo.visibility = View.GONE
+        }
 
         val llFilaMateriales = view.findViewById<LinearLayout>(R.id.llFilaMateriales)
         val tvDetalleMaterialesDesc = view.findViewById<TextView>(R.id.tvDetalleMaterialesDesc)
-        tvDetalleMaterialesDesc.text = buildString {
-            if (viewModel.listaEstambresGuardados.isEmpty() && viewModel.listaAccesoriosGuardados.isEmpty()) {
-                append("- Sin detalles agregados")
-            } else {
-                viewModel.listaEstambresGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
-                viewModel.listaAccesoriosGuardados.forEach { appendLine("- ${it.nombre}: $${it.costo}") }
-            }
-        }.trimEnd()
-
-        var matExpandido = false
-        llFilaMateriales.setOnClickListener {
-            matExpandido = !matExpandido
-            tvDetalleMaterialesDesc.visibility = if (matExpandido) View.VISIBLE else View.GONE
-        }
+        tvDetalleMaterialesDesc.text = desgloseMateriales(
+            estambres = viewModel.listaEstambresGuardados,
+            accesorios = viewModel.listaAccesoriosGuardados,
+            vineta = "- ",
+            textoVacio = "- Sin detalles agregados"
+        )
+        llFilaMateriales.hacerDesplegable(tvDetalleMaterialesDesc)
 
         val llFilaManoObra = view.findViewById<LinearLayout>(R.id.llFilaManoObra)
         val tvDetalleManoObraDesc = view.findViewById<TextView>(R.id.tvDetalleManoObraDesc)
-        tvDetalleManoObraDesc.text = String.format("- Tiempo: %.2f hrs\n- Pago: $%.2f/hr", viewModel.horasTrabajadasTemp, viewModel.pagoPorHoraTemp)
+        tvDetalleManoObraDesc.text = String.format(LOCALE_MX, "- Tiempo: %.2f hrs", viewModel.horasTrabajadasTemp) +
+            "\n- Pago: ${viewModel.pagoPorHoraTemp.comoDinero()}/hr"
+        llFilaManoObra.hacerDesplegable(tvDetalleManoObraDesc)
 
-        var manoExpandida = false
-        llFilaManoObra.setOnClickListener {
-            manoExpandida = !manoExpandida
-            tvDetalleManoObraDesc.visibility = if (manoExpandida) View.VISIBLE else View.GONE
+        view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
+            it.hapticClickPrincipal()
+            mostrarModalGuardar()
         }
-
-        view.findViewById<View>(R.id.btnGuardar).setOnClickListener { mostrarModalGuardar() }
-    }
-
-    private fun mostrarModalFecha(onFechaActualizada: () -> Unit) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_seleccionar_fecha, null)
-        val dialog = MaterialAlertDialogBuilder(requireContext()).setView(dialogView).create()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val datePicker = dialogView.findViewById<DatePicker>(R.id.datePickerSpinner)
-        val calendario = Calendar.getInstance()
-        viewModel.fechaEnEdicion?.let { calendario.timeInMillis = it }
-        datePicker.updateDate(calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH))
-
-        dialogView.findViewById<MaterialButton>(R.id.btnCancelarFecha).setOnClickListener { dialog.dismiss() }
-        dialogView.findViewById<MaterialButton>(R.id.btnAceptarFecha).setOnClickListener {
-            val nuevaFecha = Calendar.getInstance()
-            nuevaFecha.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
-            viewModel.fechaEnEdicion = nuevaFecha.timeInMillis
-            onFechaActualizada()
-            dialog.dismiss()
-        }
-        dialog.show()
     }
 
     private fun mostrarModalGuardar() {
@@ -174,6 +175,9 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     setChipStrokeColorResource(it.colorRes)
                     chipStrokeWidth = 1f * resources.displayMetrics.density
                 }
+                setOnClickListener {
+                    hapticSeleccion()
+                }
             }
             if (viewModel.carpetasTemp.contains(nombreCarpeta)) chip.isChecked = true
             mapChips[nombreCarpeta] = chip
@@ -182,19 +186,62 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         if (viewModel.nombreTemp.isNotEmpty()) etNombre?.setText(viewModel.nombreTemp)
 
-        if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
-            uriFotoSeleccionada = viewModel.fotoUriTemp
-            ivPreviewModal?.load(viewModel.fotoUriTemp) { crossfade(true) }
-            ivPreviewModal?.imageTintList = null
+        btnSeleccionarFotoModal = btnElegirFoto
+
+        fun refrescarFotoModal() {
+            if (!uriFotoSeleccionada.isNullOrEmpty()) {
+                ivPreviewModal?.load(uriFotoSeleccionada) { crossfade(true) }
+                ivPreviewModal?.imageTintList = null
+                btnElegirFoto?.text = "Cambiar o eliminar foto"
+            } else {
+                ivPreviewModal?.setImageResource(R.drawable.ic_photo)
+                ivPreviewModal?.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+                btnElegirFoto?.text = "Añadir Foto (Opcional)"
+            }
         }
 
-        btnElegirFoto?.setOnClickListener { pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build()) }
-        ivPreviewModal?.setOnClickListener { pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build()) }
-        btnCancelar?.setOnClickListener { dialog.dismiss() }
+        if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
+            uriFotoSeleccionada = viewModel.fotoUriTemp
+        }
+        refrescarFotoModal()
+
+        fun gestionarClicFoto() {
+            if (uriFotoSeleccionada.isNullOrEmpty()) {
+                pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
+            } else {
+                DialogUtils.mostrarOpciones(
+                    context = requireContext(),
+                    titulo = "Opciones de foto",
+                    textoOpcion1 = "Cambiar foto",
+                    textoOpcion2 = "Eliminar foto",
+                    accionOpcion1 = {
+                        pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
+                    },
+                    accionOpcion2 = {
+                        uriFotoSeleccionada = null
+                        refrescarFotoModal()
+                    }
+                )
+            }
+        }
+
+        btnElegirFoto?.setOnClickListener {
+            it.hapticClickPrincipal()
+            gestionarClicFoto()
+        }
+        ivPreviewModal?.setOnClickListener {
+            it.hapticClickPrincipal()
+            gestionarClicFoto()
+        }
+        btnCancelar?.setOnClickListener {
+            it.hapticClickPrincipal()
+            dialog.dismiss()
+        }
 
         btnConfirmar?.setOnClickListener {
             val nombre = etNombre?.text?.toString()?.trim() ?: ""
             if (nombre.isEmpty()) {
+                it.hapticError()
                 tilNombre?.error = "Ingresa un nombre"
                 return@setOnClickListener
             }
@@ -214,6 +261,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                         (requireActivity() as MainActivity).irAlDashboardConGanchillo()
                     }
                 } else {
+                    btnConfirmar.hapticError()
                     btnConfirmar.isEnabled = true
                     btnCancelar?.isEnabled = true
                     tilNombre?.error = "No se pudo respaldar la foto. Revisa tu conexión e inténtalo de nuevo."
@@ -225,6 +273,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private fun mostrarModalExito(onAnimacionTerminada: () -> Unit) {
         val context = context ?: return
+        HapticHelper.exito(context = context)
 
         val lottieView = LottieAnimationView(context).apply {
             setAnimation(R.raw.animacion_success)
