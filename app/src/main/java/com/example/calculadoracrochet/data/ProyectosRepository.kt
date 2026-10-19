@@ -1,7 +1,10 @@
 package com.example.calculadoracrochet.data
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
@@ -34,11 +37,7 @@ class ProyectosRepository(
 
     fun guardar(proyecto: ProyectoCrochet, onResultado: (Boolean) -> Unit) {
         coleccion.document(proyecto.id).set(proyecto)
-            .addOnSuccessListener { onResultado(true) }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Error al guardar proyecto", e)
-                onResultado(false)
-            }
+            .alConfirmarOEncolar("guardar proyecto ${proyecto.id}", onResultado)
     }
 
     fun actualizarCampos(
@@ -47,11 +46,7 @@ class ProyectosRepository(
         onResultado: ((Boolean) -> Unit)? = null
     ) {
         coleccion.document(idProyecto).update(campos)
-            .addOnSuccessListener { onResultado?.invoke(true) }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Error al actualizar $campos en $idProyecto", e)
-                onResultado?.invoke(false)
-            }
+            .alConfirmarOEncolar("actualizar $campos en $idProyecto") { onResultado?.invoke(it) }
     }
 
     fun actualizarCamposEnLote(
@@ -61,27 +56,55 @@ class ProyectosRepository(
     ) {
         val batch = db.batch()
         idsProyectos.forEach { batch.update(coleccion.document(it), campos) }
-        batch.commit()
-            .addOnSuccessListener { onResultado(true) }
-            .addOnFailureListener { onResultado(false) }
+        batch.commit().alConfirmarOEncolar("actualizar $campos en lote", onResultado)
     }
 
     fun eliminar(idProyecto: String, onResultado: (Boolean) -> Unit) {
         coleccion.document(idProyecto).delete()
-            .addOnSuccessListener { onResultado(true) }
-            .addOnFailureListener { onResultado(false) }
+            .alConfirmarOEncolar("eliminar $idProyecto", onResultado)
     }
 
     fun eliminarEnLote(idsProyectos: List<String>, onResultado: (Boolean) -> Unit) {
         val batch = db.batch()
         idsProyectos.forEach { batch.delete(coleccion.document(it)) }
-        batch.commit()
-            .addOnSuccessListener { onResultado(true) }
-            .addOnFailureListener { onResultado(false) }
+        batch.commit().alConfirmarOEncolar("eliminar en lote", onResultado)
+    }
+
+    /**
+     * Firestore applies writes to the local cache right away, but the Task only completes once the
+     * server acknowledges them, which may never happen on a slow or missing connection. If there is
+     * no answer within [ESPERA_CONFIRMACION_MS] the write is already queued and will sync later,
+     * so report success instead of leaving the UI waiting. Answers at most once.
+     */
+    private fun Task<Void>.alConfirmarOEncolar(descripcion: String, onResultado: (Boolean) -> Unit) {
+        var respondido = false
+        fun responder(exito: Boolean) {
+            if (respondido) return
+            respondido = true
+            onResultado(exito)
+        }
+
+        val handler = Handler(Looper.getMainLooper())
+        val porTiempo = Runnable {
+            Log.w(TAG, "Sin confirmación del servidor al $descripcion; queda en cola para sincronizar")
+            responder(true)
+        }
+        handler.postDelayed(porTiempo, ESPERA_CONFIRMACION_MS)
+
+        addOnSuccessListener {
+            handler.removeCallbacks(porTiempo)
+            responder(true)
+        }
+        addOnFailureListener { e ->
+            handler.removeCallbacks(porTiempo)
+            Log.e(TAG, "Error al $descripcion", e)
+            responder(false)
+        }
     }
 
     companion object {
         const val COLECCION = "proyectos_mina"
         private const val TAG = "Firebase"
+        private const val ESPERA_CONFIRMACION_MS = 3_000L
     }
 }
