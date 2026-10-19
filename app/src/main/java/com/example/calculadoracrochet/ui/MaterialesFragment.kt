@@ -17,7 +17,6 @@ import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.viewmodel.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
-import java.util.Locale
 
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
@@ -27,6 +26,7 @@ import com.example.calculadoracrochet.utils.errorSiVacio
 import com.example.calculadoracrochet.utils.errorSiNoPositivo
 import com.example.calculadoracrochet.utils.errorCantidadUsada
 import com.example.calculadoracrochet.utils.aNumeroOInvalido
+import com.example.calculadoracrochet.utils.comoTextoEditable
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
@@ -44,7 +44,13 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
             } else {
                 viewModel.listaEstambresGuardados.forEach {
-                    agregarFilaEstambre(llContenedorEstambres, it.nombre, it.costo, it.totales, it.usados)
+                    agregarFilaEstambre(
+                        llContenedorEstambres,
+                        it.nombre,
+                        it.costoMadeja.comoTextoEditable(),
+                        it.gramosTotales.comoTextoEditable(),
+                        it.gramosUsados.comoTextoEditable()
+                    )
                 }
             }
 
@@ -54,12 +60,12 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                         agregarFilaAccesorioCalculado(
                             llContenedorExtra,
                             it.nombre,
-                            it.costoPaquete,
-                            it.cantidadTotal,
-                            it.cantidadUsada
+                            it.costoPaquete.comoTextoEditable(),
+                            it.cantidadTotal.comoTextoEditable(),
+                            it.cantidadUsada.comoTextoEditable()
                         )
                     } else {
-                        agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo)
+                        agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo.comoTextoEditable())
                     }
                 }
             }
@@ -135,11 +141,11 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 val strTotales = fila.findViewById<EditText>(R.id.etGramosTotales).text.toString()
                 val strUsados = fila.findViewById<EditText>(R.id.etGramosUsados).text.toString()
 
-                estambresTemp.add(EstambreGuardado(strNombre, strCosto, strTotales, strUsados))
-
                 val costoMadeja = strCosto.aNumeroOInvalido()
                 val gramosTotales = strTotales.aNumeroOInvalido()
                 val gramosUsados = strUsados.aNumeroOInvalido()
+                val estambre = EstambreGuardado(strNombre, costoMadeja, gramosTotales, gramosUsados)
+                estambresTemp.add(estambre)
 
                 todoCorrecto = tilNombre.validar(errorSiVacio(strNombre, "Ingresa el color/marca")) && todoCorrecto
                 todoCorrecto = tilCostoMadeja.validar(errorSiNoPositivo(costoMadeja, "Debe ser mayor a $0")) && todoCorrecto
@@ -147,7 +153,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 todoCorrecto = tilGramosUsados.validar(errorCantidadUsada(gramosUsados, gramosTotales, "Debe ser mayor a 0g")) && todoCorrecto
 
                 if (costoMadeja > 0 && gramosTotales > 0 && gramosUsados > 0) {
-                    costoTotalEstambres += (costoMadeja / gramosTotales) * gramosUsados
+                    costoTotalEstambres += estambre.costo
                 }
             }
 
@@ -161,8 +167,8 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                     val strNombreMat = fila.findViewById<EditText>(R.id.etNombreMaterial).text.toString().trim()
                     val strCostoMat = etCostoDirecto.text.toString()
 
-                    accesoriosTemp.add(AccesorioGuardado(strNombreMat, strCostoMat, esCalculado = false))
                     val costoMaterial = strCostoMat.aNumeroOInvalido()
+                    accesoriosTemp.add(AccesorioGuardado(strNombreMat, costoMaterial, esCalculado = false))
 
                     todoCorrecto = tilNombreMaterial.validar(errorSiVacio(strNombreMat, "Ingresa un nombre")) && todoCorrecto
                     todoCorrecto = tilCostoMaterial.validar(errorSiNoPositivo(costoMaterial, "Debe ser mayor a $0")) && todoCorrecto
@@ -194,11 +200,11 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                         accesoriosTemp.add(
                             AccesorioGuardado(
                                 nombre = strNombre,
-                                costo = String.format(Locale.US, "%.2f", costoFinal),
+                                costo = costoFinal,
                                 esCalculado = true,
-                                costoPaquete = strCosto,
-                                cantidadTotal = strTotales,
-                                cantidadUsada = strUsados
+                                costoPaquete = costoTotal,
+                                cantidadTotal = cantTotal,
+                                cantidadUsada = cantUsada
                             )
                         )
                     }

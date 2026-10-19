@@ -22,13 +22,7 @@ class ProyectosRepository(
 
             val listaProcesada = documentos.mapNotNull { documento ->
                 try {
-                    documento.toObject(ProyectoCrochet::class.java).apply {
-                        id = documento.id
-                        // Firestore can leave these null on documents saved before the fields existed
-                        carpetas = carpetas ?: emptyList()
-                        listaEstambres = listaEstambres ?: emptyList()
-                        listaAccesorios = listaAccesorios ?: emptyList()
-                    }
+                    ProyectoMapper.desdeMapa(documento.id, documento.data)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error al procesar proyecto: ${documento.id}", e)
                     null

@@ -2,20 +2,27 @@ package com.example.calculadoracrochet.viewmodel
 
 import java.util.UUID
 
+/** Version 1 stored material amounts as text; version 2 stores numbers. */
+const val VERSION_DATOS_ACTUAL = 2
+
 data class EstambreGuardado(
     var nombre: String = "",
-    var costo: String = "",
-    var totales: String = "",
-    var usados: String = ""
-)
+    var costoMadeja: Double = 0.0,
+    var gramosTotales: Double = 0.0,
+    var gramosUsados: Double = 0.0
+) {
+    /** Cost of the grams actually used. Also written to Firestore so the document reads on its own. */
+    val costo: Double
+        get() = if (gramosTotales > 0.0) costoMadeja / gramosTotales * gramosUsados else 0.0
+}
 
 data class AccesorioGuardado(
     var nombre: String = "",
-    var costo: String = "",
+    var costo: Double = 0.0,
     var esCalculado: Boolean = false,
-    var costoPaquete: String = "",
-    var cantidadTotal: String = "",
-    var cantidadUsada: String = ""
+    var costoPaquete: Double = 0.0,
+    var cantidadTotal: Double = 0.0,
+    var cantidadUsada: Double = 0.0
 )
 
 data class ProyectoCrochet(
@@ -37,7 +44,8 @@ data class ProyectoCrochet(
     var pagoPorHora: Double = 0.0,
     var listaEstambres: List<EstambreGuardado> = emptyList(),
     var listaAccesorios: List<AccesorioGuardado> = emptyList(),
-    var carpetas: List<String> = emptyList()
+    var carpetas: List<String> = emptyList(),
+    var versionDatos: Int = VERSION_DATOS_ACTUAL
 )
 
 val ProyectoCrochet.estaEnPapelera: Boolean

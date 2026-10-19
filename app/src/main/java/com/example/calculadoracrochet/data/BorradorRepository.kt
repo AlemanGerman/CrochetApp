@@ -73,24 +73,9 @@ class BorradorRepository(context: Context) {
             idProyectoEnEdicion = prefs.getString("idProyectoEnEdicion", null),
             fechaEnEdicion = prefs.getLong("fechaEnEdicion", SIN_FECHA).takeIf { it != SIN_FECHA },
             carpetas = prefs.getStringSet("carpetasTemp", emptySet()) ?: emptySet(),
-            estambres = leerLista("estambres") { obj ->
-                EstambreGuardado(
-                    nombre = obj.optString("nombre"),
-                    costo = obj.optString("costo"),
-                    totales = obj.optString("totales"),
-                    usados = obj.optString("usados")
-                )
-            },
-            accesorios = leerLista("accesorios") { obj ->
-                AccesorioGuardado(
-                    nombre = obj.optString("nombre"),
-                    costo = obj.optString("costo"),
-                    esCalculado = obj.optBoolean("esCalculado", false),
-                    costoPaquete = obj.optString("costoPaquete"),
-                    cantidadTotal = obj.optString("cantidadTotal"),
-                    cantidadUsada = obj.optString("cantidadUsada")
-                )
-            }
+            // Same tolerant parsing as Firestore: drafts saved before version 2 hold text amounts
+            estambres = leerLista("estambres", ProyectoMapper::estambreDesdeMapa),
+            accesorios = leerLista("accesorios", ProyectoMapper::accesorioDesdeMapa)
         )
     }
 
@@ -100,16 +85,19 @@ class BorradorRepository(context: Context) {
 
     private fun leerDouble(clave: String): Double = prefs.getFloat(clave, 0f).toDouble()
 
-    private fun <T> leerLista(clave: String, mapear: (JSONObject) -> T): List<T> {
+    private fun <T> leerLista(clave: String, mapear: (Map<String, Any?>) -> T): List<T> {
         val json = prefs.getString(clave, null)
         if (json.isNullOrEmpty()) return emptyList()
         return try {
             val arr = JSONArray(json)
-            (0 until arr.length()).map { mapear(arr.getJSONObject(it)) }
+            (0 until arr.length()).map { mapear(arr.getJSONObject(it).comoMapa()) }
         } catch (_: Exception) {
             emptyList()
         }
     }
+
+    private fun JSONObject.comoMapa(): Map<String, Any?> =
+        keys().asSequence().associateWith { clave -> opt(clave).takeUnless { it == JSONObject.NULL } }
 
     private fun estambresAJson(estambres: List<EstambreGuardado>): String =
         JSONArray().apply {
@@ -117,9 +105,9 @@ class BorradorRepository(context: Context) {
                 put(
                     JSONObject()
                         .put("nombre", est.nombre)
-                        .put("costo", est.costo)
-                        .put("totales", est.totales)
-                        .put("usados", est.usados)
+                        .put("costoMadeja", est.costoMadeja)
+                        .put("gramosTotales", est.gramosTotales)
+                        .put("gramosUsados", est.gramosUsados)
                 )
             }
         }.toString()
