@@ -13,8 +13,8 @@ import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.calculadoracrochet.utils.FotosOptimizador
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
-import com.example.calculadoracrochet.viewmodel.estaEnPapelera
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.estaEnPapelera
 import com.example.calculadoracrochet.workers.EliminarFotoWorker
 import com.example.calculadoracrochet.workers.SubirFotoWorker
 import java.io.File

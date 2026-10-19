@@ -2,8 +2,8 @@ package com.example.calculadoracrochet.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
-import com.example.calculadoracrochet.viewmodel.EstambreGuardado
+import com.example.calculadoracrochet.data.model.AccesorioGuardado
+import com.example.calculadoracrochet.data.model.EstambreGuardado
 import org.json.JSONArray
 import org.json.JSONObject
 

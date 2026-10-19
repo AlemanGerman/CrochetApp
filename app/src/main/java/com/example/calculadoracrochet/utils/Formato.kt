@@ -1,7 +1,7 @@
 package com.example.calculadoracrochet.utils
 
-import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
-import com.example.calculadoracrochet.viewmodel.EstambreGuardado
+import com.example.calculadoracrochet.data.model.AccesorioGuardado
+import com.example.calculadoracrochet.data.model.EstambreGuardado
 import java.util.Locale
 
 val LOCALE_MX: Locale = Locale.forLanguageTag("es-MX")

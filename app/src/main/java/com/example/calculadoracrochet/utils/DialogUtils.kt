@@ -15,7 +15,7 @@ import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.ui.EncuadreImageView
+import com.example.calculadoracrochet.ui.comun.EncuadreImageView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout

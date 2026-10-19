@@ -1,6 +1,6 @@
 package com.example.calculadoracrochet.data
 
-import com.example.calculadoracrochet.viewmodel.VERSION_DATOS_ACTUAL
+import com.example.calculadoracrochet.data.model.VERSION_DATOS_ACTUAL
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

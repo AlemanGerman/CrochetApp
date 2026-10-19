@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.adapters
+package com.example.calculadoracrochet.ui.dashboard
 
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -20,14 +20,14 @@ import com.example.calculadoracrochet.utils.ColorExtractorHelper
 import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Date
-import com.example.calculadoracrochet.viewmodel.tieneFoto
+import com.example.calculadoracrochet.data.model.tieneFoto
 import com.example.calculadoracrochet.utils.comoDinero
 import com.example.calculadoracrochet.utils.LOCALE_MX
 

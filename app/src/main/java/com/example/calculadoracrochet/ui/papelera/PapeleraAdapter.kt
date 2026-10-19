@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.adapters
+package com.example.calculadoracrochet.ui.papelera
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -15,9 +15,9 @@ import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.utils.hapticSeleccion
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.example.calculadoracrochet.viewmodel.esRutaFotoValida
+import com.example.calculadoracrochet.data.model.esRutaFotoValida
 
 class PapeleraAdapter(
     private var lista: List<ProyectoCrochet>,

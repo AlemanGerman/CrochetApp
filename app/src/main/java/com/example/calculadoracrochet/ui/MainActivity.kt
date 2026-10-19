@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.dashboard.DashboardFragment
 
 class MainActivity : AppCompatActivity() {
 

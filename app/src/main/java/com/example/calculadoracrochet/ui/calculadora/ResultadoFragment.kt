@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.calculadora
 
 import android.animation.Animator
 import android.content.res.ColorStateList
@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
+import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils

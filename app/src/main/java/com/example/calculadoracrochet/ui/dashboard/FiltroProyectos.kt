@@ -1,7 +1,7 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.dashboard
 
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
-import com.example.calculadoracrochet.viewmodel.estaEnPapelera
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.estaEnPapelera
 
 enum class CriterioOrden {
     FECHA,

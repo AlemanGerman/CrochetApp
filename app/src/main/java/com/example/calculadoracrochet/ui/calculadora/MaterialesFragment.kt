@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.calculadora
 
 import android.os.Bundle
 import android.os.SystemClock
@@ -12,10 +12,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.utils.DialogUtils
-import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
+import com.example.calculadoracrochet.data.model.AccesorioGuardado
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
-import com.example.calculadoracrochet.viewmodel.EstambreGuardado
+import com.example.calculadoracrochet.data.model.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
 
 import com.example.calculadoracrochet.utils.hapticClickPrincipal

@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.dashboard
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -26,13 +26,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.adapters.ProyectosAdapter
+import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.calculadora.MaterialesFragment
+import com.example.calculadoracrochet.ui.configuracion.ConfiguracionFragment
+import com.example.calculadoracrochet.ui.estadisticas.EstadisticasFragment
+import com.example.calculadoracrochet.ui.papelera.PapeleraFragment
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox

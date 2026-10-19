@@ -1,8 +1,8 @@
 package com.example.calculadoracrochet.data
 
-import com.example.calculadoracrochet.viewmodel.AccesorioGuardado
-import com.example.calculadoracrochet.viewmodel.EstambreGuardado
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.AccesorioGuardado
+import com.example.calculadoracrochet.data.model.EstambreGuardado
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 
 /**
  * Builds projects from raw Firestore data, accepting both formats:
