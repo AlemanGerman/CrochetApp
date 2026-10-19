@@ -15,7 +15,6 @@ import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.data.model.AccesorioGuardado
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.example.calculadoracrochet.data.model.EstambreGuardado
 import com.google.android.material.textfield.TextInputLayout
 
@@ -31,7 +30,7 @@ import com.example.calculadoracrochet.utils.comoTextoEditable
 
 class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
     private var ultimoClicTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -41,10 +40,10 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         val llContenedorExtra = view.findViewById<LinearLayout>(R.id.llContenedorMaterialesExtra)
 
         view.post {
-            if (viewModel.listaEstambresGuardados.isEmpty()) {
+            if (viewModel.calculo.estambres.isEmpty()) {
                 agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
             } else {
-                viewModel.listaEstambresGuardados.forEach {
+                viewModel.calculo.estambres.forEach {
                     agregarFilaEstambre(
                         llContenedorEstambres,
                         it.nombre,
@@ -55,8 +54,8 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 }
             }
 
-            if (viewModel.listaAccesoriosGuardados.isNotEmpty()) {
-                viewModel.listaAccesoriosGuardados.forEach {
+            if (viewModel.calculo.accesorios.isNotEmpty()) {
+                viewModel.calculo.accesorios.forEach {
                     if (it.esCalculado) {
                         agregarFilaAccesorioCalculado(
                             llContenedorExtra,
@@ -214,11 +213,11 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
 
             if (todoCorrecto) {
                 view.hapticClickPrincipal()
-                viewModel.costoMateriales = costoTotalEstambres + costoTotalAccesorios
-                viewModel.listaEstambresGuardados.clear()
-                viewModel.listaEstambresGuardados.addAll(estambresTemp)
-                viewModel.listaAccesoriosGuardados.clear()
-                viewModel.listaAccesoriosGuardados.addAll(accesoriosTemp)
+                viewModel.calculo.costoMateriales = costoTotalEstambres + costoTotalAccesorios
+                viewModel.calculo.estambres.clear()
+                viewModel.calculo.estambres.addAll(estambresTemp)
+                viewModel.calculo.accesorios.clear()
+                viewModel.calculo.accesorios.addAll(accesoriosTemp)
                 viewModel.guardarBorrador()
 
                 requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE

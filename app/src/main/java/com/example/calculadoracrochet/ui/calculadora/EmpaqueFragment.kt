@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.ui.MainActivity
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputLayout
 
@@ -19,7 +18,7 @@ import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.utils.validar
 
 class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,12 +47,12 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
             "${value.toInt()}%"
         }
 
-        if (viewModel.costoEmpaque > 0.0) {
-            etCostoCaja.setText(viewModel.costoEmpaque.toString())
+        if (viewModel.calculo.costoEmpaque > 0.0) {
+            etCostoCaja.setText(viewModel.calculo.costoEmpaque.toString())
         }
 
-        if (viewModel.margenGanancia >= 0.0) {
-            val margenSeguro = viewModel.margenGanancia.toFloat().coerceIn(0f, 100f)
+        if (viewModel.calculo.margenGanancia >= 0.0) {
+            val margenSeguro = viewModel.calculo.margenGanancia.toFloat().coerceIn(0f, 100f)
             sliderMargen.value = margenSeguro
             tvMargenLabel.text = "Margen de ganancia extra: ${margenSeguro.toInt()}%"
         }
@@ -78,8 +77,8 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
 
             if (todoCorrecto) {
                 view.hapticClickPrincipal()
-                viewModel.costoEmpaque = costoCaja
-                viewModel.margenGanancia = margen
+                viewModel.calculo.costoEmpaque = costoCaja
+                viewModel.calculo.margenGanancia = margen
                 viewModel.guardarBorrador()
 
                 (requireActivity() as MainActivity).navegarConGanchillo(ResultadoFragment())

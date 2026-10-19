@@ -12,7 +12,6 @@ import androidx.fragment.app.activityViewModels
 import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
@@ -22,7 +21,7 @@ import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticSeleccion
 
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
     private var ultimoRetrocesoTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,13 +53,13 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
         }
         val colorMorado = ContextCompat.getColor(requireContext(), R.color.purple_primary)
 
-        if (viewModel.pagoPorHoraTemp > 0.0) {
-            etPagoHora.setText(viewModel.pagoPorHoraTemp.toString())
+        if (viewModel.calculo.pagoPorHora > 0.0) {
+            etPagoHora.setText(viewModel.calculo.pagoPorHora.toString())
         }
 
-        if (viewModel.horasTrabajadasTemp > 0.0) {
-            val horas = viewModel.horasTrabajadasTemp.toInt()
-            val minutos = ((viewModel.horasTrabajadasTemp - horas) * 60).toInt()
+        if (viewModel.calculo.horasTrabajadas > 0.0) {
+            val horas = viewModel.calculo.horasTrabajadas.toInt()
+            val minutos = ((viewModel.calculo.horasTrabajadas - horas) * 60).toInt()
             timePickerHoras.hour = horas
             timePickerHoras.minute = minutos
         }
@@ -100,9 +99,9 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
 
             if (todoCorrecto) {
                 view.hapticClickPrincipal()
-                viewModel.costoManoObra = pagoPorHora * horasTotales
-                viewModel.pagoPorHoraTemp = pagoPorHora
-                viewModel.horasTrabajadasTemp = horasTotales
+                viewModel.calculo.costoManoObra = pagoPorHora * horasTotales
+                viewModel.calculo.pagoPorHora = pagoPorHora
+                viewModel.calculo.horasTrabajadas = horasTotales
                 viewModel.guardarBorrador()
 
                 parentFragmentManager.beginTransaction()

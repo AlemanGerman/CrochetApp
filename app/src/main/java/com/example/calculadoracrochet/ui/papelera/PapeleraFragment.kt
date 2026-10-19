@@ -14,13 +14,13 @@ import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: ProyectosViewModel by activityViewModels()
     private lateinit var adapter: PapeleraAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

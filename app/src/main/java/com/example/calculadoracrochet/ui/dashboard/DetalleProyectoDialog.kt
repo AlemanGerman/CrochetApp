@@ -13,6 +13,7 @@ import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.data.CalculadoraPrecio
 import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.example.calculadoracrochet.ui.calculadora.MaterialesFragment
 import com.example.calculadoracrochet.ui.comun.ZoomableImageView
 import com.example.calculadoracrochet.utils.DialogUtils
@@ -22,7 +23,7 @@ import com.example.calculadoracrochet.utils.desgloseMateriales
 import com.example.calculadoracrochet.utils.hacerDesplegable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.data.model.tieneFoto
 import com.google.android.material.button.MaterialButton
@@ -35,7 +36,8 @@ import java.util.Date
  */
 class DetalleProyectoDialog(
     private val fragment: Fragment,
-    private val viewModel: MinaViewModel,
+    private val viewModel: ProyectosViewModel,
+    private val calculadoraViewModel: CalculadoraViewModel,
     private val onProyectoModificado: () -> Unit,
     private val onSolicitarFoto: (proyecto: ProyectoCrochet, vistaFoto: ImageView) -> Unit
 ) {
@@ -212,7 +214,7 @@ class DetalleProyectoDialog(
         }
 
         fun abrirEnCalculadora(esDuplicado: Boolean) {
-            viewModel.cargarProyectoParaEdicion(proyecto, esDuplicado)
+            calculadoraViewModel.cargarProyectoParaEdicion(proyecto, esDuplicado)
             dialog.dismiss()
             (fragment.requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }

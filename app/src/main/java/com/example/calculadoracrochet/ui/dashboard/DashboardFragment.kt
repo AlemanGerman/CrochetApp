@@ -35,7 +35,8 @@ import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
+import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -44,7 +45,8 @@ import java.lang.ref.WeakReference
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: ProyectosViewModel by activityViewModels()
+    private val calculadoraViewModel: CalculadoraViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
     private lateinit var detalleDialog: DetalleProyectoDialog
     private var dockCarpetas: DockCarpetasController? = null
@@ -74,7 +76,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                     e.printStackTrace()
                 }
 
-                viewModel.actualizarFotoProyecto(contexto, proyectoActual, uriEncuadrada.toString()) { actualizada ->
+                viewModel.actualizarFotoProyecto(proyectoActual, uriEncuadrada.toString()) { actualizada ->
                     if (!isAdded) return@actualizarFotoProyecto
 
                     if (actualizada) {
@@ -112,6 +114,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         detalleDialog = DetalleProyectoDialog(
             fragment = this,
             viewModel = viewModel,
+            calculadoraViewModel = calculadoraViewModel,
             onProyectoModificado = { filtrarYOrdenarLista() },
             onSolicitarFoto = { proyecto, vistaFoto -> solicitarFoto(proyecto, vistaFoto) }
         )
@@ -153,7 +156,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
             it.hapticClickPrincipal()
-            viewModel.limpiarCalculoActual()
+            calculadoraViewModel.limpiarCalculoActual()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 

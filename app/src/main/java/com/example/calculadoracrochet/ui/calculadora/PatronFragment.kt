@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
 import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
 
@@ -22,7 +21,7 @@ import com.example.calculadoracrochet.utils.aNumeroOInvalido
 
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
 
     private var ultimoRetrocesoTiempo: Long = 0L
 
@@ -86,11 +85,11 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                 ) && todoCorrecto
 
                 if (todoCorrecto) {
-                    viewModel.costoDiseno = costo / unidades.toDouble()
+                    viewModel.calculo.costoDiseno = costo / unidades.toDouble()
                 }
 
             } else {
-                viewModel.costoDiseno = 0.0
+                viewModel.calculo.costoDiseno = 0.0
             }
 
             if (todoCorrecto) {
