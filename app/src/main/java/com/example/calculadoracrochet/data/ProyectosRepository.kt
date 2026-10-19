@@ -1,7 +1,7 @@
 package com.example.calculadoracrochet.data
 
 import android.util.Log
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 

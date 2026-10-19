@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.configuracion
 
 import android.os.Bundle
 import android.text.Editable

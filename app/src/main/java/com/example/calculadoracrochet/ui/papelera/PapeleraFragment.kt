@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.papelera
 
 import android.os.Bundle
 import android.view.View
@@ -10,7 +10,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.adapters.PapeleraAdapter
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal

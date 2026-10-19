@@ -22,7 +22,7 @@
             app:cardElevation="0dp"
             android:backgroundTint="#F8F9FA">
 
-            <com.example.calculadoracrochet.ui.ZoomableImageView
+            <com.example.calculadoracrochet.ui.comun.ZoomableImageView
                 android:id="@+id/ivFotoZoom"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

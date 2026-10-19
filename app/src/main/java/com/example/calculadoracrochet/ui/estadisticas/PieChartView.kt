@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.estadisticas
 
 import android.content.Context
 import android.graphics.Canvas

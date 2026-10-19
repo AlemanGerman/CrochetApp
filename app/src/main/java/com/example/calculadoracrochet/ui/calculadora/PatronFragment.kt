@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.calculadora
 
 import android.os.Bundle
 import android.view.View

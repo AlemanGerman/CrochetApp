@@ -324,7 +324,7 @@
                             android:letterSpacing="0.08"
                             android:layout_marginBottom="12dp"/>
 
-                        <com.example.calculadoracrochet.ui.PieChartView
+                        <com.example.calculadoracrochet.ui.estadisticas.PieChartView
                             android:id="@+id/pieChartCarpetas"
                             android:layout_width="match_parent"
                             android:layout_height="180dp"

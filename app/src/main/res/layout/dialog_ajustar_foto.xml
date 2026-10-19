@@ -44,7 +44,7 @@
             app:strokeColor="#E9D5FF"
             android:backgroundTint="#F8F9FA">
 
-            <com.example.calculadoracrochet.ui.EncuadreImageView
+            <com.example.calculadoracrochet.ui.comun.EncuadreImageView
                 android:id="@+id/ivEncuadre"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

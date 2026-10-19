@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.calculadora
 
 import android.os.Bundle
 import android.view.View
@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputLayout

@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.dashboard
 
 import android.app.AlertDialog
 import android.content.res.ColorStateList
@@ -12,6 +12,9 @@ import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.data.CalculadoraPrecio
+import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.calculadora.MaterialesFragment
+import com.example.calculadoracrochet.ui.comun.ZoomableImageView
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.LOCALE_MX
 import com.example.calculadoracrochet.utils.comoDinero
@@ -20,8 +23,8 @@ import com.example.calculadoracrochet.utils.hacerDesplegable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
-import com.example.calculadoracrochet.viewmodel.tieneFoto
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.tieneFoto
 import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
 import java.util.Date

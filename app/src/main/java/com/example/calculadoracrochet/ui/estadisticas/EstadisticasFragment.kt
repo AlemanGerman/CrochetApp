@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.estadisticas
 
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -14,7 +14,7 @@ import coil.load
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.MinaViewModel
-import com.example.calculadoracrochet.viewmodel.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import com.example.calculadoracrochet.utils.comoDinero
 import com.example.calculadoracrochet.utils.LOCALE_MX

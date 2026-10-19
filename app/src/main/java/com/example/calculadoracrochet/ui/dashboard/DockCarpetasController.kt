@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.ui
+package com.example.calculadoracrochet.ui.dashboard
 
 import android.animation.ValueAnimator
 import android.view.LayoutInflater

@@ -14,6 +14,10 @@ import com.example.calculadoracrochet.data.FotosLocalesPersistentes
 import com.example.calculadoracrochet.data.FotosProyectoRepository
 import com.example.calculadoracrochet.data.ProyectosRepository
 import com.example.calculadoracrochet.data.esRemota
+import com.example.calculadoracrochet.data.model.AccesorioGuardado
+import com.example.calculadoracrochet.data.model.EstambreGuardado
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
+import com.example.calculadoracrochet.data.model.estaEnPapelera
 import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.Dispatchers

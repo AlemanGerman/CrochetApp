@@ -1,4 +1,4 @@
-package com.example.calculadoracrochet.viewmodel
+package com.example.calculadoracrochet.data.model
 
 import java.util.UUID
 
