@@ -13,7 +13,7 @@ import androidx.fragment.app.activityViewModels
 import coil.load
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import com.example.calculadoracrochet.utils.comoDinero
@@ -21,7 +21,7 @@ import com.example.calculadoracrochet.utils.LOCALE_MX
 
 class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: ProyectosViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,18 +34,20 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
     }
 
     private fun calcularYMostrarMetricas(rootView: View) {
-        val proyectos = viewModel.proyectosActivos
+        val carpetasSinTodos = CarpetasConfig.listaCarpetas.filter { it.nombre != "Todos" }
+        val resumen = EstadisticasProyectos.calcular(
+            proyectos = viewModel.proyectosActivos,
+            nombresCarpetas = carpetasSinTodos.map { it.nombre }
+        )
 
-        val totalProyectos = proyectos.size
-        val totalVentas = proyectos.sumOf { it.precioFinal }
-
+        val totalProyectos = resumen.totalProyectos
         rootView.findViewById<TextView>(R.id.tvNumeroProyectos)?.text =
             if (totalProyectos == 1) "1 creación" else "$totalProyectos creaciones"
         rootView.findViewById<TextView>(R.id.tvTotalVentas)?.text =
-            totalVentas.comoDinero()
+            resumen.totalVentas.comoDinero()
 
-        val masCostoso = proyectos.maxByOrNull { it.precioFinal }
-        val masHoras = proyectos.maxByOrNull { it.horasTrabajadas }
+        val masCostoso = resumen.masCostoso
+        val masHoras = resumen.masHoras
 
         configurarDestacado(
             proyecto = masCostoso,
@@ -66,35 +68,6 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
         val llCarpetas = rootView.findViewById<LinearLayout>(R.id.llContenedorCarpetasStats)
         llCarpetas?.removeAllViews()
 
-        val carpetasSinTodos = CarpetasConfig.listaCarpetas.filter { it.nombre != "Todos" }
-
-        val conteosPorCarpeta = carpetasSinTodos.map { carpeta ->
-            val conteo = proyectos.count { it.carpetas.contains(carpeta.nombre) }
-            Pair(carpeta, conteo)
-        }
-
-        val totalPiezasGrafica = conteosPorCarpeta.sumOf { it.second }
-
-        val mapaPorcentajes = mutableMapOf<String, Int>()
-        if (totalPiezasGrafica > 0) {
-            data class ItemResto(val nombre: String, val base: Int, val resto: Double)
-
-            val listaItems = conteosPorCarpeta.filter { it.second > 0 }.map { (carpeta, conteo) ->
-                val exacto = (conteo.toDouble() / totalPiezasGrafica) * 100.0
-                val base = exacto.toInt()
-                ItemResto(carpeta.nombre, base, exacto - base)
-            }
-
-            val sumaBases = listaItems.sumOf { it.base }
-            val faltante = 100 - sumaBases
-
-            val ordenados = listaItems.sortedByDescending { it.resto }
-            ordenados.forEachIndexed { i, item ->
-                val extra = if (i < faltante) 1 else 0
-                mapaPorcentajes[item.nombre] = item.base + extra
-            }
-        }
-
         val listaSlices = mutableListOf<PieChartView.Slice>()
 
         val coloresGrafica = listOf(
@@ -107,9 +80,10 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             0xFF64748B.toInt()
         )
 
-        conteosPorCarpeta.forEachIndexed { index, (carpeta, conteo) ->
+        carpetasSinTodos.zip(resumen.carpetas).forEachIndexed { index, (carpeta, estadistica) ->
             val colorAsignado = coloresGrafica[index % coloresGrafica.size]
-            val porcentaje = mapaPorcentajes[carpeta.nombre] ?: 0
+            val conteo = estadistica.conteo
+            val porcentaje = estadistica.porcentaje
 
             if (conteo > 0) {
                 listaSlices.add(PieChartView.Slice(carpeta.nombre, conteo, colorAsignado, porcentaje))

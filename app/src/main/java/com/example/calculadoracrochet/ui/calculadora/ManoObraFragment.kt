@@ -12,17 +12,18 @@ import androidx.fragment.app.activityViewModels
 import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
 import com.example.calculadoracrochet.R
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 
+import com.example.calculadoracrochet.utils.comoTextoEditable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.horasAMinutos
 
 class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
     private var ultimoRetrocesoTiempo: Long = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,20 +55,19 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
         }
         val colorMorado = ContextCompat.getColor(requireContext(), R.color.purple_primary)
 
-        if (viewModel.pagoPorHoraTemp > 0.0) {
-            etPagoHora.setText(viewModel.pagoPorHoraTemp.toString())
+        if (viewModel.calculo.pagoPorHora > 0.0) {
+            etPagoHora.setText(viewModel.calculo.pagoPorHora.comoTextoEditable())
         }
 
-        if (viewModel.horasTrabajadasTemp > 0.0) {
-            val horas = viewModel.horasTrabajadasTemp.toInt()
-            val minutos = ((viewModel.horasTrabajadasTemp - horas) * 60).toInt()
-            timePickerHoras.hour = horas
-            timePickerHoras.minute = minutos
+        if (viewModel.calculo.horasTrabajadas > 0.0) {
+            val totalMinutos = horasAMinutos(viewModel.calculo.horasTrabajadas)
+            timePickerHoras.hour = (totalMinutos / 60).coerceAtMost(23)
+            timePickerHoras.minute = totalMinutos % 60
         }
 
         view.findViewById<MaterialButton>(R.id.btnSalarioMinimo).setOnClickListener {
             it.hapticSeleccion()
-            etPagoHora.setText("39.38")
+            etPagoHora.setText(SALARIO_MINIMO_HORA.comoTextoEditable())
             cardPagoHora.strokeColor = colorMorado
             tvErrorPago.visibility = View.GONE
         }
@@ -82,7 +82,7 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
             val minutos = timePickerHoras.minute
             val horasTotales = horas + (minutos / 60.0)
 
-            if (pagoPorHora < 39.38) {
+            if (pagoPorHora < SALARIO_MINIMO_HORA) {
                 cardPagoHora.strokeColor = Color.parseColor("#E53935")
                 tvErrorPago.visibility = View.VISIBLE
                 todoCorrecto = false
@@ -100,9 +100,9 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
 
             if (todoCorrecto) {
                 view.hapticClickPrincipal()
-                viewModel.costoManoObra = pagoPorHora * horasTotales
-                viewModel.pagoPorHoraTemp = pagoPorHora
-                viewModel.horasTrabajadasTemp = horasTotales
+                viewModel.calculo.costoManoObra = pagoPorHora * horasTotales
+                viewModel.calculo.pagoPorHora = pagoPorHora
+                viewModel.calculo.horasTrabajadas = horasTotales
                 viewModel.guardarBorrador()
 
                 parentFragmentManager.beginTransaction()
@@ -119,5 +119,10 @@ class ManoObraFragment : Fragment(R.layout.fragment_mano_obra) {
                 view.hapticError()
             }
         }
+    }
+
+    private companion object {
+        /** Mexican minimum wage per hour; also the lowest rate the screen accepts. */
+        const val SALARIO_MINIMO_HORA = 39.38
     }
 }

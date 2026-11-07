@@ -19,7 +19,7 @@ import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticExito
 import com.example.calculadoracrochet.utils.hapticSeleccion
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
@@ -28,7 +28,7 @@ import com.example.calculadoracrochet.utils.comoDinero
 
 class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
 
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
 
     private var switchRedondeo: SwitchMaterial? = null
     private var tvEstadoRedondeo: TextView? = null

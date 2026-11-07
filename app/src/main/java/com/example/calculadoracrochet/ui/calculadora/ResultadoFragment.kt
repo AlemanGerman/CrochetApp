@@ -17,10 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.ui.MainActivity
-import com.example.calculadoracrochet.viewmodel.MinaViewModel
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.LOCALE_MX
@@ -44,7 +45,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
-    private val viewModel: MinaViewModel by activityViewModels()
+    private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val proyectosViewModel: ProyectosViewModel by activityViewModels()
 
     private var uriFotoSeleccionada: String? = null
     private var ivPreviewModal: ImageView? = null
@@ -52,7 +54,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            DialogUtils.mostrarModalEncuadre(requireContext(), uri) { uriEncuadrada ->
+            DialogUtils.mostrarModalEncuadre(requireContext(), viewLifecycleOwner.lifecycleScope, uri) { uriEncuadrada ->
                 uriFotoSeleccionada = uriEncuadrada.toString()
                 try {
                     ivPreviewModal?.setImageURI(uriEncuadrada)
@@ -75,30 +77,30 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         viewModel.calcularTotal()
 
         val desglose = CalculadoraPrecio.desglosar(
-            viewModel.costoMateriales,
-            viewModel.costoDiseno,
-            viewModel.costoManoObra,
-            viewModel.costoEmpaque,
-            viewModel.margenGanancia
+            viewModel.calculo.costoMateriales,
+            viewModel.calculo.costoDiseno,
+            viewModel.calculo.costoManoObra,
+            viewModel.calculo.costoEmpaque,
+            viewModel.calculo.margenGanancia
         )
 
         val tvFechaTicket = view.findViewById<TextView>(R.id.tvFechaTicket)
         val dateFormato = SimpleDateFormat("EEEE, dd MMM, yyyy", LOCALE_MX)
 
         fun actualizarTextoFecha() {
-            val fechaAUsar = viewModel.fechaEnEdicion ?: System.currentTimeMillis()
+            val fechaAUsar = viewModel.calculo.fechaEnEdicion ?: System.currentTimeMillis()
             tvFechaTicket.text = dateFormato.format(Date(fechaAUsar)).uppercase()
         }
 
         actualizarTextoFecha()
         val btnCambiarFecha = view.findViewById<MaterialButton>(R.id.btnCambiarFecha)
 
-        if (viewModel.idProyectoEnEdicion != null) {
+        if (viewModel.calculo.idProyectoEnEdicion != null) {
             btnCambiarFecha.visibility = View.VISIBLE
             btnCambiarFecha.setOnClickListener {
                 it.hapticClickPrincipal()
-                DialogUtils.mostrarSelectorFecha(requireContext(), viewModel.fechaEnEdicion) { fechaMs ->
-                    viewModel.fechaEnEdicion = fechaMs
+                DialogUtils.mostrarSelectorFecha(requireContext(), viewModel.calculo.fechaEnEdicion) { fechaMs ->
+                    viewModel.calculo.fechaEnEdicion = fechaMs
                     actualizarTextoFecha()
                 }
             }
@@ -106,22 +108,22 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             btnCambiarFecha.visibility = View.GONE
         }
 
-        view.findViewById<TextView>(R.id.tvPrecioFinal).text = viewModel.precioFinalSugerdio.comoDinero()
-        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = viewModel.costoMateriales.comoDinero()
-        view.findViewById<TextView>(R.id.tvDesglosePatron).text = viewModel.costoDiseno.comoDinero()
-        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = viewModel.costoManoObra.comoDinero()
-        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = viewModel.costoEmpaque.comoDinero()
+        view.findViewById<TextView>(R.id.tvPrecioFinal).text = viewModel.calculo.precioFinalSugerido.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = viewModel.calculo.costoMateriales.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesglosePatron).text = viewModel.calculo.costoDiseno.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = viewModel.calculo.costoManoObra.comoDinero()
+        view.findViewById<TextView>(R.id.tvDesgloseEmpaque).text = viewModel.calculo.costoEmpaque.comoDinero()
         view.findViewById<TextView>(R.id.tvDesgloseSubtotal).text = desglose.subtotal.comoDinero()
         view.findViewById<TextView>(R.id.tvDesgloseGanancia).text = desglose.ganancia.comoDinero()
 
         val tvLabelGanancia = view.findViewById<TextView>(R.id.tvLabelGanancia)
-        tvLabelGanancia.text = "GANANCIA EXTRA (${viewModel.margenGanancia.toInt()}%):"
+        tvLabelGanancia.text = "GANANCIA EXTRA (${viewModel.calculo.margenGanancia.toInt()}%):"
 
         val llFilaRedondeo = view.findViewById<LinearLayout>(R.id.llFilaRedondeo)
         val tvDesgloseRedondeo = view.findViewById<TextView>(R.id.tvDesgloseRedondeo)
-        if (viewModel.ajusteRedondeo > 0.0) {
+        if (viewModel.calculo.ajusteRedondeo > 0.0) {
             llFilaRedondeo.visibility = View.VISIBLE
-            tvDesgloseRedondeo.text = viewModel.ajusteRedondeo.comoDinero()
+            tvDesgloseRedondeo.text = viewModel.calculo.ajusteRedondeo.comoDinero()
         } else {
             llFilaRedondeo.visibility = View.GONE
         }
@@ -129,8 +131,8 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
         val llFilaMateriales = view.findViewById<LinearLayout>(R.id.llFilaMateriales)
         val tvDetalleMaterialesDesc = view.findViewById<TextView>(R.id.tvDetalleMaterialesDesc)
         tvDetalleMaterialesDesc.text = desgloseMateriales(
-            estambres = viewModel.listaEstambresGuardados,
-            accesorios = viewModel.listaAccesoriosGuardados,
+            estambres = viewModel.calculo.estambres,
+            accesorios = viewModel.calculo.accesorios,
             vineta = "- ",
             textoVacio = "- Sin detalles agregados"
         )
@@ -138,8 +140,8 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         val llFilaManoObra = view.findViewById<LinearLayout>(R.id.llFilaManoObra)
         val tvDetalleManoObraDesc = view.findViewById<TextView>(R.id.tvDetalleManoObraDesc)
-        tvDetalleManoObraDesc.text = String.format(LOCALE_MX, "- Tiempo: %.2f hrs", viewModel.horasTrabajadasTemp) +
-            "\n- Pago: ${viewModel.pagoPorHoraTemp.comoDinero()}/hr"
+        tvDetalleManoObraDesc.text = String.format(LOCALE_MX, "- Tiempo: %.2f hrs", viewModel.calculo.horasTrabajadas) +
+            "\n- Pago: ${viewModel.calculo.pagoPorHora.comoDinero()}/hr"
         llFilaManoObra.hacerDesplegable(tvDetalleManoObraDesc)
 
         view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
@@ -180,12 +182,12 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     hapticSeleccion()
                 }
             }
-            if (viewModel.carpetasTemp.contains(nombreCarpeta)) chip.isChecked = true
+            if (viewModel.calculo.carpetas.contains(nombreCarpeta)) chip.isChecked = true
             mapChips[nombreCarpeta] = chip
             cgCarpetas.addView(chip)
         }
 
-        if (viewModel.nombreTemp.isNotEmpty()) etNombre?.setText(viewModel.nombreTemp)
+        if (viewModel.calculo.nombre.isNotEmpty()) etNombre?.setText(viewModel.calculo.nombre)
 
         btnSeleccionarFotoModal = btnElegirFoto
 
@@ -201,8 +203,8 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             }
         }
 
-        if (!viewModel.fotoUriTemp.isNullOrEmpty()) {
-            uriFotoSeleccionada = viewModel.fotoUriTemp
+        if (!viewModel.calculo.fotoUri.isNullOrEmpty()) {
+            uriFotoSeleccionada = viewModel.calculo.fotoUri
         }
         refrescarFotoModal()
 
@@ -248,12 +250,13 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             }
 
             val carpetasSeleccionadas = mapChips.filter { it.value.isChecked }.keys.toList()
-            viewModel.carpetasTemp.clear()
-            viewModel.carpetasTemp.addAll(carpetasSeleccionadas)
+            val proyecto = viewModel.prepararProyecto(nombre, carpetasSeleccionadas)
 
             btnConfirmar.isEnabled = false
             btnCancelar?.isEnabled = false
-            viewModel.guardarProyecto(requireContext(), nombre, uriFotoSeleccionada) { guardado ->
+            proyectosViewModel.guardarProyecto(proyecto, uriFotoSeleccionada) { guardado ->
+                // Clear even if the screen is gone: the project is saved and the draft must not reappear
+                if (guardado) viewModel.limpiarCalculoActual()
                 if (!isAdded) return@guardarProyecto
 
                 if (guardado) {
@@ -265,7 +268,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     btnConfirmar.hapticError()
                     btnConfirmar.isEnabled = true
                     btnCancelar?.isEnabled = true
-                    tilNombre?.error = "No se pudo respaldar la foto. Revisa tu conexión e inténtalo de nuevo."
+                    tilNombre?.error = "No se pudo guardar. Revisa tu conexión o elige otra foto e inténtalo de nuevo."
                 }
             }
         }

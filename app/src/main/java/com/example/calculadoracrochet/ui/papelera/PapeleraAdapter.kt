@@ -18,6 +18,7 @@ import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.example.calculadoracrochet.data.model.esRutaFotoValida
+import java.util.concurrent.TimeUnit
 
 class PapeleraAdapter(
     private var lista: List<ProyectoCrochet>,
@@ -92,11 +93,15 @@ class PapeleraAdapter(
             }
 
             val fechaEliminado = item.fechaEliminado ?: System.currentTimeMillis()
-            val msPasados = System.currentTimeMillis() - fechaEliminado
-            val diasPasados = (msPasados / (1000 * 60 * 60 * 24)).toInt()
-            val diasRestantes = (30 - diasPasados).coerceAtLeast(0)
+            val msPasados = (System.currentTimeMillis() - fechaEliminado).coerceAtLeast(0L)
+            val diasPasados = TimeUnit.MILLISECONDS.toDays(msPasados)
 
-            tvDiasRestantes.text = "Se eliminará en $diasRestantes días"
+            // Nothing deletes trashed projects automatically, so show how long it has been there
+            tvDiasRestantes.text = when (diasPasados) {
+                0L -> "En la papelera desde hoy"
+                1L -> "En la papelera desde hace 1 día"
+                else -> "En la papelera desde hace $diasPasados días"
+            }
 
             cbSeleccion.setOnCheckedChangeListener(null)
             cbSeleccion.isChecked = seleccionados.contains(item)

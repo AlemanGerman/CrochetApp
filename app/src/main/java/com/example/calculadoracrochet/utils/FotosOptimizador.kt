@@ -1,11 +1,9 @@
 package com.example.calculadoracrochet.utils
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
-import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -80,22 +78,6 @@ object FotosOptimizador {
             throw error
         } finally {
             foto.recycle()
-        }
-    }
-
-    fun optimizar(context: Context, uri: Uri): FotosOptimizadas {
-        val temp = File(context.cacheDir, "temp_opt_${UUID.randomUUID()}.tmp")
-        try {
-            if (uri.scheme == "file") {
-                File(uri.path ?: "").copyTo(temp, overwrite = true)
-            } else {
-                context.contentResolver.openInputStream(uri)?.use { input ->
-                    temp.outputStream().use { output -> input.copyTo(output) }
-                } ?: error("No se pudo abrir la foto seleccionada")
-            }
-            return optimizarArchivo(context.cacheDir, temp)
-        } finally {
-            temp.delete()
         }
     }
 

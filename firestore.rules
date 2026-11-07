@@ -1,0 +1,10 @@
+rules_version = '2';
+
+// The app signs in anonymously on launch (ProyectosViewModel), so only signed-in users get in.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /proyectos_mina/{proyectoId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

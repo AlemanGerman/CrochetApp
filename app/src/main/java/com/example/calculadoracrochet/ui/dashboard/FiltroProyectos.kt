@@ -27,7 +27,7 @@ object FiltroProyectos {
         val filtrados = proyectos.filter { proyecto ->
             !proyecto.estaEnPapelera &&
                 proyecto.nombre.lowercase().contains(busqueda) &&
-                (carpeta == CARPETA_TODOS || (proyecto.carpetas ?: emptyList()).contains(carpeta))
+                (carpeta == CARPETA_TODOS || proyecto.carpetas.contains(carpeta))
         }
 
         return filtrados.sortedWith(comparador(criterio, descendente))

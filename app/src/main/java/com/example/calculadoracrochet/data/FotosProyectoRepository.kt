@@ -31,6 +31,25 @@ data class FotoProyecto(
         val VACIA = FotoProyecto(null, null)
 
         fun de(proyecto: ProyectoCrochet) = FotoProyecto(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
+
+        /**
+         * Remote URLs of [fotos] that no project outside [idsExcluidos] uses. Duplicated projects
+         * share their photo, so only these URLs are safe to delete from Storage.
+         */
+        fun urlsSinUso(
+            fotos: List<FotoProyecto>,
+            proyectos: List<ProyectoCrochet>,
+            idsExcluidos: Set<String>
+        ): List<String> {
+            val candidatas = fotos.flatMap { it.rutas }.filter { it.esRemota() }.distinct()
+            if (candidatas.isEmpty()) return emptyList()
+
+            val enUso = proyectos
+                .filter { it.id !in idsExcluidos }
+                .flatMap { de(it).rutas }
+                .toSet()
+            return candidatas.filter { it !in enUso }
+        }
     }
 }
 

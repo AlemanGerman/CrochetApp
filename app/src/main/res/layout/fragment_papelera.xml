@@ -64,7 +64,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Se conservan 30 días"
+                        android:text="Se conservan hasta que los borres"
                         android:textColor="#E9D5FF"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -162,7 +162,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Los proyectos que elimines aparecerán aquí durante 30 días"
+                            android:text="Los proyectos que elimines aparecerán aquí hasta que los restaures o los borres"
                             android:textColor="@color/gray_hint"
                             android:textSize="13sp"
                             android:gravity="center"
