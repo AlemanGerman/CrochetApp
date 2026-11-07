@@ -10,3 +10,11 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+# Firestore writes the models by reflection (DocumentReference.set(proyecto)): their class and
+# property names become the document fields, so R8 must not rename or remove any of them.
+-keep class com.example.calculadoracrochet.data.model.** { *; }
+-keepattributes Signature,*Annotation*
+
+# Readable stack traces with the mapping file
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
