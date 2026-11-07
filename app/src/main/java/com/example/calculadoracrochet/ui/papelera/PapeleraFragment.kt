@@ -102,7 +102,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
             ) {
                 viewModel.vaciarPapelera { exito ->
                     if (!isAdded) return@vaciarPapelera
-                    if (exito == true) {
+                    if (exito) {
                         HapticHelper.advertenciaOEliminar(context = requireContext())
                         Toast.makeText(requireContext(), "Papelera vaciada", Toast.LENGTH_SHORT).show()
                     }
@@ -130,7 +130,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
             ) {
                 viewModel.restaurarProyectos(seleccionados) { exito ->
                     if (!isAdded) return@restaurarProyectos
-                    if (exito == true) {
+                    if (exito) {
                         HapticHelper.exito(context = requireContext())
                         Toast.makeText(requireContext(), "${seleccionados.size} proyectos restaurados", Toast.LENGTH_SHORT).show()
                     }
@@ -152,7 +152,7 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
             ) {
                 viewModel.eliminarProyectosPermanentes(seleccionados) { exito ->
                     if (!isAdded) return@eliminarProyectosPermanentes
-                    if (exito == true) {
+                    if (exito) {
                         HapticHelper.advertenciaOEliminar(context = requireContext())
                         Toast.makeText(requireContext(), "Proyectos eliminados permanentemente", Toast.LENGTH_SHORT).show()
                     }

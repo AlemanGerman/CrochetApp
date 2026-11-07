@@ -61,64 +61,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun navegarConGanchillo(fragmentDestino: Fragment) {
-        if (estaNavegando) return
-        estaNavegando = true
-        bloquearToques(true)
-
-        lottieGanchillo.removeAllUpdateListeners()
-        lottieGanchillo.removeAllAnimatorListeners()
-
-        lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-        lottieGanchillo.visibility = View.VISIBLE
-
-        lottieGanchillo.addAnimatorUpdateListener { animation ->
-            if (animation.animatedFraction >= 0.25f && lottieGanchillo.tag != "navegando") {
-                lottieGanchillo.tag = "navegando"
-
-                supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.slide_in_top,
-                        R.anim.slide_out_bottom,
-                        R.anim.slide_in_top,
-                        R.anim.slide_out_bottom
-                    )
-                    .replace(R.id.fragmentContainer, fragmentDestino)
-                    .addToBackStack(null)
-                    .commit()
-            }
+        animarGanchillo {
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_top,
+                    R.anim.slide_out_bottom,
+                    R.anim.slide_in_top,
+                    R.anim.slide_out_bottom
+                )
+                .replace(R.id.fragmentContainer, fragmentDestino)
+                .addToBackStack(null)
+                .commit()
         }
-
-        lottieGanchillo.addAnimatorListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                lottieGanchillo.tag = ""
-            }
-            override fun onAnimationEnd(animation: Animator) {
-                lottieGanchillo.post {
-                    lottieGanchillo.pauseAnimation()
-                    lottieGanchillo.progress = 0f
-                    lottieGanchillo.visibility = View.VISIBLE
-                }
-
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-
-                estaNavegando = false
-                bloquearToques(false)
-            }
-            override fun onAnimationCancel(animation: Animator) {
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-                estaNavegando = false
-                bloquearToques(false)
-            }
-            override fun onAnimationRepeat(animation: Animator) {}
-        })
-
-        lottieGanchillo.playAnimation()
     }
+
     fun regresarConGanchillo() {
+        animarGanchillo { supportFragmentManager.popBackStack() }
+    }
+
+    /** After saving: back to the dashboard at the bottom of the stack, dropping the calculator steps. */
+    fun irAlDashboardConGanchillo() {
+        animarGanchillo {
+            supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
+    }
+
+    /** Plays the crochet hook animation with touches blocked and runs [alLlegarAl25] once at 25 %. */
+    private fun animarGanchillo(alLlegarAl25: () -> Unit) {
         if (estaNavegando) return
         estaNavegando = true
         bloquearToques(true)
@@ -129,103 +98,35 @@ class MainActivity : AppCompatActivity() {
         lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
         lottieGanchillo.visibility = View.VISIBLE
 
+        var accionEjecutada = false
         lottieGanchillo.addAnimatorUpdateListener { animation ->
-            if (animation.animatedFraction >= 0.25f && lottieGanchillo.tag != "regresando") {
-                lottieGanchillo.tag = "regresando"
-                supportFragmentManager.popBackStack()
+            if (animation.animatedFraction >= 0.25f && !accionEjecutada) {
+                accionEjecutada = true
+                alLlegarAl25()
             }
         }
 
         lottieGanchillo.addAnimatorListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                lottieGanchillo.tag = ""
-            }
-            override fun onAnimationEnd(animation: Animator) {
-                lottieGanchillo.post {
-                    lottieGanchillo.pauseAnimation()
-                    lottieGanchillo.progress = 0f
-                    lottieGanchillo.visibility = View.VISIBLE
-                }
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-
-                estaNavegando = false
-                bloquearToques(false)
-            }
-            override fun onAnimationCancel(animation: Animator) {
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-                estaNavegando = false
-                bloquearToques(false)
-            }
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) = terminarAnimacion()
+            override fun onAnimationCancel(animation: Animator) = terminarAnimacion()
             override fun onAnimationRepeat(animation: Animator) {}
         })
 
         lottieGanchillo.playAnimation()
     }
 
-    fun irAlDashboardConGanchillo() {
-        if (estaNavegando) return
-        estaNavegando = true
-        bloquearToques(true)
-
+    private fun terminarAnimacion() {
+        lottieGanchillo.post {
+            lottieGanchillo.pauseAnimation()
+            lottieGanchillo.progress = 0f
+            lottieGanchillo.visibility = View.VISIBLE
+        }
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
 
-        lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-        lottieGanchillo.visibility = View.VISIBLE
-
-        var navegacionDisparada = false
-
-        lottieGanchillo.addAnimatorUpdateListener { animation ->
-            if (animation.animatedFraction >= 0.25f && !navegacionDisparada) {
-                navegacionDisparada = true
-
-                supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.slide_in_top,
-                        R.anim.slide_out_bottom
-                    )
-                    .replace(R.id.fragmentContainer, DashboardFragment())
-                    .commit()
-            }
-        }
-
-        lottieGanchillo.addAnimatorListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                lottieGanchillo.tag = ""
-            }
-            override fun onAnimationEnd(animation: Animator) {
-                lottieGanchillo.post {
-                    lottieGanchillo.pauseAnimation()
-                    lottieGanchillo.progress = 0f
-                    lottieGanchillo.visibility = View.VISIBLE
-                }
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-
-                estaNavegando = false
-                bloquearToques(false)
-            }
-            override fun onAnimationCancel(animation: Animator) {
-                lottieGanchillo.post {
-                    lottieGanchillo.pauseAnimation()
-                    lottieGanchillo.progress = 0f
-                    lottieGanchillo.visibility = View.VISIBLE
-                }
-                lottieGanchillo.tag = ""
-                lottieGanchillo.removeAllUpdateListeners()
-                lottieGanchillo.removeAllAnimatorListeners()
-                estaNavegando = false
-                bloquearToques(false)
-            }
-            override fun onAnimationRepeat(animation: Animator) {}
-        })
-
-        lottieGanchillo.playAnimation()
+        estaNavegando = false
+        bloquearToques(false)
     }
 
     private fun bloquearToques(bloquear: Boolean) {

@@ -19,10 +19,15 @@ import com.example.calculadoracrochet.ui.comun.EncuadreImageView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 object DialogUtils {
 
@@ -198,42 +203,49 @@ object DialogUtils {
         dialog.show()
     }
 
+    /**
+     * Decoding and saving the photo run on [Dispatchers.IO]; [scope] should be the caller's view
+     * lifecycle scope, so nothing is shown once the screen is gone.
+     */
     fun mostrarModalEncuadre(
         context: Context,
+        scope: CoroutineScope,
         uriOrigen: Uri,
         onFotoEncuadrada: (Uri) -> Unit
     ) {
-        val bitmap = cargarBitmapParaEncuadre(context, uriOrigen)
-        if (bitmap == null) {
-            onFotoEncuadrada(uriOrigen)
-            return
-        }
-
-        val (dialog, view) = crearDialogBase(context, R.layout.dialog_ajustar_foto)
-        val ivEncuadre = view.findViewById<EncuadreImageView>(R.id.ivEncuadre)
-        val btnCancelar = view.findViewById<MaterialButton>(R.id.btnCancelarEncuadre)
-        val btnAceptar = view.findViewById<MaterialButton>(R.id.btnAceptarEncuadre)
-
-        ivEncuadre.setSourceBitmap(bitmap)
-
-        btnCancelar.setOnClickListener {
-            it.hapticClickPrincipal()
-            dialog.dismiss()
-        }
-
-        btnAceptar.setOnClickListener {
-            it.hapticClickPrincipal()
-            val recortado = ivEncuadre.recortarBitmap() ?: bitmap
-            val uriGuardada = guardarBitmapEncuadrado(context, recortado)
-            dialog.dismiss()
-            if (uriGuardada != null) {
-                onFotoEncuadrada(uriGuardada)
-            } else {
+        scope.launch {
+            val bitmap = withContext(Dispatchers.IO) { cargarBitmapParaEncuadre(context, uriOrigen) }
+            if (bitmap == null) {
                 onFotoEncuadrada(uriOrigen)
+                return@launch
             }
-        }
 
-        dialog.show()
+            val (dialog, view) = crearDialogBase(context, R.layout.dialog_ajustar_foto)
+            val ivEncuadre = view.findViewById<EncuadreImageView>(R.id.ivEncuadre)
+            val btnCancelar = view.findViewById<MaterialButton>(R.id.btnCancelarEncuadre)
+            val btnAceptar = view.findViewById<MaterialButton>(R.id.btnAceptarEncuadre)
+
+            ivEncuadre.setSourceBitmap(bitmap)
+
+            btnCancelar.setOnClickListener {
+                it.hapticClickPrincipal()
+                dialog.dismiss()
+            }
+
+            btnAceptar.setOnClickListener {
+                it.hapticClickPrincipal()
+                btnAceptar.isEnabled = false
+                btnCancelar.isEnabled = false
+                val recortado = ivEncuadre.recortarBitmap() ?: bitmap
+                scope.launch {
+                    val uriGuardada = withContext(Dispatchers.IO) { guardarBitmapEncuadrado(context, recortado) }
+                    dialog.dismiss()
+                    onFotoEncuadrada(uriGuardada ?: uriOrigen)
+                }
+            }
+
+            dialog.show()
+        }
     }
 
     private fun cargarBitmapParaEncuadre(context: Context, uri: Uri): Bitmap? {
@@ -290,6 +302,7 @@ object DialogUtils {
 
     private fun guardarBitmapEncuadrado(context: Context, bitmap: Bitmap): Uri? {
         val dir = File(context.cacheDir, "fotos_encuadradas").apply { mkdirs() }
+        borrarRecortesViejos(dir)
         val archivo = File(dir, "crop_${UUID.randomUUID()}.jpg")
         try {
             FileOutputStream(archivo).use { out ->
@@ -300,5 +313,14 @@ object DialogUtils {
             e.printStackTrace()
             return null
         }
+    }
+
+    /**
+     * Crops are copied into filesDir when the project is saved, but the copy here is kept so a
+     * failed save can be retried. Anything older than a day is no longer needed.
+     */
+    private fun borrarRecortesViejos(dir: File) {
+        val limite = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)
+        dir.listFiles()?.filter { it.lastModified() < limite }?.forEach { it.delete() }
     }
 }

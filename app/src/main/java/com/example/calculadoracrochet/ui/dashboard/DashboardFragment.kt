@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -61,11 +62,12 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         val contexto = context
         val proyectoActual = proyectoEditando
-        if (uri != null && proyectoActual != null && contexto != null) {
+        val scopeVista = view?.let { viewLifecycleOwner.lifecycleScope }
+        if (uri != null && proyectoActual != null && contexto != null && scopeVista != null) {
             val referenciaVista = vistaFotoEnEdicion
             val fotoAnterior = proyectoActual.fotoUri
 
-            DialogUtils.mostrarModalEncuadre(contexto, uri) { uriEncuadrada ->
+            DialogUtils.mostrarModalEncuadre(contexto, scopeVista, uri) { uriEncuadrada ->
                 try {
                     referenciaVista?.get()?.takeIf { it.isAttachedToWindow }?.apply {
                         setImageURI(uriEncuadrada)
@@ -347,7 +349,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 carpetaInfo?.let {
                     buttonTintList = ContextCompat.getColorStateList(context, it.colorRes)
                 }
-                isChecked = (proyecto.carpetas ?: emptyList()).contains(nombreCarpeta)
+                isChecked = proyecto.carpetas.contains(nombreCarpeta)
                 setOnCheckedChangeListener { _, _ ->
                     hapticSeleccion()
                 }

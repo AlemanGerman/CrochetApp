@@ -132,7 +132,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Córrele, solo tienes 30 dias."
+                android:text="Restaura o borra lo que eliminaste."
                 android:textSize="12sp"
                 android:textColor="@color/gray_hint" />
         </LinearLayout>

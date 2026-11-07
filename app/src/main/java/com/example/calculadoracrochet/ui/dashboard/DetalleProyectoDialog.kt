@@ -171,8 +171,8 @@ class DetalleProyectoDialog(
         dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen).text = proyecto.costoMateriales.comoDinero()
         val tvDesgloseMat = dialogView.findViewById<TextView>(R.id.tvDesgloseMateriales)
         tvDesgloseMat.text = desgloseMateriales(
-            estambres = proyecto.listaEstambres ?: emptyList(),
-            accesorios = proyecto.listaAccesorios ?: emptyList(),
+            estambres = proyecto.listaEstambres,
+            accesorios = proyecto.listaAccesorios,
             vineta = "• ",
             textoVacio = "Sin detalles guardados"
         )

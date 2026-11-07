@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.ui.MainActivity
@@ -53,7 +54,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            DialogUtils.mostrarModalEncuadre(requireContext(), uri) { uriEncuadrada ->
+            DialogUtils.mostrarModalEncuadre(requireContext(), viewLifecycleOwner.lifecycleScope, uri) { uriEncuadrada ->
                 uriFotoSeleccionada = uriEncuadrada.toString()
                 try {
                     ivPreviewModal?.setImageURI(uriEncuadrada)
@@ -267,7 +268,7 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     btnConfirmar.hapticError()
                     btnConfirmar.isEnabled = true
                     btnCancelar?.isEnabled = true
-                    tilNombre?.error = "No se pudo respaldar la foto. Revisa tu conexión e inténtalo de nuevo."
+                    tilNombre?.error = "No se pudo guardar. Revisa tu conexión o elige otra foto e inténtalo de nuevo."
                 }
             }
         }
