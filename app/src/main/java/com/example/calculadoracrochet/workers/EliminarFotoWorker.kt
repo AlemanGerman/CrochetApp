@@ -17,7 +17,7 @@ class EliminarFotoWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val urls = inputData.getStringArray(KEY_URLS)?.toList()
+        val urls = inputData.getNullableStringArray(KEY_URLS)?.filterNotNull()
             ?: listOfNotNull(inputData.getString(KEY_URL_REMOTA))
 
         val urlsHttp = urls.filter { it.startsWith("http") }

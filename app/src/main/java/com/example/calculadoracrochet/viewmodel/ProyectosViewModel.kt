@@ -12,9 +12,13 @@ import com.example.calculadoracrochet.data.ProyectosRepository
 import com.example.calculadoracrochet.data.esRemota
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.data.model.estaEnPapelera
+import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /**
@@ -39,7 +43,34 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
         get() = historialProyectos.filter { it.estaEnPapelera }
 
     init {
-        cargarProyectosDeLaNube()
+        iniciarSesionYCargar()
+    }
+
+    /**
+     * Firestore rules only allow signed-in users, so sign in anonymously before listening.
+     * The session is kept on the phone: only the very first launch needs a connection, and
+     * without one it keeps retrying until there is.
+     */
+    private fun iniciarSesionYCargar() {
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser != null) {
+            cargarProyectosDeLaNube()
+            return
+        }
+
+        viewModelScope.launch {
+            var espera = ESPERA_INICIAL_SESION_MS
+            while (auth.currentUser == null) {
+                try {
+                    auth.signInAnonymously().await()
+                } catch (e: Exception) {
+                    Log.w(TAG, "No se pudo iniciar sesión anónima; se reintenta en ${espera / 1000} s", e)
+                    delay(espera)
+                    espera = (espera * 2).coerceAtMost(ESPERA_MAXIMA_SESION_MS)
+                }
+            }
+            cargarProyectosDeLaNube()
+        }
     }
 
     override fun onCleared() {
@@ -64,38 +95,54 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
      * with; [fotoElegida] is the one picked on the result screen (local URI, remote URL or null).
      */
     fun guardarProyecto(proyecto: ProyectoCrochet, fotoElegida: String?, onComplete: (Boolean) -> Unit) {
-        val fotoAnterior = FotoProyecto.de(proyecto)
+        val fotoCargada = FotoProyecto.de(proyecto)
+        // Null for a new project or a duplicate: the photo it was loaded with belongs to another project
+        val fotoActual = historialProyectos.find { it.id == proyecto.id }?.let { FotoProyecto.de(it) }
 
-        if (fotoElegida.esUriLocal()) {
-            viewModelScope.launch(Dispatchers.IO) {
+        when {
+            fotoActual != null && fotoElegida == fotoCargada.principal -> {
+                // Photo not changed. Its upload may have finished since the project was opened, so keep the live one
+                guardarEnFirestoreYEncolar(proyecto, fotoActual, null, fotoActual, onComplete)
+            }
+            fotoElegida.esUriLocal() -> viewModelScope.launch(Dispatchers.IO) {
                 val fotosPersistentes = fotosRepo.procesarYGuardarFotoLocal(proyecto.id, Uri.parse(fotoElegida))
                 withContext(Dispatchers.Main) {
-                    guardarEnFirestoreYEncolar(
-                        proyecto,
-                        fotoParaGuardar = fotosPersistentes?.comoFotoProyecto() ?: FotoProyecto.VACIA,
-                        rutasFisicasParaSubir = fotosPersistentes,
-                        fotoAnterior = fotoAnterior,
-                        onComplete = onComplete
-                    )
+                    if (fotosPersistentes == null) {
+                        // Saving anyway would drop the new photo and delete the previous one
+                        onComplete(false)
+                    } else {
+                        guardarEnFirestoreYEncolar(
+                            proyecto,
+                            fotoParaGuardar = fotosPersistentes.comoFotoProyecto(),
+                            rutasFisicasParaSubir = fotosPersistentes,
+                            fotoReemplazada = fotoActual,
+                            onComplete = onComplete
+                        )
+                    }
                 }
             }
-        } else {
-            val miniatura = if (fotoElegida.isNullOrBlank()) null else fotoAnterior.miniatura
-            guardarEnFirestoreYEncolar(
-                proyecto,
-                fotoParaGuardar = FotoProyecto(fotoElegida, miniatura),
-                rutasFisicasParaSubir = null,
-                fotoAnterior = fotoAnterior,
-                onComplete = onComplete
-            )
+            else -> {
+                val miniatura = if (fotoElegida.isNullOrBlank()) null else fotoCargada.miniatura
+                guardarEnFirestoreYEncolar(
+                    proyecto,
+                    fotoParaGuardar = FotoProyecto(fotoElegida, miniatura),
+                    rutasFisicasParaSubir = null,
+                    fotoReemplazada = fotoActual,
+                    onComplete = onComplete
+                )
+            }
         }
     }
 
+    /**
+     * [fotoReemplazada] is the photo the project has right now, or null for a new project or a
+     * duplicate, whose previous photo belongs to another project and must not be touched.
+     */
     private fun guardarEnFirestoreYEncolar(
         proyecto: ProyectoCrochet,
         fotoParaGuardar: FotoProyecto,
         rutasFisicasParaSubir: FotosLocalesPersistentes?,
-        fotoAnterior: FotoProyecto,
+        fotoReemplazada: FotoProyecto?,
         onComplete: (Boolean) -> Unit
     ) {
         val proyectoFinal = proyecto.copy(
@@ -110,11 +157,16 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
             }
 
             if (rutasFisicasParaSubir != null) {
-                val urlsAnteriores = fotoAnterior.rutas
+                val urlsAnteriores = fotoReemplazada?.rutas.orEmpty()
                     .filter { it.esRemota() && it !in fotoParaGuardar.rutas }
                 fotosRepo.encolarSubida(proyectoFinal.id, proyectoFinal.nombre, rutasFisicasParaSubir, urlsAnteriores)
-            } else if (fotoParaGuardar != fotoAnterior) {
-                borrarFotosSiNoSeUsan(listOf(fotoAnterior), idsExcluidos = setOf(proyectoFinal.id))
+                // The new upload replaces any pending one, so the previous local files are no longer needed
+                fotoReemplazada?.let { fotosRepo.borrarArchivosLocales(it) }
+            } else if (fotoReemplazada != null && fotoParaGuardar != fotoReemplazada) {
+                // Photo removed: a pending upload must not write it back
+                fotosRepo.cancelarSubida(proyectoFinal.id)
+                fotosRepo.borrarArchivosLocales(fotoReemplazada)
+                borrarFotosSiNoSeUsan(listOf(fotoReemplazada), idsExcluidos = setOf(proyectoFinal.id))
             }
 
             fotosRepo.precargarLocal(fotoParaGuardar)
@@ -203,14 +255,14 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
         val fotosABorrar = proyectos.map { FotoProyecto.de(it) }
 
         ids.forEach { fotosRepo.cancelarSubida(it) }
-        fotosABorrar.forEach { fotosRepo.borrarArchivosLocales(it) }
-        // Exclude every project being deleted, so a photo shared only among them is deleted too
-        borrarFotosSiNoSeUsan(fotosABorrar, idsExcluidos = ids.toSet())
 
         proyectosRepo.eliminarEnLote(ids) { exito ->
             if (exito) {
                 historialProyectos.removeAll { it.id in ids }
                 publicarProyectos()
+                fotosABorrar.forEach { fotosRepo.borrarArchivosLocales(it) }
+                // Exclude every project being deleted, so a photo shared only among them is deleted too
+                borrarFotosSiNoSeUsan(fotosABorrar, idsExcluidos = ids.toSet())
             }
             onComplete?.invoke(exito)
         }
@@ -295,4 +347,10 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
     private fun String?.esUriLocal(): Boolean = !isNullOrBlank() && !esRemota()
 
     // endregion
+
+    private companion object {
+        const val TAG = "ProyectosViewModel"
+        const val ESPERA_INICIAL_SESION_MS = 2_000L
+        const val ESPERA_MAXIMA_SESION_MS = 60_000L
+    }
 }
