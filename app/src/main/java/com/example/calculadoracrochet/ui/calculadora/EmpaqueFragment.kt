@@ -12,6 +12,7 @@ import com.example.calculadoracrochet.ui.MainActivity
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputLayout
 
+import com.example.calculadoracrochet.utils.comoTextoEditable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
 import com.example.calculadoracrochet.utils.hapticSeleccion
@@ -48,7 +49,7 @@ class EmpaqueFragment : Fragment(R.layout.fragment_empaque) {
         }
 
         if (viewModel.calculo.costoEmpaque > 0.0) {
-            etCostoCaja.setText(viewModel.calculo.costoEmpaque.toString())
+            etCostoCaja.setText(viewModel.calculo.costoEmpaque.comoTextoEditable())
         }
 
         if (viewModel.calculo.margenGanancia >= 0.0) {

@@ -11,6 +11,7 @@ import android.os.SystemClock
 import androidx.activity.OnBackPressedCallback
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
+import java.util.Locale
 
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
@@ -53,6 +54,21 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
         val etCostoPatron = view.findViewById<EditText>(R.id.etCostoPatron)
         val etNumeroMunecos = view.findViewById<EditText>(R.id.etNumeroMunecos)
 
+        // Editing a project or restoring a draft: show the saved pattern cost instead of resetting it to 0.
+        // Only the cost per piece is saved, so it comes back as that cost for 1 piece.
+        val costoGuardado = viewModel.calculo.costoDiseno
+        val textoCostoGuardado = if (costoGuardado > 0.0) {
+            String.format(Locale.US, "%.2f", costoGuardado).removeSuffix(".00")
+        } else {
+            ""
+        }
+        if (costoGuardado > 0.0) {
+            tgComproPatron.check(R.id.btnPatronSi)
+            llCamposPatron.visibility = View.VISIBLE
+            etCostoPatron.setText(textoCostoGuardado)
+            etNumeroMunecos.setText("1")
+        }
+
         tgComproPatron.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 tgComproPatron.hapticSeleccion()
@@ -85,7 +101,9 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                 ) && todoCorrecto
 
                 if (todoCorrecto) {
-                    viewModel.calculo.costoDiseno = costo / unidades.toDouble()
+                    // The field shows 2 decimals of the saved cost; keep the exact value if it was not changed
+                    viewModel.calculo.costoDiseno =
+                        if (strCosto == textoCostoGuardado && unidades == 1) costoGuardado else costo / unidades.toDouble()
                 }
 
             } else {

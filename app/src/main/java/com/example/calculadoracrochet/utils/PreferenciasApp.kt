@@ -63,10 +63,16 @@ object PreferenciasApp {
             return Pair(totalExacto, 0.0)
         }
         val safeMultiplo = multiplo.coerceAtLeast(0.01)
-        val redondeado = kotlin.math.ceil(totalExacto / safeMultiplo) * safeMultiplo
-        val ajuste = (redondeado - totalExacto).let { if (it < 0.001) 0.0 else it }
+        // 1.1 h × $50 gives 55.00000000000001: working in cents keeps that from jumping to the next multiple
+        val total = aCentavos(totalExacto)
+        val redondeado = aCentavos(kotlin.math.ceil(total / safeMultiplo - EPSILON_REDONDEO) * safeMultiplo)
+        val ajuste = aCentavos(redondeado - total).let { if (it < 0.001) 0.0 else it }
         return Pair(redondeado, ajuste)
     }
+
+    private const val EPSILON_REDONDEO = 1e-9
+
+    private fun aCentavos(valor: Double): Double = Math.round(valor * 100) / 100.0
 
     fun formatearMultiplo(multiplo: Double): String {
         return if (multiplo % 1.0 == 0.0) {

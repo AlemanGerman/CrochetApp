@@ -34,6 +34,15 @@ class FormatoTest {
     }
 
     @Test
+    fun `hours turn back into the same minutes, also after the draft stores them as Float`() {
+        for (minutos in 1 until 24 * 60) {
+            val horas = minutos / 60 + (minutos % 60) / 60.0
+            assertEquals("$minutos min", minutos, horasAMinutos(horas))
+            assertEquals("$minutos min (Float)", minutos, horasAMinutos(horas.toFloat().toDouble()))
+        }
+    }
+
+    @Test
     fun `materials breakdown without materials shows the empty text`() {
         assertEquals("Sin materiales", desgloseMateriales(emptyList(), emptyList(), "- ", "Sin materiales"))
     }

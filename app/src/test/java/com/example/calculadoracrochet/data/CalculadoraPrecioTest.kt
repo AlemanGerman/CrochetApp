@@ -46,6 +46,16 @@ class CalculadoraPrecioTest {
     }
 
     @Test
+    fun `floating point noise does not push the price to the next multiple`() {
+        // 1 h 06 min at $50/h is 55.00000000000001 in doubles
+        assertEquals(55.0 to 0.0, PreferenciasApp.calcularRedondeo(50.0 * (1 + 6 / 60.0), activo = true, multiplo = 5.0))
+        // A $55 skein with 100 g used out of 100 g
+        assertEquals(55.0 to 0.0, PreferenciasApp.calcularRedondeo(55.0 / 100 * 100, activo = true, multiplo = 5.0))
+        // 1.1 / 0.1 is 11.000000000000002
+        assertEquals(1.1 to 0.0, PreferenciasApp.calcularRedondeo(1.1, activo = true, multiplo = 0.1))
+    }
+
+    @Test
     fun `rounding off or with an invalid multiple keeps the exact price`() {
         assertEquals(231.4 to 0.0, PreferenciasApp.calcularRedondeo(231.4, activo = false, multiplo = 5.0))
         assertEquals(231.4 to 0.0, PreferenciasApp.calcularRedondeo(231.4, activo = true, multiplo = 0.0))

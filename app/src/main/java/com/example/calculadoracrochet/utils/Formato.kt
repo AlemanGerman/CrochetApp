@@ -3,8 +3,12 @@ package com.example.calculadoracrochet.utils
 import com.example.calculadoracrochet.data.model.AccesorioGuardado
 import com.example.calculadoracrochet.data.model.EstambreGuardado
 import java.util.Locale
+import kotlin.math.roundToInt
 
 val LOCALE_MX: Locale = Locale.forLanguageTag("es-MX")
+
+/** Whole minutes in [horas]. Rounds instead of truncating: 1 h 05 min is 1.08333…, which truncates to 1 h 04 min. */
+fun horasAMinutos(horas: Double): Int = (horas * 60).roundToInt()
 
 /** "$1,234.50" regardless of the device language, so every screen shows money the same way. */
 fun Double.comoDinero(): String = String.format(LOCALE_MX, "$%,.2f", this)
