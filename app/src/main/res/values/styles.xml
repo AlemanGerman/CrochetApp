@@ -387,12 +387,14 @@
 
     <!-- region Inputs and controls -->
 
-    <!-- Soft lavender fields; the purple outline only appears when focused -->
-    <style name="Widget.Mina.Campo" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+    <!-- Soft lavender fields with the label floating inside the box (filled style, not outlined:
+         the outlined label sits on the border line and showed half outside the lavender box).
+         No underline, all corners rounded; focus shows in the purple label and cursor. -->
+    <style name="Widget.Mina.Campo" parent="Widget.Material3.TextInputLayout.FilledBox">
         <item name="boxBackgroundColor">@color/lavanda</item>
         <item name="boxStrokeColor">@color/selector_campo_borde</item>
         <item name="boxStrokeWidth">0dp</item>
-        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
         <item name="boxStrokeErrorColor">@color/error</item>
         <item name="boxCornerRadiusTopStart">14dp</item>
         <item name="boxCornerRadiusTopEnd">14dp</item>
@@ -410,11 +412,11 @@
         <item name="materialThemeOverlay">@style/ThemeOverlay.Mina.Campo</item>
     </style>
 
-    <style name="ThemeOverlay.Mina.Campo" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+    <style name="ThemeOverlay.Mina.Campo" parent="ThemeOverlay.Material3.TextInputEditText.FilledBox">
         <item name="editTextStyle">@style/Widget.Mina.Campo.Texto</item>
     </style>
 
-    <style name="Widget.Mina.Campo.Texto" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+    <style name="Widget.Mina.Campo.Texto" parent="Widget.Material3.TextInputEditText.FilledBox">
         <item name="android:textColor">@color/tinta</item>
         <item name="android:textSize">16sp</item>
         <item name="android:fontFamily">@font/nunito_semibold</item>

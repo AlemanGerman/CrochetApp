@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.ui.comun.FondoPatronView
 import com.example.calculadoracrochet.utils.configurarInsetsConTeclado
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
@@ -55,6 +56,11 @@ object EncabezadoPaso {
         raiz.findViewById<View>(R.id.btnVolverPaso).setOnClickListener {
             it.hapticClickPrincipal()
             alVolver()
+        }
+
+        raiz.findViewById<View>(R.id.btnCancelarProyecto).setOnClickListener {
+            it.hapticClickPrincipal()
+            (raiz.context as? MainActivity)?.cancelarProyecto()
         }
 
         raiz.findViewById<View>(R.id.contenidoEncabezadoPaso).rellenarBajoBarraDeEstado()
