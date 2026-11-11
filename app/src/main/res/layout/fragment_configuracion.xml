@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/fondo"
@@ -135,13 +136,7 @@
                                 android:layout_height="wrap_content"
                                 android:contentDescription="Redondeo de precios" />
                         </LinearLayout>
-                        <TextView
-                            style="@style/Texto.Suave"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="Redondea el precio sugerido hacia arriba para que no te dé ansiedad ver números inexactos." />
-
+                        <!-- Only while rounding is on: the step and an example -->
                         <LinearLayout
                             android:id="@+id/llContenedorMultiplo"
                             android:layout_width="match_parent"
@@ -149,18 +144,78 @@
                             android:layout_marginTop="14dp"
                             android:orientation="vertical">
 
-                            <LinearLayout
+                            <TextView
+                                style="@style/Texto.Etiqueta"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Redondear de" />
+
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/cgMultiplos"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                app:chipSpacingHorizontal="8dp"
+                                app:selectionRequired="true"
+                                app:singleSelection="true">
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipMultiplo1"
+                                    style="@style/Widget.Mina.Chip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="$1"
+                                    app:checkedIconVisible="false" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipMultiplo5"
+                                    style="@style/Widget.Mina.Chip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="$5"
+                                    app:checkedIconVisible="false" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipMultiplo10"
+                                    style="@style/Widget.Mina.Chip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="$10"
+                                    app:checkedIconVisible="false" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipMultiplo50"
+                                    style="@style/Widget.Mina.Chip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="$50"
+                                    app:checkedIconVisible="false" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chipMultiploOtro"
+                                    style="@style/Widget.Mina.Chip"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Otro"
+                                    app:checkedIconVisible="false" />
+                            </com.google.android.material.chip.ChipGroup>
+
+                            <!-- Any other amount, only after picking «Otro» -->
+                            <LinearLayout
+                                android:id="@+id/llMultiploOtro"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
                                 android:gravity="center_vertical"
-                                android:orientation="horizontal">
+                                android:orientation="horizontal"
+                                android:visibility="gone">
 
                                 <com.google.android.material.textfield.TextInputLayout
                                     android:id="@+id/tilMultiploPersonalizado"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:hint="Redondear al múltiplo de"
+                                    android:hint="Cantidad"
                                     app:prefixText="$">
 
                                     <com.google.android.material.textfield.TextInputEditText
@@ -177,39 +232,71 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="10dp"
-                                    android:text="Aplicar" />
+                                    android:text="Usar" />
                             </LinearLayout>
 
-                            <!-- Preview of the rounding with an example price -->
+                            <!-- Example: exact price → rounded price -->
                             <LinearLayout
                                 android:id="@+id/cardSimulacionRedondeo"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
+                                android:layout_marginTop="14dp"
                                 android:background="@drawable/bg_bloque_lavanda"
                                 android:orientation="vertical"
-                                android:padding="14dp">
+                                android:paddingHorizontal="16dp"
+                                android:paddingVertical="12dp">
 
                                 <TextView
                                     style="@style/Texto.Etiqueta"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Vista previa" />
+                                    android:text="Ejemplo" />
 
-                                <TextView
-                                    android:id="@+id/tvSimulacionBase"
-                                    style="@style/Texto.Suave"
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="6dp" />
+                                    android:layout_marginTop="4dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
 
-                                <TextView
-                                    android:id="@+id/tvSimulacionResultado"
-                                    style="@style/Texto.Cuerpo.Fuerte"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:textColor="@color/morado_fuerte" />
+                                    <TextView
+                                        android:id="@+id/tvSimulacionBase"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:textColor="@color/tinta_suave"
+                                        android:textSize="18sp"
+                                        tools:text="$143.20" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_marginHorizontal="10dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_chevron_derecha"
+                                        app:tint="@color/morado_fuerte" />
+
+                                    <TextView
+                                        android:id="@+id/tvSimulacionResultado"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/nunito_extrabold"
+                                        android:textColor="@color/morado_fuerte"
+                                        android:textSize="22sp"
+                                        tools:text="$145.00" />
+
+                                    <TextView
+                                        android:id="@+id/tvSimulacionAjuste"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="10dp"
+                                        android:layout_weight="1"
+                                        android:fontFamily="@font/nunito_semibold"
+                                        android:gravity="end"
+                                        android:textColor="@color/tinta_suave"
+                                        android:textSize="13sp"
+                                        tools:text="+$1.80" />
+                                </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>

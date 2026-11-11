@@ -26,6 +26,7 @@ import com.example.calculadoracrochet.utils.hapticExito
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
@@ -47,6 +48,9 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
     private var btnAplicarMultiplo: MaterialButton? = null
     private var tvSimulacionBase: TextView? = null
     private var tvSimulacionResultado: TextView? = null
+    private var tvSimulacionAjuste: TextView? = null
+    private var cgMultiplos: ChipGroup? = null
+    private var llMultiploOtro: View? = null
 
     private var switchVibracion: MaterialSwitch? = null
     private var tvEstadoVibracion: TextView? = null
@@ -74,6 +78,9 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
         btnAplicarMultiplo = view.findViewById(R.id.btnAplicarMultiplo)
         tvSimulacionBase = view.findViewById(R.id.tvSimulacionBase)
         tvSimulacionResultado = view.findViewById(R.id.tvSimulacionResultado)
+        tvSimulacionAjuste = view.findViewById(R.id.tvSimulacionAjuste)
+        cgMultiplos = view.findViewById(R.id.cgMultiplos)
+        llMultiploOtro = view.findViewById(R.id.llMultiploOtro)
 
         switchVibracion = view.findViewById(R.id.switchVibracion)
         tvEstadoVibracion = view.findViewById(R.id.tvEstadoVibracion)
@@ -120,20 +127,32 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
         val multiploActual = PreferenciasApp.getMultiploRedondeo(context)
 
         switchRedondeo?.isChecked = redondeoActivo
-        actualizarEstadoTextoRedondeo(redondeoActivo)
         llContenedorMultiplo?.visibility = if (redondeoActivo) View.VISIBLE else View.GONE
-
-        // Muestra el número actual configurado (por defecto 5)
-        actualizarCampoMultiplo(multiploActual)
+        marcarMultiplo(multiploActual)
+        actualizarSimulacion()
 
         switchRedondeo?.setOnCheckedChangeListener { _, isChecked ->
             switchRedondeo?.hapticSeleccion()
             PreferenciasApp.setRedondeoActivo(requireContext(), isChecked)
-            actualizarEstadoTextoRedondeo(isChecked)
             (llContenedorMultiplo?.parent as? android.view.ViewGroup)?.animarCambiosDeLayout()
             llContenedorMultiplo?.visibility = if (isChecked) View.VISIBLE else View.GONE
             viewModel.calcularTotal()
             actualizarSimulacion()
+        }
+
+        // The usual amounts apply as soon as they are tapped; «Otro» opens the field for any amount
+        cgMultiplos?.setOnCheckedStateChangeListener { grupo, ids ->
+            val id = ids.firstOrNull() ?: return@setOnCheckedStateChangeListener
+            grupo.hapticSeleccion()
+            val esOtro = id == R.id.chipMultiploOtro
+            (llContenedorMultiplo as? android.view.ViewGroup)?.animarCambiosDeLayout()
+            llMultiploOtro?.visibility = if (esOtro) View.VISIBLE else View.GONE
+            if (esOtro) {
+                etMultiploPersonalizado?.requestFocus()
+                return@setOnCheckedStateChangeListener
+            }
+            tilMultiplo?.error = null
+            guardarMultiplo(MULTIPLOS_RAPIDOS.getValue(id))
         }
 
         btnAplicarMultiplo?.setOnClickListener {
@@ -163,28 +182,35 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
         })
     }
 
+    /** Checks the chip of [multiplo], or «Otro» with the amount in the field. */
+    private fun marcarMultiplo(multiplo: Double) {
+        val rapido = MULTIPLOS_RAPIDOS.entries.firstOrNull { it.value == multiplo }?.key
+        cgMultiplos?.check(rapido ?: R.id.chipMultiploOtro)
+        llMultiploOtro?.visibility = if (rapido == null) View.VISIBLE else View.GONE
+        if (rapido == null) actualizarCampoMultiplo(multiplo)
+    }
+
     private fun aplicarMultiploPersonalizado() {
         val texto = etMultiploPersonalizado?.text?.toString()?.trim()
         val nuevoMultiplo = texto?.toDoubleOrNull()
 
         if (nuevoMultiplo == null || nuevoMultiplo <= 0.0) {
             btnAplicarMultiplo?.hapticError()
-            tilMultiplo?.error = "Ingresa un número mayor a 0"
+            tilMultiplo?.error = "Escribe una cantidad mayor a 0"
             return
         }
 
         btnAplicarMultiplo?.hapticClickPrincipal()
         tilMultiplo?.error = null
-        PreferenciasApp.setMultiploRedondeo(requireContext(), nuevoMultiplo)
-        actualizarCampoMultiplo(nuevoMultiplo)
+        guardarMultiplo(nuevoMultiplo)
+        // An amount that has its own chip moves the selection there
+        if (MULTIPLOS_RAPIDOS.containsValue(nuevoMultiplo)) marcarMultiplo(nuevoMultiplo)
+    }
+
+    private fun guardarMultiplo(multiplo: Double) {
+        PreferenciasApp.setMultiploRedondeo(requireContext(), multiplo)
         viewModel.calcularTotal()
         actualizarSimulacion()
-
-        Toast.makeText(
-            requireContext(),
-            "Múltiplo guardado: ${PreferenciasApp.formatearMultiplo(nuevoMultiplo)}",
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     private fun actualizarCampoMultiplo(multiplo: Double) {
@@ -195,16 +221,6 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
         }
         etMultiploPersonalizado?.setText(textoFormateado)
         etMultiploPersonalizado?.setSelection(etMultiploPersonalizado?.text?.length ?: 0)
-    }
-
-    private fun actualizarEstadoTextoRedondeo(activo: Boolean) {
-        if (activo) {
-            tvEstadoRedondeo?.text = "Activo"
-            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.morado_fuerte))
-        } else {
-            tvEstadoRedondeo?.text = "Desactivado"
-            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.tinta_suave))
-        }
     }
 
     private fun configurarSeccionVibracion() {
@@ -259,27 +275,31 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
         }
     }
 
+    /** The subtitle says what rounding does right now; the example shows it with a sample price. */
     private fun actualizarSimulacion(multiploSimulado: Double? = null) {
         val context = context ?: return
         val activo = PreferenciasApp.isRedondeoActivo(context)
         val multiplo = multiploSimulado ?: PreferenciasApp.getMultiploRedondeo(context)
 
-        val totalBaseSimulado = 143.20
-        tvSimulacionBase?.text = "Un precio de ${totalBaseSimulado.comoDinero()}…"
-
-        if (activo) {
-            val (precioRedondeado, ajuste) = PreferenciasApp.calcularRedondeo(totalBaseSimulado, activo, multiplo)
-            val textoMultiplo = PreferenciasApp.formatearMultiplo(multiplo)
-            tvSimulacionResultado?.text =
-                "…queda en ${precioRedondeado.comoDinero()} (múltiplos de $textoMultiplo, +${ajuste.comoDinero()} a tu favor)"
+        tvEstadoRedondeo?.text = if (activo) {
+            "Sube al siguiente múltiplo de ${PreferenciasApp.formatearMultiplo(multiplo)}"
         } else {
-            tvSimulacionResultado?.text = "…se queda en ${totalBaseSimulado.comoDinero()}: precio exacto"
+            "Se usa el precio exacto"
         }
+        tvEstadoRedondeo?.setTextColor(
+            ContextCompat.getColor(context, if (activo) R.color.morado_fuerte else R.color.tinta_suave)
+        )
+
+        val (precioRedondeado, ajuste) = PreferenciasApp.calcularRedondeo(PRECIO_EJEMPLO, activo, multiplo)
+        tvSimulacionBase?.text = PRECIO_EJEMPLO.comoDinero()
+        tvSimulacionResultado?.text = precioRedondeado.comoDinero()
+        tvSimulacionAjuste?.text = if (ajuste > 0.0) "+${ajuste.comoDinero()}" else "sin cambio"
     }
 
     override fun onPause() {
         super.onPause()
-        // Si el usuario escribió un múltiplo válido pero no presionó "Aplicar", se persiste para no perderlo
+        // Si el usuario escribió un múltiplo válido en «Otro» pero no presionó "Usar", se persiste para no perderlo
+        if (cgMultiplos?.checkedChipId != R.id.chipMultiploOtro) return
         val texto = etMultiploPersonalizado?.text?.toString()?.trim()
         val nuevoMultiplo = texto?.toDoubleOrNull()
         if (nuevoMultiplo != null && nuevoMultiplo > 0.0) {
@@ -288,5 +308,16 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
                 viewModel.calcularTotal()
             }
         }
+    }
+
+    private companion object {
+        const val PRECIO_EJEMPLO = 143.20
+
+        val MULTIPLOS_RAPIDOS = mapOf(
+            R.id.chipMultiplo1 to 1.0,
+            R.id.chipMultiplo5 to 5.0,
+            R.id.chipMultiplo10 to 10.0,
+            R.id.chipMultiplo50 to 50.0
+        )
     }
 }
