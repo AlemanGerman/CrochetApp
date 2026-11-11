@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.data.MaterialesFavoritosRepository
 import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.ui.PestanaPrincipal
 import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
@@ -102,6 +103,17 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
             }
         })
 
+        view.findViewById<View>(R.id.itemAbrirMisMateriales).setOnClickListener {
+            it.hapticClickPrincipal()
+            (requireActivity() as MainActivity).abrirMisMateriales()
+        }
+        val totalEstambres = MaterialesFavoritosRepository.estambres(requireContext()).size
+        val totalAccesorios = MaterialesFavoritosRepository.accesorios(requireContext()).size
+        if (totalEstambres + totalAccesorios > 0) {
+            view.findViewById<TextView>(R.id.tvConteoMisMateriales).text =
+                "${conteo(totalEstambres, "estambre", "estambres")} · ${conteo(totalAccesorios, "accesorio", "accesorios")}"
+        }
+
         view.findViewById<View>(R.id.itemAbrirPapelera).setOnClickListener {
             it.hapticClickPrincipal()
             (requireActivity() as MainActivity).abrirPapelera()
@@ -116,6 +128,8 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), Pestana
             }
         }
     }
+
+    private fun conteo(n: Int, singular: String, plural: String) = "$n ${if (n == 1) singular else plural}"
 
     override fun alVolverAPulsar() {
         view?.findViewById<android.widget.ScrollView>(R.id.hojaAjustes)?.smoothScrollTo(0, 0)

@@ -26,12 +26,15 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.ui.configuracion.ConfiguracionFragment
+import com.example.calculadoracrochet.ui.configuracion.MisMaterialesFragment
 import com.example.calculadoracrochet.ui.dashboard.DashboardFragment
 import com.example.calculadoracrochet.ui.estadisticas.EstadisticasFragment
 import com.example.calculadoracrochet.ui.papelera.PapeleraFragment
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.utils.rebotar
 import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
+import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
+import com.example.calculadoracrochet.utils.DialogUtils
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /** A main tab (Proyectos, Estadísticas, Ajustes): the bottom bar shows while it is on screen. */
@@ -48,6 +51,7 @@ interface PantallaConGanchillo
 class MainActivity : AppCompatActivity() {
 
     private val proyectosViewModel: ProyectosViewModel by viewModels()
+    private val calculadoraViewModel: CalculadoraViewModel by viewModels()
 
     private var estaListo = false
     private lateinit var lottieGanchillo: LottieAnimationView
@@ -259,6 +263,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Leaves the calculator from any step, after confirming: the calculation and its draft are
+     * dropped and the dashboard comes back. A project being edited stays as it was saved.
+     */
+    fun cancelarProyecto() {
+        if (estaNavegando) return
+        val editando = calculadoraViewModel.calculo.idProyectoEnEdicion != null
+        DialogUtils.mostrarAlerta(
+            context = this,
+            titulo = if (editando) "¿Descartar los cambios?" else "¿Cancelar el proyecto?",
+            mensaje = if (editando) "El proyecto se queda como estaba guardado."
+            else "Se perderá lo que llevas capturado.",
+            textoConfirmar = if (editando) "Descartar" else "Sí, cancelar",
+            iconoResId = R.drawable.ic_sad
+        ) {
+            calculadoraViewModel.limpiarCalculoActual()
+            irAlDashboardConGanchillo()
+        }
+    }
+
     fun regresarConGanchillo() {
         animarGanchillo { supportFragmentManager.popBackStack() }
     }
@@ -292,6 +316,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun abrirPapelera() = navegarDeslizando(PapeleraFragment())
+
+    fun abrirMisMateriales() = navegarDeslizando(MisMaterialesFragment())
 
     // endregion
 

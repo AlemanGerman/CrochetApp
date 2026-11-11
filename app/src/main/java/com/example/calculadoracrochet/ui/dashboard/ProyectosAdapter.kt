@@ -60,7 +60,7 @@ class TarjetaProyecto(val proyecto: ProyectoCrochet) {
 }
 
 class ProyectosAdapter(
-    private val onItemClick: (ProyectoCrochet) -> Unit,
+    private val onItemClick: (proyecto: ProyectoCrochet, foto: ImageView) -> Unit,
     private val onEditCarpetaClick: (ProyectoCrochet) -> Unit
 ) : ListAdapter<TarjetaProyecto, ProyectosAdapter.ProyectoViewHolder>(DIFERENCIAS) {
 
@@ -154,7 +154,7 @@ class ProyectosAdapter(
             view.setOnClickListener {
                 val tarjeta = tarjetaActual ?: return@setOnClickListener
                 it.hapticClickPrincipal()
-                onItemClick(tarjeta.proyecto)
+                onItemClick(tarjeta.proyecto, ivImagen)
             }
             btnEditarCarpeta.setOnClickListener {
                 val tarjeta = tarjetaActual ?: return@setOnClickListener

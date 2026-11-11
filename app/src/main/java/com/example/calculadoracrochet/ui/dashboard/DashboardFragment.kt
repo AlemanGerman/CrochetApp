@@ -135,7 +135,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ProyectosAdapter(
-            onItemClick = { proyecto -> detalleDialog.mostrar(proyecto) },
+            onItemClick = { proyecto, foto -> detalleDialog.mostrar(proyecto, foto) },
             onEditCarpetaClick = { proyecto -> mostrarModalCarpetas(proyecto) }
         )
         adapter.cambiarColorDinamico(PreferenciasApp.isColorDinamicoTarjetasActivo(requireContext()))
