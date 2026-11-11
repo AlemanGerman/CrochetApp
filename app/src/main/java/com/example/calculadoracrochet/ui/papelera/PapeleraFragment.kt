@@ -2,7 +2,6 @@ package com.example.calculadoracrochet.ui.papelera
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -10,6 +9,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.utils.margenSobreBarraDeNavegacion
+import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
+import com.example.calculadoracrochet.utils.rellenarSobreBarraDeNavegacion
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
@@ -33,13 +36,24 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
 
         rv.layoutManager = LinearLayoutManager(requireContext())
 
+        view.findViewById<View>(R.id.contenidoEncabezado).rellenarBajoBarraDeEstado()
+        view.findViewById<View>(R.id.hojaPapelera).clipToOutline = true
+        rv.rellenarSobreBarraDeNavegacion()
+        cardAcciones.margenSobreBarraDeNavegacion((16 * resources.displayMetrics.density).toInt())
+
         adapter = PapeleraAdapter(
             lista = viewModel.papeleraProyectos,
             onSeleccionCambiada = { totalSeleccionados ->
                 if (totalSeleccionados > 0) {
-                    cardAcciones.visibility = View.VISIBLE
-                    tvConteo.text = "$totalSeleccionados seleccionados"
+                    if (cardAcciones.visibility != View.VISIBLE) {
+                        cardAcciones.visibility = View.VISIBLE
+                        cardAcciones.translationY = 40f * resources.displayMetrics.density
+                        cardAcciones.alpha = 0f
+                        cardAcciones.animate().translationY(0f).alpha(1f).setDuration(200L).start()
+                    }
+                    tvConteo.text = if (totalSeleccionados == 1) "1 seleccionado" else "$totalSeleccionados seleccionados"
                 } else {
+                    cardAcciones.animate().cancel()
                     cardAcciones.visibility = View.GONE
                 }
             },
@@ -85,9 +99,9 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
             actualizarVista(llVacio)
         }
 
-        view.findViewById<ImageButton>(R.id.btnVolverPapelera).setOnClickListener {
+        view.findViewById<View>(R.id.btnVolverPapelera).setOnClickListener {
             it.hapticClickPrincipal()
-            parentFragmentManager.popBackStack()
+            (requireActivity() as MainActivity).regresarDeslizando()
         }
 
         view.findViewById<MaterialButton>(R.id.btnVaciarPapelera).setOnClickListener {
@@ -167,5 +181,6 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
         val lista = viewModel.papeleraProyectos
         adapter.actualizarLista(lista)
         llVacio.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
+        view?.findViewById<View>(R.id.btnVaciarPapelera)?.visibility = if (lista.isEmpty()) View.INVISIBLE else View.VISIBLE
     }
 }

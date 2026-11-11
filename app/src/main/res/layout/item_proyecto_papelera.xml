@@ -4,87 +4,77 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="2dp"
-    android:backgroundTint="@color/white">
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingVertical="10dp"
-        android:paddingHorizontal="12dp">
+        android:paddingStart="4dp"
+        android:paddingEnd="6dp">
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/cbSeleccionPapelera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:buttonTint="@color/purple_primary"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"/>
+            android:contentDescription="Seleccionar" />
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivFotoPapelera"
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:importantForAccessibility="no"
             android:scaleType="centerCrop"
-            android:background="#F3E8FF"
-            app:shapeAppearanceOverlay="@style/RoundedSquare"
-            android:layout_marginStart="8dp"
-            tools:src="@drawable/ic_sad"
-            tools:tint="@color/purple_primary"/>
+            app:shapeAppearanceOverlay="@style/Forma.Mina.Foto" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="6dp">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvNombrePapelera"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Amigurumi Osito"
-                android:textColor="@color/gray_text"
-                android:textSize="15sp"
-                android:textStyle="bold"
+                android:ellipsize="end"
+                android:fontFamily="@font/nunito_bold"
                 android:maxLines="1"
-                android:ellipsize="end"/>
+                android:textColor="@color/tinta"
+                android:textSize="15sp"
+                tools:text="Osito amigurumi" />
 
             <TextView
                 android:id="@+id/tvDiasRestantes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Se elimina en 24 días"
-                android:textColor="#DC2626"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginTop="3dp"/>
+                android:layout_marginTop="2dp"
+                android:textColor="@color/tinta_suave"
+                android:textSize="13sp"
+                tools:text="En la papelera desde hace 3 días" />
         </LinearLayout>
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRestaurarIndividual"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_restaurar"
-            android:padding="8dp"
-            app:tint="@color/green_mina"
-            android:contentDescription="Restaurar" />
+            style="@style/Widget.Mina.BotonIcono"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="Restaurar"
+            app:icon="@drawable/ic_restaurar"
+            app:iconTint="@color/verde_texto" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEliminarIndividual"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_eliminar_definitivo"
-            android:padding="8dp"
-            app:tint="#DC2626"
-            android:contentDescription="Eliminar definitivo" />
+            style="@style/Widget.Mina.BotonIcono"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="Borrar definitivamente"
+            app:icon="@drawable/ic_eliminar_definitivo"
+            app:iconTint="@color/error" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

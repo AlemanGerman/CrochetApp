@@ -3,12 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="3dp"
-    app:strokeColor="@color/purple_light"
-    app:strokeWidth="1dp"
-    android:backgroundTint="@color/white">
+    android:layout_marginBottom="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,116 +11,134 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <TextView
+            style="@style/Texto.Etiqueta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estambre" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilNombreEstambre"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Color/Marca de hilo"
-                android:textColorHint="@color/gray_text"
-                app:hintTextColor="@color/purple_primary"
-                app:boxStrokeColor="@color/purple_primary">
+                android:hint="Color o marca">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNombreEstambre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/gray_text"
-                    android:textColorHint="@color/gray_hint"
                     android:imeOptions="actionNext"
-                    android:nextFocusForward="@+id/etCostoMadeja"
-                    android:inputType="textCapSentences"/>
+                    android:inputType="textCapSentences" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEliminarEstambre"
+                style="@style/Widget.Mina.BotonIcono"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_eliminar"
-                app:tint="@color/purple_primary"
-                android:contentDescription="Eliminar estambre"/>
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="-6dp"
+                android:contentDescription="Eliminar estambre"
+                app:icon="@drawable/ic_eliminar"
+                app:iconTint="@color/tinta_suave" />
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilCostoMadeja"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Costo de la madeja completa ($)"
-            android:textColorHint="@color/gray_text"
-            app:hintTextColor="@color/purple_primary"
-            app:boxStrokeColor="@color/purple_primary">
+            android:layout_marginTop="10dp"
+            android:hint="Costo de la madeja"
+            app:prefixText="$">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etCostoMadeja"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/gray_text"
-                android:textColorHint="@color/gray_hint"
                 android:imeOptions="actionNext"
-                android:nextFocusForward="@+id/etGramosTotales"
-                android:inputType="numberDecimal"/>
+                android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilGramosTotales"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:layout_weight="1"
                 android:hint="Gramos totales"
-                android:textColorHint="@color/gray_text"
-                app:hintTextColor="@color/purple_primary"
-                app:boxStrokeColor="@color/purple_primary"
-                android:layout_marginEnd="8dp">
+                app:suffixText="g">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etGramosTotales"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/gray_text"
-                    android:textColorHint="@color/gray_hint"
                     android:imeOptions="actionNext"
-                    android:nextFocusForward="@+id/etGramosUsados"
-                    android:inputType="numberDecimal"/>
+                    android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilGramosUsados"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="Gramos usados"
-                android:textColorHint="@color/gray_text"
-                app:hintTextColor="@color/purple_primary"
-                app:boxStrokeColor="@color/purple_primary">
+                app:suffixText="g">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etGramosUsados"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/gray_text"
-                    android:textColorHint="@color/gray_hint"
                     android:imeOptions="actionDone"
-                    android:inputType="numberDecimal"/>
+                    android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- Cost of what was used, updated while typing -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:background="@color/lavanda_borde" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito_semibold"
+                android:text="Costo de lo usado"
+                android:textColor="@color/tinta_suave"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvCostoFila"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_extrabold"
+                android:text="—"
+                android:textColor="@color/morado_fuerte"
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -10,6 +10,18 @@ val LOCALE_MX: Locale = Locale.forLanguageTag("es-MX")
 /** Whole minutes in [horas]. Rounds instead of truncating: 1 h 05 min is 1.08333…, which truncates to 1 h 04 min. */
 fun horasAMinutos(horas: Double): Int = (horas * 60).roundToInt()
 
+/** "5 h 30 min", "45 min" or "2 h" for a duration in hours. */
+fun duracionLegible(horas: Double): String {
+    val totalMinutos = horasAMinutos(horas).coerceAtLeast(0)
+    val h = totalMinutos / 60
+    val min = totalMinutos % 60
+    return when {
+        h == 0 -> "$min min"
+        min == 0 -> "$h h"
+        else -> "$h h $min min"
+    }
+}
+
 /** "$1,234.50" regardless of the device language, so every screen shows money the same way. */
 fun Double.comoDinero(): String = String.format(LOCALE_MX, "$%,.2f", this)
 

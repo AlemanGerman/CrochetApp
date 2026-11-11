@@ -1,350 +1,350 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_estadisticas">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.card.MaterialCardView
+        <com.example.calculadoracrochet.ui.comun.FondoPatronView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:patron="@drawable/encabezado_estadisticas" />
+
+        <LinearLayout
+            android:id="@+id/contenidoEncabezado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:backgroundTint="@color/purple_primary">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="10dp"
+            android:paddingBottom="@dimen/relleno_inferior_encabezado">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+            <include layout="@layout/fila_marca" />
+
+            <TextView
+                style="@style/Texto.Encabezado.Titulo"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="16dp">
+                android:layout_marginTop="18dp"
+                android:accessibilityHeading="true"
+                android:text="Estadísticas" />
 
-                <ImageButton
-                    android:id="@+id/btnVolverEstadisticas"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_flecha_abajo"
-                    android:rotation="90"
-                    app:tint="@color/white"
-                    android:contentDescription="Regresar"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+            <TextView
+                style="@style/Texto.Encabezado.Subtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Los detalles de tu empresa" />
+        </LinearLayout>
+    </FrameLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Detalles de tu Empresa"
-                    android:textSize="21sp"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toEndOf="@id/btnVolverEstadisticas"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="8dp"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
+    <ScrollView
+        android:id="@+id/hojaEstadisticas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="@dimen/espacio_lista_sin_boton"
+        android:scrollbars="none">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
-            android:scrollbars="none">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp">
 
+            <!-- Income -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_bloque_lavanda"
                 android:orientation="vertical"
-                android:paddingHorizontal="20dp"
-                android:paddingBottom="24dp">
+                android:padding="20dp">
+
+                <TextView
+                    style="@style/Texto.Etiqueta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ingresos brutos cotizados" />
+
+                <TextView
+                    android:id="@+id/tvTotalVentas"
+                    style="@style/Texto.Monto.Grande"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textSize="36sp"
+                    tools:text="$30,025.00" />
+
+                <TextView
+                    style="@style/Texto.Suave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Y de todo eso no me pichas nada…" />
+            </LinearLayout>
+
+            <!-- Count and average -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    android:backgroundTint="@color/white"
-                    android:layout_marginBottom="16dp">
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="16dp">
 
                         <TextView
+                            style="@style/Texto.Etiqueta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="INGRESOS BRUTOS ACUMULADOS"
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08" />
+                            android:text="Proyectos" />
 
                         <TextView
-                            android:id="@+id/tvTotalVentas"
+                            android:id="@+id/tvNumeroProyectos"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            tools:text="$12,450.00"
-                            android:textColor="@color/purple_primary"
-                            android:textSize="30sp"
-                            android:textStyle="bold"
-                            android:layout_marginTop="6dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Y de todo eso no me pichas nada…"
-                            android:textColor="@color/gray_hint"
-                            android:textSize="12sp"
-                            android:layout_marginTop="4dp"/>
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/nunito_extrabold"
+                            android:textColor="@color/tinta"
+                            android:textSize="20sp"
+                            tools:text="162 creaciones" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    android:backgroundTint="@color/white"
-                    android:layout_marginBottom="16dp">
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
+                        android:orientation="vertical"
                         android:padding="16dp">
+
+                        <TextView
+                            style="@style/Texto.Etiqueta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Precio promedio" />
+
+                        <TextView
+                            android:id="@+id/tvPrecioPromedio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/nunito_extrabold"
+                            android:textColor="@color/tinta"
+                            android:textSize="20sp"
+                            tools:text="$185.34" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Records -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="Récords personales" />
+
+                    <LinearLayout
+                        android:id="@+id/itemProyectoMasCostoso"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/ivImgMasCostoso"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@color/lavanda"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/Forma.Mina.Foto" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Cantidad de Proyectos"
-                                android:textColor="@color/gray_text"
-                                android:textSize="14sp"/>
+                                android:drawablePadding="4dp"
+                                android:fontFamily="@font/nunito_extrabold"
+                                android:gravity="center_vertical"
+                                android:text="Más valioso :0"
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.06"
+                                android:textColor="@color/tinta_suave"
+                                android:textSize="11sp"
+                                app:drawableStartCompat="@drawable/ic_estrella"
+                                app:drawableTint="@color/amarillo" />
 
                             <TextView
-                                android:id="@+id/tvNumeroProyectos"
+                                android:id="@+id/tvNombreMasCostoso"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                tools:text="28 creaciones"
-                                android:textColor="@color/black"
-                                android:textSize="22sp"
-                                android:textStyle="bold"
-                                android:layout_marginTop="2dp"/>
+                                android:ellipsize="end"
+                                android:fontFamily="@font/nunito_bold"
+                                android:maxLines="1"
+                                android:textColor="@color/tinta"
+                                android:textSize="16sp" />
                         </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/img_todos"
-                            app:tint="@color/purple_primary"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    android:backgroundTint="@color/white"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
 
                         <TextView
+                            android:id="@+id/tvValorMasCostoso"
+                            style="@style/Texto.Monto"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="RÉCORDS PERSONALES"
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08"
-                            android:layout_marginBottom="12dp"/>
-
-                        <LinearLayout
-                            android:id="@+id/itemProyectoMasCostoso"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:paddingVertical="8dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:id="@+id/ivImgMasCostoso"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                android:scaleType="centerCrop"
-                                app:shapeAppearanceOverlay="@style/RoundedSquare"
-                                android:background="#F3E8FF"/>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Más valioso :0"
-                                    android:textColor="@color/purple_primary"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold"/>
-
-                                <TextView
-                                    android:id="@+id/tvNombreMasCostoso"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    tools:text="Ramo Reversible"
-                                    android:textColor="@color/black"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold"
-                                    android:maxLines="1"
-                                    android:ellipsize="end"/>
-                            </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/tvValorMasCostoso"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="$1,850.00"
-                                android:textColor="@color/purple_primary"
-                                android:textSize="16sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#F0F0F0"
-                            android:layout_marginVertical="8dp"/>
-
-                        <LinearLayout
-                            android:id="@+id/itemProyectoMasHoras"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:background="?attr/selectableItemBackground"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:paddingVertical="8dp">
-
-                            <com.google.android.material.imageview.ShapeableImageView
-                                android:id="@+id/ivImgMasHoras"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                android:scaleType="centerCrop"
-                                app:shapeAppearanceOverlay="@style/RoundedSquare"
-                                android:background="#F3E8FF"/>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Mayor Dedicación"
-                                    android:textColor="@color/purple_primary"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold"/>
-
-                                <TextView
-                                    android:id="@+id/tvNombreMasHoras"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    tools:text="Vaquita Gigante"
-                                    android:textColor="@color/black"
-                                    android:textSize="15sp"
-                                    android:textStyle="bold"
-                                    android:maxLines="1"
-                                    android:ellipsize="end"/>
-                            </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/tvValorMasHoras"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                tools:text="14.5 hrs"
-                                android:textColor="@color/purple_primary"
-                                android:textSize="16sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-
+                            android:layout_marginStart="8dp" />
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    android:backgroundTint="@color/white">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@color/lavanda_borde" />
 
                     <LinearLayout
+                        android:id="@+id/itemProyectoMasHoras"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="TIPOS DE PROYECTOS"
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08"
-                            android:layout_marginBottom="12dp"/>
-
-                        <com.example.calculadoracrochet.ui.estadisticas.PieChartView
-                            android:id="@+id/pieChartCarpetas"
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp"
-                            android:layout_marginVertical="8dp"/>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#F0F0F0"
-                            android:layout_marginVertical="12dp"/>
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/ivImgMasHoras"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@color/lavanda"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/Forma.Mina.Foto" />
 
                         <LinearLayout
-                            android:id="@+id/llContenedorCarpetasStats"
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-            </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="4dp"
+                                android:fontFamily="@font/nunito_extrabold"
+                                android:gravity="center_vertical"
+                                android:text="Mayor dedicación"
+                                android:textAllCaps="true"
+                                android:letterSpacing="0.06"
+                                android:textColor="@color/tinta_suave"
+                                android:textSize="11sp"
+                                app:drawableStartCompat="@drawable/ic_reloj"
+                                app:drawableTint="@color/morado_fuerte" />
+
+                            <TextView
+                                android:id="@+id/tvNombreMasHoras"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/nunito_bold"
+                                android:maxLines="1"
+                                android:textColor="@color/tinta"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvValorMasHoras"
+                            style="@style/Texto.Monto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Folders -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="Tipos de proyecto" />
+
+                    <TextView
+                        style="@style/Texto.Suave"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Según la carpeta de cada proyecto." />
+
+                    <com.example.calculadoracrochet.ui.estadisticas.PieChartView
+                        android:id="@+id/pieChartCarpetas"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="Gráfica de proyectos por carpeta" />
+
+                    <LinearLayout
+                        android:id="@+id/llContenedorCarpetasStats"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

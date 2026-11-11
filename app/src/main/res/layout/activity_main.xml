@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/splash_screen">
+    android:background="@color/fondo">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Main tabs. It draws over the screens (they leave room for it) and hides in the calculator
+         and the trash; it pads itself above the system navigation bar. -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/barraNavegacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_barra_accion"
+        app:backgroundTint="@null"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_navegacion" />
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieGanchillo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="100dp"
+        android:importantForAccessibility="no"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:lottie_rawRes="@raw/animacion_ganchillo"
+        android:visibility="gone"
         app:lottie_autoPlay="false"
         app:lottie_loop="false"
-        android:visibility="gone"
-        android:elevation="100dp" />
+        app:lottie_rawRes="@raw/animacion_ganchillo" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

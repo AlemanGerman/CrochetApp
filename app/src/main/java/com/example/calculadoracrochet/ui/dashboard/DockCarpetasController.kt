@@ -9,11 +9,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.hapticSeleccion
 
-/** Folder dock at the bottom of the dashboard, with the animated pill that follows the selected folder. */
+/** Folder filter row of the dashboard, with the purple pill that slides to the selected folder. */
 class DockCarpetasController(
     private val raiz: View,
     carpetaInicial: String,
@@ -30,15 +31,11 @@ class DockCarpetasController(
     private val hsvCarpetas = raiz.findViewById<HorizontalScrollView>(R.id.hsvCarpetas)
 
     private val vistasCarpetas = mutableListOf<View>()
+    private val colorNormal = ContextCompat.getColor(contexto, R.color.tinta)
+    private val colorSobrePildora = ContextCompat.getColor(contexto, R.color.white)
     private var animadorSelector: ValueAnimator? = null
 
     fun configurar() {
-        raiz.findViewById<View>(R.id.dockCarpetas).clipToOutline = true
-
-        indicador.elevation = 0f
-        llContenedor.elevation = 2f
-        llContenedor.bringToFront()
-
         llContenedor.removeAllViews()
         vistasCarpetas.clear()
 
@@ -49,7 +46,7 @@ class DockCarpetasController(
 
             itemView.findViewById<ImageView>(R.id.ivIconoCarpeta).setImageResource(carpetaInfo.iconoRes)
             tvNombre.text = carpetaInfo.nombre
-            itemView.alpha = 1.0f
+            itemView.contentDescription = "Carpeta ${carpetaInfo.nombre}"
             actualizarColorTexto(tvNombre, carpetaInfo.nombre == carpetaSeleccionada)
 
             itemView.setOnClickListener {
@@ -59,12 +56,13 @@ class DockCarpetasController(
                 carpetaSeleccionada = carpetaInfo.nombre
                 vistasCarpetas.forEach { vista ->
                     val tv = vista.findViewById<TextView>(R.id.tvNombreCarpeta)
-                    actualizarColorTexto(tv, tv.text.toString() == carpetaSeleccionada)
+                    vista.isSelected = tv.text.toString() == carpetaSeleccionada
                 }
                 animarSelectorHacia(itemView)
                 onCarpetaSeleccionada(carpetaSeleccionada)
             }
 
+            itemView.isSelected = carpetaInfo.nombre == carpetaSeleccionada
             vistasCarpetas.add(itemView)
             llContenedor.addView(itemView)
         }
@@ -119,6 +117,7 @@ class DockCarpetasController(
                     params.height = altoActual
                     indicador.layoutParams = params
                 }
+                pintarTextosSegunIndicador(indicador.translationX, indicador.translationX + anchoActual)
             }
             start()
         }
@@ -132,7 +131,16 @@ class DockCarpetasController(
     }
 
     private fun actualizarColorTexto(tvNombre: TextView, estaSeleccionada: Boolean) {
-        val color = if (estaSeleccionada) R.color.purple_primary else R.color.gray_light
-        tvNombre.setTextColor(ContextCompat.getColor(contexto, color))
+        tvNombre.setTextColor(if (estaSeleccionada) colorSobrePildora else colorNormal)
+    }
+
+    /** A folder name turns white as the pill slides under it, so it never sits white on the sheet. */
+    private fun pintarTextosSegunIndicador(izquierda: Float, derecha: Float) {
+        vistasCarpetas.forEach { vista ->
+            val solape = (minOf(derecha, vista.x + vista.width) - maxOf(izquierda, vista.x)).coerceAtLeast(0f)
+            val cobertura = if (vista.width > 0) (solape / vista.width).coerceIn(0f, 1f) else 0f
+            vista.findViewById<TextView>(R.id.tvNombreCarpeta)
+                .setTextColor(ColorUtils.blendARGB(colorNormal, colorSobrePildora, cobertura))
+        }
     }
 }

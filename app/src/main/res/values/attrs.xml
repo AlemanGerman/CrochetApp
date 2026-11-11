@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Purple header with the screen pattern (FondoPatronView) -->
+    <declare-styleable name="FondoPatronView">
+        <attr name="patron" format="reference" />
+        <attr name="colorBase" format="color" />
+    </declare-styleable>
+</resources>

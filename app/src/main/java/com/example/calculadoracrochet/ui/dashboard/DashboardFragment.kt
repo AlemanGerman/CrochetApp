@@ -1,7 +1,6 @@
 package com.example.calculadoracrochet.ui.dashboard
 
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,9 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
@@ -27,34 +24,38 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.PantallaConGanchillo
+import com.example.calculadoracrochet.ui.PestanaPrincipal
+import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.example.calculadoracrochet.ui.calculadora.MaterialesFragment
-import com.example.calculadoracrochet.ui.configuracion.ConfiguracionFragment
-import com.example.calculadoracrochet.ui.estadisticas.EstadisticasFragment
-import com.example.calculadoracrochet.ui.papelera.PapeleraFragment
+import com.example.calculadoracrochet.ui.comun.FondoPatronView
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.CarpetasUi
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.comoDinero
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.margenSobreBarraDeNavegacion
+import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
+import com.example.calculadoracrochet.utils.rellenarSobreBarraDeNavegacion
 import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
-import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
-import com.example.calculadoracrochet.data.model.ProyectoCrochet
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import java.lang.ref.WeakReference
 
-class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
+class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipal, PantallaConGanchillo {
+
+    override val idPestana = R.id.nav_proyectos
 
     private val viewModel: ProyectosViewModel by activityViewModels()
     private val calculadoraViewModel: CalculadoraViewModel by activityViewModels()
     private lateinit var adapter: ProyectosAdapter
     private lateinit var detalleDialog: DetalleProyectoDialog
     private var dockCarpetas: DockCarpetasController? = null
-
-    private var criterioActual: CriterioOrden = CriterioOrden.FECHA
-    private var esOrdenDescendente: Boolean = true
-    private var carpetaSeleccionada = FiltroProyectos.CARPETA_TODOS
 
     private var proyectoEditando: ProyectoCrochet? = null
     private var vistaFotoEnEdicion: WeakReference<ImageView>? = null
@@ -110,8 +111,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        prepararAnimacionGanchillo()
         configurarBotonAtras()
+        configurarInsets(view)
 
         detalleDialog = DetalleProyectoDialog(
             fragment = this,
@@ -130,11 +131,25 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         )
         recyclerView.adapter = adapter
 
+        // The floating button tucks its label away while the list scrolls down
+        val btnNuevo = view.findViewById<ExtendedFloatingActionButton>(R.id.btnNuevoProyecto)
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy > 6 && btnNuevo.isExtended) btnNuevo.shrink()
+                else if ((dy < -6 || !recyclerView.canScrollVertically(-1)) && !btnNuevo.isExtended) btnNuevo.extend()
+            }
+        })
+
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
             filtrarYOrdenarLista()
         }
 
-        view.findViewById<EditText>(R.id.etBuscarProyecto).doAfterTextChanged { filtrarYOrdenarLista() }
+        val etBuscar = view.findViewById<EditText>(R.id.etBuscarProyecto)
+        etBuscar.setText(viewModel.filtroDashboard.textoBusqueda)
+        etBuscar.doAfterTextChanged {
+            viewModel.filtroDashboard = viewModel.filtroDashboard.copy(textoBusqueda = it?.toString().orEmpty())
+            filtrarYOrdenarLista()
+        }
 
         view.findViewById<MaterialButton>(R.id.btnTipoOrden).setOnClickListener { vistaBoton ->
             vistaBoton.hapticClickPrincipal()
@@ -142,21 +157,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         val btnDireccion = view.findViewById<MaterialButton>(R.id.btnDireccionOrden)
-        btnDireccion.setIconResource(R.drawable.ic_flecha_abajo)
         actualizarRotacionFlecha(animar = false)
         btnDireccion.setOnClickListener {
             btnDireccion.hapticSeleccion()
-            esOrdenDescendente = !esOrdenDescendente
+            val filtro = viewModel.filtroDashboard
+            viewModel.filtroDashboard = filtro.copy(descendente = !filtro.descendente)
             actualizarRotacionFlecha(animar = true)
             refrescarYSubir()
         }
 
-        view.findViewById<ImageButton>(R.id.btnOpciones).setOnClickListener {
+        view.findViewById<View>(R.id.btnPapelera).setOnClickListener {
             it.hapticClickPrincipal()
-            mostrarBottomSheetOpciones()
+            (requireActivity() as MainActivity).abrirPapelera()
         }
 
-        view.findViewById<MaterialButton>(R.id.btnNuevoProyecto).setOnClickListener {
+        btnNuevo.setOnClickListener {
             it.hapticClickPrincipal()
             calculadoraViewModel.limpiarCalculoActual()
             (requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
@@ -164,13 +179,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         dockCarpetas = DockCarpetasController(
             raiz = view,
-            carpetaInicial = carpetaSeleccionada,
+            carpetaInicial = viewModel.filtroDashboard.carpeta,
             estaActivo = { isAdded },
             onCarpetaSeleccionada = { carpeta ->
-                carpetaSeleccionada = carpeta
+                viewModel.filtroDashboard = viewModel.filtroDashboard.copy(carpeta = carpeta)
                 refrescarYSubir()
             }
         ).also { it.configurar() }
+
+        // The first calculator step is usually next: have its header ready
+        view.post {
+            if (isAdded) {
+                val encabezado = view.findViewById<View>(R.id.contenidoEncabezado).parent as View
+                FondoPatronView.precargar(requireContext(), R.drawable.encabezado_materiales, view.width, encabezado.height)
+            }
+        }
 
         filtrarYOrdenarLista()
     }
@@ -181,16 +204,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         super.onDestroyView()
     }
 
-    private fun prepararAnimacionGanchillo() {
-        val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
-        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
-            lottieGanchillo.post {
-                lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-                lottieGanchillo.pauseAnimation()
-                lottieGanchillo.progress = 0f
-                lottieGanchillo.visibility = View.VISIBLE
-            }
-        }
+    override fun alVolverAPulsar() {
+        view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+    }
+
+    private fun configurarInsets(view: View) {
+        val densidad = resources.displayMetrics.density
+        view.findViewById<View>(R.id.contenidoEncabezado).rellenarBajoBarraDeEstado()
+        view.findViewById<View>(R.id.rvProyectos).rellenarSobreBarraDeNavegacion()
+        view.findViewById<View>(R.id.btnNuevoProyecto).margenSobreBarraDeNavegacion(
+            resources.getDimensionPixelSize(R.dimen.alto_barra_navegacion) + (16 * densidad).toInt()
+        )
     }
 
     private fun configurarBotonAtras() {
@@ -216,16 +240,38 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun filtrarYOrdenarLista() {
-        val textoBusqueda = view?.findViewById<EditText>(R.id.etBuscarProyecto)?.text?.toString() ?: ""
-        adapter.actualizarLista(
-            FiltroProyectos.aplicar(
-                proyectos = viewModel.historialProyectos,
-                textoBusqueda = textoBusqueda,
-                carpeta = carpetaSeleccionada,
-                criterio = criterioActual,
-                descendente = esOrdenDescendente
-            )
+        val vista = view ?: return
+        val filtro = viewModel.filtroDashboard
+        val lista = FiltroProyectos.aplicar(
+            proyectos = viewModel.historialProyectos,
+            textoBusqueda = filtro.textoBusqueda,
+            carpeta = filtro.carpeta,
+            criterio = filtro.criterio,
+            descendente = filtro.descendente
         )
+        adapter.actualizarLista(lista)
+
+        val cargado = viewModel.proyectosEnVivo.value != null
+        val activos = viewModel.proyectosActivos
+        vista.findViewById<TextView>(R.id.tvResumenProyectos).text = when {
+            !cargado -> "Cargando proyectos…"
+            activos.isEmpty() -> "Aquí aparecerán tus cotizaciones"
+            else -> {
+                val cuantos = if (activos.size == 1) "1 proyecto" else "${activos.size} proyectos"
+                "$cuantos · ${activos.sumOf { it.precioFinal }.comoDinero()} cotizados"
+            }
+        }
+
+        val llVacio = vista.findViewById<View>(R.id.llEstadoVacio)
+        llVacio.visibility = if (cargado && lista.isEmpty()) View.VISIBLE else View.GONE
+        if (lista.isEmpty()) {
+            val sinProyectos = activos.isEmpty()
+            vista.findViewById<TextView>(R.id.tvTituloVacio).text =
+                if (sinProyectos) "Aún no tienes proyectos" else "Sin resultados"
+            vista.findViewById<TextView>(R.id.tvMensajeVacio).text =
+                if (sinProyectos) "Toca «Nuevo proyecto» para hacer tu primera cotización."
+                else "Ningún proyecto coincide con la búsqueda o la carpeta elegida."
+        }
     }
 
     private fun refrescarYSubir() {
@@ -235,7 +281,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun actualizarRotacionFlecha(animar: Boolean = true) {
         val btnDireccion = view?.findViewById<MaterialButton>(R.id.btnDireccionOrden) ?: return
-        val anguloDestino = if (esOrdenDescendente) 0f else 180f
+        val anguloDestino = if (viewModel.filtroDashboard.descendente) 0f else 180f
 
         if (animar) {
             btnDireccion.animate()
@@ -257,9 +303,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             ViewGroup.LayoutParams.WRAP_CONTENT,
             true
         ).apply {
-            elevation = 16f
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             isOutsideTouchable = true
+            animationStyle = R.style.AnimacionMenuOrden
         }
 
         data class OpcionCriterio(val opcion: Int, val check: Int, val texto: Int)
@@ -271,19 +317,19 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             CriterioOrden.NOMBRE to OpcionCriterio(R.id.opcCriterioNombre, R.id.checkCriterioNombre, R.id.tvCriterioNombre)
         )
 
-        opciones[criterioActual]?.let { actual ->
+        opciones[viewModel.filtroDashboard.criterio]?.let { actual ->
             menuView.findViewById<View>(actual.check)?.visibility = View.VISIBLE
             menuView.findViewById<TextView>(actual.texto)?.apply {
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
-                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.morado_fuerte))
+                typeface = androidx.core.content.res.ResourcesCompat.getFont(requireContext(), R.font.nunito_extrabold)
             }
         }
 
         opciones.forEach { (criterio, ids) ->
             menuView.findViewById<View>(ids.opcion).setOnClickListener {
                 it.hapticSeleccion()
-                if (criterioActual != criterio) {
-                    criterioActual = criterio
+                if (viewModel.filtroDashboard.criterio != criterio) {
+                    viewModel.filtroDashboard = viewModel.filtroDashboard.copy(criterio = criterio)
                     refrescarYSubir()
                 }
                 popupWindow.dismiss()
@@ -295,68 +341,21 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
         )
         val offsetX = -(menuView.measuredWidth - anchorView.width)
-        popupWindow.showAsDropDown(anchorView, offsetX, 12)
-    }
-
-    private fun mostrarBottomSheetOpciones() {
-        val bottomSheetDialog = BottomSheetDialog(requireContext())
-        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_dashboard_opciones, null)
-        bottomSheetDialog.setContentView(sheetView)
-
-        mapOf(
-            R.id.itemOpcionEstadisticas to { EstadisticasFragment() },
-            R.id.itemOpcionConfiguracion to { ConfiguracionFragment() },
-            R.id.itemOpcionPapelera to { PapeleraFragment() }
-        ).forEach { (idOpcion, crearDestino) ->
-            sheetView.findViewById<View>(idOpcion)?.setOnClickListener {
-                it.hapticClickPrincipal()
-                bottomSheetDialog.dismiss()
-                navegarHaciaFragmento(crearDestino())
-            }
-        }
-
-        bottomSheetDialog.show()
-    }
-
-    private fun navegarHaciaFragmento(fragment: Fragment) {
-        requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
-
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left,
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-            .replace(R.id.fragmentContainer, fragment)
-            .addToBackStack(null)
-            .commit()
+        popupWindow.showAsDropDown(anchorView, offsetX, 0)
     }
 
     private fun mostrarModalCarpetas(proyecto: ProyectoCrochet) {
         val (dialog, dialogView) = DialogUtils.crearDialogBase(requireContext(), R.layout.dialog_editar_carpetas)
 
-        val llContenedor = dialogView.findViewById<LinearLayout>(R.id.llCarpetasContenedor)
-        llContenedor.removeAllViews()
-
-        val checkboxesMap = mutableMapOf<String, MaterialCheckBox>()
-
-        CarpetasConfig.obtenerNombresSinTodos().forEach { nombreCarpeta ->
-            val carpetaInfo = CarpetasConfig.listaCarpetas.find { it.nombre == nombreCarpeta }
-            val cb = MaterialCheckBox(requireContext()).apply {
-                text = nombreCarpeta
-                setTextColor(ContextCompat.getColor(context, R.color.black))
-                carpetaInfo?.let {
-                    buttonTintList = ContextCompat.getColorStateList(context, it.colorRes)
-                }
-                isChecked = proyecto.carpetas.contains(nombreCarpeta)
-                setOnCheckedChangeListener { _, _ ->
-                    hapticSeleccion()
-                }
+        val cgCarpetas = dialogView.findViewById<ChipGroup>(R.id.cgCarpetasEditar)
+        val chips = mutableMapOf<String, Chip>()
+        CarpetasConfig.listaCarpetas
+            .filter { it.nombre != CarpetasConfig.CARPETA_TODOS }
+            .forEach { carpeta ->
+                val chip = CarpetasUi.crearChipSeleccionable(cgCarpetas, carpeta, proyecto.carpetas.contains(carpeta.nombre))
+                chips[carpeta.nombre] = chip
+                cgCarpetas.addView(chip)
             }
-            checkboxesMap[nombreCarpeta] = cb
-            llContenedor.addView(cb)
-        }
 
         dialogView.findViewById<MaterialButton>(R.id.btnCancelarCarpetas).setOnClickListener {
             it.hapticClickPrincipal()
@@ -365,7 +364,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
         dialogView.findViewById<MaterialButton>(R.id.btnGuardarCarpetas).setOnClickListener {
             it.hapticClickPrincipal()
-            proyecto.carpetas = checkboxesMap.filter { it.value.isChecked }.keys.toList()
+            proyecto.carpetas = chips.filter { it.value.isChecked }.keys.toList()
             viewModel.actualizarCarpetasProyecto(proyecto)
             filtrarYOrdenarLista()
             dialog.dismiss()

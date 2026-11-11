@@ -6,7 +6,7 @@ import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -14,6 +14,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.PestanaPrincipal
+import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
+import com.example.calculadoracrochet.utils.rellenarSobreBarraDeNavegacion
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
@@ -21,27 +26,32 @@ import com.example.calculadoracrochet.utils.hapticExito
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.ui.calculadora.CalculadoraViewModel
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
 import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.animarCambiosDeLayout
 
-class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
+class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion), PestanaPrincipal {
+
+    override val idPestana = R.id.nav_ajustes
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
+    private val proyectosViewModel: ProyectosViewModel by activityViewModels()
 
-    private var switchRedondeo: SwitchMaterial? = null
+    private var switchRedondeo: MaterialSwitch? = null
     private var tvEstadoRedondeo: TextView? = null
     private var llContenedorMultiplo: LinearLayout? = null
     private var etMultiploPersonalizado: TextInputEditText? = null
+    private var tilMultiplo: com.google.android.material.textfield.TextInputLayout? = null
     private var btnAplicarMultiplo: MaterialButton? = null
     private var tvSimulacionBase: TextView? = null
     private var tvSimulacionResultado: TextView? = null
 
-    private var switchVibracion: SwitchMaterial? = null
+    private var switchVibracion: MaterialSwitch? = null
     private var tvEstadoVibracion: TextView? = null
 
-    private var switchColorDinamico: SwitchMaterial? = null
+    private var switchColorDinamico: MaterialSwitch? = null
     private var tvEstadoColorDinamico: TextView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,6 +70,7 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
         tvEstadoRedondeo = view.findViewById(R.id.tvEstadoRedondeo)
         llContenedorMultiplo = view.findViewById(R.id.llContenedorMultiplo)
         etMultiploPersonalizado = view.findViewById(R.id.etMultiploPersonalizado)
+        tilMultiplo = view.findViewById(R.id.tilMultiploPersonalizado)
         btnAplicarMultiplo = view.findViewById(R.id.btnAplicarMultiplo)
         tvSimulacionBase = view.findViewById(R.id.tvSimulacionBase)
         tvSimulacionResultado = view.findViewById(R.id.tvSimulacionResultado)
@@ -72,10 +83,35 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
     }
 
     private fun configurarBotonVolver(view: View) {
-        view.findViewById<ImageButton>(R.id.btnVolverConfiguracion)?.setOnClickListener {
-            it.hapticClickPrincipal()
-            parentFragmentManager.popBackStack()
+        view.findViewById<View>(R.id.contenidoEncabezado).rellenarBajoBarraDeEstado()
+        view.findViewById<View>(R.id.hojaAjustes).apply {
+            rellenarSobreBarraDeNavegacion()
+            clipToOutline = true
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).volverAProyectos()
+            }
+        })
+
+        view.findViewById<View>(R.id.itemAbrirPapelera).setOnClickListener {
+            it.hapticClickPrincipal()
+            (requireActivity() as MainActivity).abrirPapelera()
+        }
+        val tvConteoPapelera = view.findViewById<TextView>(R.id.tvConteoPapelera)
+        proyectosViewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
+            val enPapelera = proyectosViewModel.papeleraProyectos.size
+            tvConteoPapelera.text = when (enPapelera) {
+                0 -> "Está vacía"
+                1 -> "1 proyecto eliminado"
+                else -> "$enPapelera proyectos eliminados"
+            }
+        }
+    }
+
+    override fun alVolverAPulsar() {
+        view?.findViewById<android.widget.ScrollView>(R.id.hojaAjustes)?.smoothScrollTo(0, 0)
     }
 
     private fun configurarSeccionRedondeo() {
@@ -94,6 +130,7 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
             switchRedondeo?.hapticSeleccion()
             PreferenciasApp.setRedondeoActivo(requireContext(), isChecked)
             actualizarEstadoTextoRedondeo(isChecked)
+            (llContenedorMultiplo?.parent as? android.view.ViewGroup)?.animarCambiosDeLayout()
             llContenedorMultiplo?.visibility = if (isChecked) View.VISIBLE else View.GONE
             viewModel.calcularTotal()
             actualizarSimulacion()
@@ -132,12 +169,12 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
 
         if (nuevoMultiplo == null || nuevoMultiplo <= 0.0) {
             btnAplicarMultiplo?.hapticError()
-            etMultiploPersonalizado?.error = "Ingresa un número mayor a 0"
+            tilMultiplo?.error = "Ingresa un número mayor a 0"
             return
         }
 
         btnAplicarMultiplo?.hapticClickPrincipal()
-        etMultiploPersonalizado?.error = null
+        tilMultiplo?.error = null
         PreferenciasApp.setMultiploRedondeo(requireContext(), nuevoMultiplo)
         actualizarCampoMultiplo(nuevoMultiplo)
         viewModel.calcularTotal()
@@ -163,10 +200,10 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
     private fun actualizarEstadoTextoRedondeo(activo: Boolean) {
         if (activo) {
             tvEstadoRedondeo?.text = "Activo"
-            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.morado_fuerte))
         } else {
             tvEstadoRedondeo?.text = "Desactivado"
-            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+            tvEstadoRedondeo?.setTextColor(ContextCompat.getColor(requireContext(), R.color.tinta_suave))
         }
     }
 
@@ -190,11 +227,11 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
 
     private fun actualizarEstadoTextoVibracion(activa: Boolean) {
         if (activa) {
-            tvEstadoVibracion?.text = "Activada en toda la app"
-            tvEstadoVibracion?.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+            tvEstadoVibracion?.text = "Activada"
+            tvEstadoVibracion?.setTextColor(ContextCompat.getColor(requireContext(), R.color.morado_fuerte))
         } else {
             tvEstadoVibracion?.text = "Desactivada"
-            tvEstadoVibracion?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+            tvEstadoVibracion?.setTextColor(ContextCompat.getColor(requireContext(), R.color.tinta_suave))
         }
     }
 
@@ -215,10 +252,10 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
     private fun actualizarEstadoTextoColorDinamico(activo: Boolean) {
         if (activo) {
             tvEstadoColorDinamico?.text = "Activo"
-            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_primary))
+            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.morado_fuerte))
         } else {
             tvEstadoColorDinamico?.text = "Desactivado"
-            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_hint))
+            tvEstadoColorDinamico?.setTextColor(ContextCompat.getColor(requireContext(), R.color.tinta_suave))
         }
     }
 
@@ -228,15 +265,15 @@ class ConfiguracionFragment : Fragment(R.layout.fragment_configuracion) {
         val multiplo = multiploSimulado ?: PreferenciasApp.getMultiploRedondeo(context)
 
         val totalBaseSimulado = 143.20
-        tvSimulacionBase?.text = "Ejemplo sin redondeo: ${totalBaseSimulado.comoDinero()}"
+        tvSimulacionBase?.text = "Un precio de ${totalBaseSimulado.comoDinero()}…"
 
         if (activo) {
             val (precioRedondeado, ajuste) = PreferenciasApp.calcularRedondeo(totalBaseSimulado, activo, multiplo)
             val textoMultiplo = PreferenciasApp.formatearMultiplo(multiplo)
             tvSimulacionResultado?.text =
-                "Con redondeo ($textoMultiplo): ${precioRedondeado.comoDinero()}\n(+ ${ajuste.comoDinero()} a tu favor)"
+                "…queda en ${precioRedondeado.comoDinero()} (múltiplos de $textoMultiplo, +${ajuste.comoDinero()} a tu favor)"
         } else {
-            tvSimulacionResultado?.text = "Sin redondeo: ${totalBaseSimulado.comoDinero()} (precio exacto)"
+            tvSimulacionResultado?.text = "…se queda en ${totalBaseSimulado.comoDinero()}: precio exacto"
         }
     }
 

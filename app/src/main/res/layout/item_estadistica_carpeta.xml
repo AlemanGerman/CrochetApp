@@ -4,45 +4,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingVertical="8dp">
+    android:minHeight="52dp"
+    android:orientation="horizontal"
+    android:paddingVertical="6dp">
 
+    <!-- Color of the folder in the chart -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardColorIndicador"
-        android:layout_width="10dp"
-        android:layout_height="36dp"
-        app:cardCornerRadius="5dp"
-        app:cardElevation="0dp"
-        android:layout_marginEnd="10dp" />
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardCornerRadius="6dp"
+        app:strokeWidth="0dp" />
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivIconoCarpetaStat"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:importantForAccessibility="no"
         android:scaleType="centerCrop"
-        android:background="#F3E8FF"
-        app:shapeAppearanceOverlay="@style/RoundedSquare"
-        tools:src="@drawable/img_amigurumi"/>
+        app:shapeAppearanceOverlay="@style/Forma.Mina.Circulo"
+        tools:src="@drawable/ic_carpeta_amigurumi" />
 
     <TextView
         android:id="@+id/tvNombreCarpetaStat"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
         android:layout_weight="1"
-        android:layout_marginStart="14dp"
+        android:fontFamily="@font/nunito_bold"
+        android:textColor="@color/tinta"
         android:textSize="15sp"
-        android:textColor="@color/black"
-        android:textStyle="bold"
         tools:text="Amigurumi" />
 
     <TextView
         android:id="@+id/tvConteoCarpetaStat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_semibold"
+        android:textColor="@color/tinta_suave"
         android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@color/purple_primary"
-        tools:text="12 proyectos (43%)" />
-
+        tools:text="12 proyectos · 43%" />
 </LinearLayout>

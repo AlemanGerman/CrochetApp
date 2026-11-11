@@ -1,122 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="24dp"
-    app:cardCornerRadius="28dp"
-    android:backgroundTint="@color/white">
+    android:background="@drawable/bg_dialogo"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:padding="24dp">
 
         <TextView
+            style="@style/Texto.Titulo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Guardar Proyecto"
-            android:textSize="22sp"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:text="Guardar proyecto" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivFotoPreview"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:scaleType="centerCrop"
-            android:background="#F0F0F0"
-            app:srcCompat="@drawable/ic_photo"
-            app:tint="@color/gray_hint"
-            app:shapeAppearanceOverlay="@style/RoundedSquare"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground" />
+        <TextView
+            style="@style/Texto.Suave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Ponle nombre para encontrarlo después." />
+
+        <!-- Photo: the dashed slot until there is one -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_foto_vacia">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivFotoPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:contentDescription="Foto del proyecto"
+                android:focusable="true"
+                android:scaleType="centerInside"
+                app:shapeAppearanceOverlay="@style/Forma.Mina.Tarjeta" />
+        </FrameLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSeleccionarFoto"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.Mina.Boton.Texto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Añadir Foto (Opcional)"
-            android:textColor="@color/purple_primary"
-            android:layout_marginBottom="16dp"/>
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp"
+            android:text="Añadir foto (opcional)"
+            app:icon="@drawable/ic_agregar_foto" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilNombreGuardar"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nombre del proyecto"
-            android:textColorHint="@color/gray_text"
-            app:hintTextColor="@color/purple_primary"
-            app:boxStrokeColor="@color/purple_primary"
-            android:layout_marginBottom="16dp">
+            android:layout_marginTop="6dp"
+            android:hint="Nombre del proyecto">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNombreGuardar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/gray_text"
-                android:textColorHint="@color/gray_hint"
-                android:inputType="textCapSentences"/>
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
+            style="@style/Texto.Etiqueta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Carpetas (Opcional):"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginTop="18dp"
+            android:text="Carpetas (opcional)" />
 
-        <HorizontalScrollView
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cgCarpetas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="24dp">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/cgCarpetas"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleLine="true">
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+            android:layout_marginTop="8dp"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="8dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:layout_marginTop="24dp"
+            android:gravity="end"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelarGuardar"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Cancelar"
-                android:textColor="@color/purple_primary"
-                app:strokeColor="@color/purple_primary"
-                app:cornerRadius="28dp"/>
+                style="@style/Widget.Mina.Boton.Texto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancelar" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnConfirmarGuardar"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Guardar"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/purple_primary"
-                app:cornerRadius="28dp"/>
+                app:icon="@drawable/ic_check" />
         </LinearLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</ScrollView>

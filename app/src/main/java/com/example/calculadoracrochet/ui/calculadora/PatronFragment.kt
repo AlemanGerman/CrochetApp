@@ -19,6 +19,11 @@ import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.utils.validar
 import com.example.calculadoracrochet.utils.errorSiNoPositivo
 import com.example.calculadoracrochet.utils.aNumeroOInvalido
+import com.example.calculadoracrochet.utils.animarCambiosDeLayout
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.ui.MainActivity
+import androidx.core.widget.doAfterTextChanged
+import android.view.ViewGroup
 
 class PatronFragment : Fragment(R.layout.fragment_patron) {
 
@@ -29,6 +34,16 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        EncabezadoPaso.configurar(
+            raiz = view,
+            paso = 2,
+            titulo = "El patrón",
+            subtitulo = "¿Tú lo hiciste o lo compraste? 🤨",
+            patron = R.drawable.encabezado_patron,
+            patronSiguiente = R.drawable.encabezado_mano_obra,
+            alVolver = { requireActivity().onBackPressedDispatcher.onBackPressed() }
+        )
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val tiempoActual = SystemClock.elapsedRealtime()
@@ -38,10 +53,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                 }
                 ultimoRetrocesoTiempo = tiempoActual
 
-                val lottie = requireActivity().findViewById<View>(R.id.lottieGanchillo)
-                lottie?.visibility = View.GONE
-
-                parentFragmentManager.popBackStack()
+                (requireActivity() as MainActivity).regresarDeslizando()
             }
         })
 
@@ -69,9 +81,25 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             etNumeroMunecos.setText("1")
         }
 
+        fun actualizarMonto() {
+            val porPieza = if (tgComproPatron.checkedButtonId == R.id.btnPatronSi) {
+                CostoEnVivo.patronPorPieza(
+                    etCostoPatron.text.toString().trim().toDoubleOrNull(),
+                    etNumeroMunecos.text.toString().trim().toIntOrNull()
+                )
+            } else {
+                0.0
+            }
+            EncabezadoPaso.mostrarMonto(view, "Patrón por pieza", porPieza?.comoDinero() ?: "—")
+        }
+        etCostoPatron.doAfterTextChanged { actualizarMonto() }
+        etNumeroMunecos.doAfterTextChanged { actualizarMonto() }
+        actualizarMonto()
+
         tgComproPatron.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 tgComproPatron.hapticSeleccion()
+                (llCamposPatron.parent as ViewGroup).animarCambiosDeLayout()
                 if (checkedId == R.id.btnPatronSi) {
                     llCamposPatron.visibility = View.VISIBLE
                 } else {
@@ -81,10 +109,11 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
                     tilCostoPatron.error = null
                     tilNumeroMunecos.error = null
                 }
+                actualizarMonto()
             }
         }
 
-        view.findViewById<View>(R.id.btnSiguientePatron).setOnClickListener {
+        view.findViewById<View>(R.id.btnContinuarPaso).setOnClickListener {
             val esComprado = tgComproPatron.checkedButtonId == R.id.btnPatronSi
             var todoCorrecto = true
 
@@ -113,16 +142,7 @@ class PatronFragment : Fragment(R.layout.fragment_patron) {
             if (todoCorrecto) {
                 view.hapticClickPrincipal()
                 viewModel.guardarBorrador()
-                parentFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_left,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_right
-                    )
-                    .replace(R.id.fragmentContainer, ManoObraFragment())
-                    .addToBackStack(null)
-                    .commit()
+                (requireActivity() as MainActivity).navegarDeslizando(ManoObraFragment())
             } else {
                 view.hapticError()
             }

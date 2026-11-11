@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.ui.comun.EncuadreImageView
 import com.google.android.material.button.MaterialButton
@@ -30,6 +31,9 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 object DialogUtils {
+
+    private fun esAccionDestructiva(texto: String): Boolean =
+        listOf("Eliminar", "Vaciar", "Mover", "Quitar", "Borrar").any { texto.contains(it, ignoreCase = true) }
 
     fun crearDialogBase(context: Context, layoutResId: Int): Pair<AlertDialog, View> {
         val view = LayoutInflater.from(context).inflate(layoutResId, null)
@@ -88,11 +92,22 @@ object DialogUtils {
         tvMensaje.text = mensaje
         btnConfirmar.text = textoConfirmar
 
+        // Deleting, emptying or trashing: the confirm button and the icon turn red
+        val esDestructiva = esAccionDestructiva(textoConfirmar)
+        if (esDestructiva) {
+            btnConfirmar.backgroundTintList = ContextCompat.getColorStateList(context, R.color.error)
+        }
+
+        val contenedorIcono = view.findViewById<View>(R.id.contenedorIcono)
         if (iconoResId != null) {
             ivIcono.setImageResource(iconoResId)
-            ivIcono.visibility = View.VISIBLE
+            if (esDestructiva) {
+                ivIcono.imageTintList = ContextCompat.getColorStateList(context, R.color.error)
+                contenedorIcono.backgroundTintList = ContextCompat.getColorStateList(context, R.color.error_claro)
+            }
+            contenedorIcono.visibility = View.VISIBLE
         } else {
-            ivIcono.visibility = View.GONE
+            contenedorIcono.visibility = View.GONE
         }
 
         view.findViewById<MaterialButton>(R.id.btnCancelar).setOnClickListener {
@@ -100,9 +115,7 @@ object DialogUtils {
             dialog.dismiss()
         }
         btnConfirmar.setOnClickListener {
-            if (textoConfirmar.contains("Eliminar", ignoreCase = true) ||
-                textoConfirmar.contains("Vaciar", ignoreCase = true) ||
-                textoConfirmar.contains("Mover", ignoreCase = true)) {
+            if (esDestructiva) {
                 it.hapticEliminar()
             } else {
                 it.hapticClickPrincipal()
@@ -171,13 +184,11 @@ object DialogUtils {
         btnOp2.text = textoOpcion2
 
         if (iconoOpcion1 != 0) btnOp1.setIconResource(iconoOpcion1)
-        if (iconoOpcion2 != 0) {
-            btnOp2.setIconResource(iconoOpcion2)
-            if (textoOpcion2.contains("Eliminar", ignoreCase = true)) {
-                btnOp2.setTextColor(Color.parseColor("#E53935"))
-                btnOp2.setStrokeColorResource(android.R.color.transparent)
-                btnOp2.setIconTintResource(android.R.color.holo_red_dark)
-            }
+        if (iconoOpcion2 != 0) btnOp2.setIconResource(iconoOpcion2)
+        if (esAccionDestructiva(textoOpcion2)) {
+            btnOp2.setTextColor(ContextCompat.getColor(context, R.color.error))
+            btnOp2.setIconTintResource(R.color.error)
+            btnOp2.backgroundTintList = ContextCompat.getColorStateList(context, R.color.error_claro)
         }
 
         view.findViewById<MaterialButton>(R.id.btnCancelarOpciones).setOnClickListener {
@@ -191,7 +202,7 @@ object DialogUtils {
             dialog.dismiss()
         }
         btnOp2.setOnClickListener {
-            if (textoOpcion2.contains("Eliminar", ignoreCase = true)) {
+            if (esAccionDestructiva(textoOpcion2)) {
                 it.hapticEliminar()
             } else {
                 it.hapticClickPrincipal()

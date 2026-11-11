@@ -1,86 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="24dp"
-    app:cardCornerRadius="28dp"
-    app:cardElevation="8dp"
-    android:backgroundTint="@color/white">
+    android:background="@drawable/bg_dialogo"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        style="@style/Texto.Titulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Ajustar foto" />
+
+    <TextView
+        style="@style/Texto.Suave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="18dp"
+        android:gravity="center"
+        android:text="Mueve o haz zoom para encuadrar la miniatura." />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        app:cardBackgroundColor="@color/lavanda"
+        app:strokeColor="@color/morado_claro"
+        app:strokeWidth="2dp">
+
+        <com.example.calculadoracrochet.ui.comun.EncuadreImageView
+            android:id="@+id/ivEncuadre"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:layout_marginTop="24dp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelarEncuadre"
+            style="@style/Widget.Mina.Boton.Texto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ajustar foto"
-            android:textSize="20sp"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="4dp" />
+            android:text="Cancelar" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAceptarEncuadre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mueve o haz zoom para encuadrar la miniatura"
-            android:textSize="13sp"
-            android:textColor="@color/gray_hint"
-            android:gravity="center"
-            android:layout_marginBottom="18dp" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="260dp"
-            android:layout_height="260dp"
-            android:layout_gravity="center"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="2.5dp"
-            app:strokeColor="#E9D5FF"
-            android:backgroundTint="#F8F9FA">
-
-            <com.example.calculadoracrochet.ui.comun.EncuadreImageView
-                android:id="@+id/ivEncuadre"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2"
-            android:layout_marginTop="20dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancelarEncuadre"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Cancelar"
-                android:textColor="@color/purple_primary"
-                app:strokeColor="@color/purple_primary"
-                app:cornerRadius="26dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAceptarEncuadre"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Listo"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/purple_primary"
-                android:textStyle="bold"
-                app:cornerRadius="26dp" />
-        </LinearLayout>
-
+            android:layout_marginStart="8dp"
+            android:text="Listo" />
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</LinearLayout>

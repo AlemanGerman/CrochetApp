@@ -1,212 +1,225 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_mano_obra">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <include layout="@layout/encabezado_paso" />
+
+    <ScrollView
+        android:id="@+id/hojaPaso"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
 
-            <ScrollView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true"
-                android:scrollbars="none">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="18dp">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="Pago por hora" />
+
+                    <TextView
+                        style="@style/Texto.Suave"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        android:backgroundTint="@color/purple_primary"
-                        android:layout_marginBottom="24dp">
+                        android:layout_marginTop="4dp"
+                        android:text="Valora tu tiempo: lo mínimo es el salario mínimo." />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="24dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="Mano de Obra"
-                                android:textColor="@color/white"
-                                android:textSize="32sp"
-                                android:textStyle="bold"
-                                android:gravity="center"
-                                android:drawableStart="@drawable/ic_mano_obra"
-                                android:drawablePadding="12dp"
-                                app:drawableTint="@color/white" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="¿Cuánto tiempo duraste ignorandome?"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPagoHora"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        app:strokeColor="@color/purple_light"
-                        app:strokeWidth="1dp"
-                        android:backgroundTint="@color/white"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginTop="14dp"
+                        android:hint="Pago por hora"
+                        app:prefixText="$"
+                        app:suffixText="/ hora">
 
-                        <LinearLayout
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPagoHora"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp">
+                            android:imeOptions="actionDone"
+                            android:inputType="numberDecimal" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="8dp"
-                                android:text="Pago deseado por hora ($)"
-                                android:textColor="@color/purple_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:id="@+id/cardPagoHora"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp"
-                                app:strokeColor="@color/purple_primary"
-                                app:strokeWidth="1dp"
-                                android:backgroundTint="@color/white">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:paddingStart="16dp"
-                                    android:paddingEnd="6dp"
-                                    android:paddingVertical="4dp"
-                                    android:gravity="center_vertical">
-
-                                    <ImageView
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
-                                        android:src="@drawable/ic_monetization"
-                                        app:tint="@color/purple_primary" />
-
-                                    <EditText
-                                        android:id="@+id/etPagoHora"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:layout_marginStart="12dp"
-                                        android:layout_marginEnd="8dp"
-                                        android:background="@null"
-                                        android:minHeight="48dp"
-                                        android:hint="Valora tu tiempo"
-                                        android:textColor="@color/gray_text"
-                                        android:textColorHint="@color/gray_hint"
-                                        android:inputType="numberDecimal"
-                                        android:maxLines="1"
-                                        android:textSize="16sp" />
-
-                                    <View
-                                        android:layout_width="1dp"
-                                        android:layout_height="28dp"
-                                        android:background="@color/purple_light"
-                                        android:layout_marginEnd="4dp"/>
-
-                                    <com.google.android.material.button.MaterialButton
-                                        android:id="@+id/btnSalarioMinimo"
-                                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="MIN ($39.38)"
-                                        android:textColor="@color/purple_primary"
-                                        android:textSize="12sp"
-                                        android:insetBottom="0dp"
-                                        android:insetTop="0dp"
-                                        android:minWidth="0dp"
-                                        android:minHeight="40dp"
-                                        android:paddingHorizontal="12dp" />
-                                </LinearLayout>
-                            </com.google.android.material.card.MaterialCardView>
-
-                            <TextView
-                                android:id="@+id/tvErrorPago"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="El salario mínimo es $39.38"
-                                android:textColor="#E53935"
-                                android:textSize="12sp"
-                                android:layout_marginStart="16dp"
-                                android:layout_marginTop="4dp"
-                                android:layout_marginBottom="12dp"
-                                android:visibility="gone" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:layout_marginBottom="8dp"
-                                android:text="Selecciona el tiempo invertido:"
-                                android:textColor="@color/purple_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <com.example.calculadoracrochet.utils.RelojScrollWrapper
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
-
-                                <TimePicker
-                                    android:id="@+id/timePickerHoras"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:timePickerMode="clock"
-                                    android:theme="@style/RelojMinaCrochett" />
-
-                            </com.example.calculadoracrochet.utils.RelojScrollWrapper>
-
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSalarioMinimo"
+                        style="@style/Widget.Mina.Boton.Tonal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:minHeight="40dp"
+                        android:text="Usar salario mínimo ($39.38)"
+                        android:textSize="14sp"
+                        app:icon="@drawable/ic_dinero"
+                        app:iconSize="18dp" />
                 </LinearLayout>
-            </ScrollView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSiguienteManoObra"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="10dp"
-                android:text="Continuar"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/purple_primary"
-                app:cornerRadius="32dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="Tiempo invertido" />
+
+                    <TextView
+                        style="@style/Texto.Suave"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Usa los botones o escribe el número." />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Texto.Cuerpo.Fuerte"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:labelFor="@id/etHoras"
+                            android:text="Horas" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnMenosHoras"
+                            style="@style/Widget.Mina.BotonIcono.Tonal"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:contentDescription="Quitar una hora"
+                            app:icon="@drawable/ic_menos" />
+
+                        <EditText
+                            android:id="@+id/etHoras"
+                            android:layout_width="76dp"
+                            android:layout_height="52dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@drawable/bg_buscador"
+                            android:fontFamily="@font/nunito_extrabold"
+                            android:gravity="center"
+                            android:importantForAutofill="no"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:selectAllOnFocus="true"
+                            android:text="0"
+                            android:textColor="@color/tinta"
+                            android:textSize="22sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnMasHoras"
+                            style="@style/Widget.Mina.BotonIcono.Tonal"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:contentDescription="Sumar una hora"
+                            app:icon="@drawable/ic_agregar" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Texto.Cuerpo.Fuerte"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:labelFor="@id/etMinutos"
+                            android:text="Minutos" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnMenosMinutos"
+                            style="@style/Widget.Mina.BotonIcono.Tonal"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:contentDescription="Quitar 5 minutos"
+                            app:icon="@drawable/ic_menos" />
+
+                        <EditText
+                            android:id="@+id/etMinutos"
+                            android:layout_width="76dp"
+                            android:layout_height="52dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@drawable/bg_buscador"
+                            android:fontFamily="@font/nunito_extrabold"
+                            android:gravity="center"
+                            android:importantForAutofill="no"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:selectAllOnFocus="true"
+                            android:text="0"
+                            android:textColor="@color/tinta"
+                            android:textSize="22sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnMasMinutos"
+                            style="@style/Widget.Mina.BotonIcono.Tonal"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:contentDescription="Sumar 5 minutos"
+                            app:icon="@drawable/ic_agregar" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvResumenTiempo"
+                        style="@style/Texto.Suave"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/bg_bloque_lavanda"
+                        android:drawablePadding="8dp"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="10dp"
+                        android:textColor="@color/tinta"
+                        app:drawableStartCompat="@drawable/ic_reloj"
+                        app:drawableTint="@color/morado_fuerte" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <include layout="@layout/barra_accion_paso" />
+</LinearLayout>

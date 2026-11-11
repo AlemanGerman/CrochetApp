@@ -12,6 +12,8 @@ import com.example.calculadoracrochet.data.ProyectosRepository
 import com.example.calculadoracrochet.data.esRemota
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.data.model.estaEnPapelera
+import com.example.calculadoracrochet.ui.dashboard.CriterioOrden
+import com.example.calculadoracrochet.ui.dashboard.FiltroProyectos
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
@@ -41,6 +43,9 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
 
     val papeleraProyectos: List<ProyectoCrochet>
         get() = historialProyectos.filter { it.estaEnPapelera }
+
+    /** Search, folder and order of the dashboard, kept while the user moves between the main tabs. */
+    var filtroDashboard = FiltroDashboard()
 
     init {
         iniciarSesionYCargar()
@@ -354,3 +359,10 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
         const val ESPERA_MAXIMA_SESION_MS = 60_000L
     }
 }
+
+data class FiltroDashboard(
+    val textoBusqueda: String = "",
+    val carpeta: String = FiltroProyectos.CARPETA_TODOS,
+    val criterio: CriterioOrden = CriterioOrden.FECHA,
+    val descendente: Boolean = true
+)

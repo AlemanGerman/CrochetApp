@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Side margin of every screen -->
+    <dimen name="margen_pantalla">20dp</dimen>
+    <!-- How far the white sheet climbs over the pattern header -->
+    <dimen name="solape_hoja">24dp</dimen>
+    <!-- Space left under the header content so the sheet overlap does not cover it: solape_hoja + 18dp -->
+    <dimen name="relleno_inferior_encabezado">42dp</dimen>
+    <!-- Bottom navigation bar of the main tabs (without the system navigation bar) -->
+    <dimen name="alto_barra_navegacion">80dp</dimen>
+    <!-- Bottom padding of a tab list so its last item clears the bar and the floating button -->
+    <dimen name="espacio_lista_con_boton">168dp</dimen>
+    <dimen name="espacio_lista_sin_boton">104dp</dimen>
+</resources>

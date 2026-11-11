@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Header of the calculator screens: pattern, back, step label, title and progress.
+     EncabezadoPaso fills it in. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/encabezadoPaso"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.example.calculadoracrochet.ui.comun.FondoPatronView
+        android:id="@+id/fondoEncabezadoPaso"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/contenidoEncabezadoPaso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/margen_pantalla"
+        android:paddingTop="10dp"
+        android:paddingBottom="@dimen/relleno_inferior_encabezado">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVolverPaso"
+                style="@style/Widget.Mina.BotonIcono.Encabezado"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Volver"
+                app:icon="@drawable/ic_flecha_atras" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvPasoActual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_etiqueta_encabezado"
+                android:fontFamily="@font/nunito_extrabold"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="5dp"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                tools:text="Paso 1 de 4" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvTituloPaso"
+            style="@style/Texto.Encabezado.Titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:accessibilityHeading="true"
+            tools:text="Materiales" />
+
+        <TextView
+            android:id="@+id/tvSubtituloPaso"
+            style="@style/Texto.Encabezado.Subtitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            tools:text="¿Qué materiales vas a usar?" />
+
+        <!-- One segment per step; EncabezadoPaso fills the ones already reached -->
+        <LinearLayout
+            android:id="@+id/llProgresoPasos"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="16dp"
+            android:importantForAccessibility="no"
+            android:orientation="horizontal">
+
+            <View style="@style/Segmento.Progreso" />
+
+            <View style="@style/Segmento.Progreso" />
+
+            <View style="@style/Segmento.Progreso" />
+
+            <View style="@style/Segmento.Progreso" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -1,118 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="6dp"
-    app:cardBackgroundColor="@color/white">
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivImagenProyecto"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:importantForAccessibility="no"
             android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/RoundedSquare"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/Forma.Mina.Foto" />
 
         <TextView
             android:id="@+id/tvNombreProyecto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Osito Amigurumi"
-            android:textSize="18sp"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="10dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/nunito_extrabold"
+            android:maxLines="2"
+            android:textColor="@color/tinta"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@id/tvPrecioProyecto"
             app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
-            app:layout_constraintTop_toTopOf="@id/ivImagenProyecto"
-            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"/>
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Osito amigurumi" />
+
+        <TextView
+            android:id="@+id/tvPrecioProyecto"
+            style="@style/Texto.Monto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvNombreProyecto"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="$675.00" />
 
         <TextView
             android:id="@+id/tvFecha"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:text="14 Ago 2026"
-            android:textSize="14sp"
-            android:textColor="@color/gray_hint"
-            app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
-            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"
-            app:layout_constraintTop_toBottomOf="@id/tvNombreProyecto"/>
-
-        <TextView
-            android:id="@+id/tvPrecioProyecto"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:text="$18.50"
-            android:textSize="20sp"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/ivImagenProyecto"
-            app:layout_constraintEnd_toStartOf="@id/btnAgregarCarpetaVacio"
-            app:layout_constraintTop_toBottomOf="@id/tvFecha" />
-
-        <ImageButton
-            android:id="@+id/btnAgregarCarpetaVacio"
-            android:layout_width="52dp"
-            android:layout_height="0dp"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_editar_carpeta"
-            app:tint="@color/purple_primary"
-            android:contentDescription="Asignar carpetas"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/tinta_suave"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvFecha"
-            app:layout_constraintBottom_toBottomOf="@id/tvPrecioProyecto"
-            android:visibility="gone" />
+            app:layout_constraintStart_toStartOf="@id/tvNombreProyecto"
+            app:layout_constraintTop_toBottomOf="@id/tvNombreProyecto"
+            tools:text="06 nov 2026" />
 
         <LinearLayout
             android:id="@+id/llContenedorTags"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
             android:gravity="center_vertical"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/ivImagenProyecto"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvNombreProyecto"
+            app:layout_constraintTop_toBottomOf="@id/tvFecha">
 
             <HorizontalScrollView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:scrollbars="none"
-                android:layout_marginEnd="8dp">
+                android:scrollbars="none">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/cgCarpetasProyecto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleLine="true"/>
+                    app:chipSpacingHorizontal="6dp"
+                    app:singleLine="true" />
             </HorizontalScrollView>
 
-            <ImageButton
+            <TextView
+                android:id="@+id/tvSinCarpeta"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sin carpeta"
+                android:textColor="@color/tinta_suave"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditarCarpeta"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:layout_gravity="center_vertical"
-                android:scaleType="centerInside"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_editar_carpeta"
-                app:tint="@color/purple_primary"
-                android:contentDescription="Asignar carpetas"/>
+                style="@style/Widget.Mina.BotonIcono"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="-10dp"
+                android:contentDescription="Asignar carpetas"
+                app:icon="@drawable/ic_editar_carpeta"
+                app:iconSize="20dp" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

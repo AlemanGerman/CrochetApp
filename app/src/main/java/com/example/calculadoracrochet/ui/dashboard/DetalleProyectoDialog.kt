@@ -1,12 +1,12 @@
 package com.example.calculadoracrochet.ui.dashboard
 
-import android.app.AlertDialog
 import android.content.res.ColorStateList
-import android.graphics.Color
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import coil.load
 import coil.request.CachePolicy
@@ -19,6 +19,7 @@ import com.example.calculadoracrochet.ui.comun.ZoomableImageView
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.utils.LOCALE_MX
 import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.duracionLegible
 import com.example.calculadoracrochet.utils.desgloseMateriales
 import com.example.calculadoracrochet.utils.hacerDesplegable
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
@@ -26,12 +27,14 @@ import com.example.calculadoracrochet.utils.hapticEliminar
 import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.data.model.tieneFoto
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
 import java.util.Date
 
 /**
- * Detail modal of a saved project: photo, rename, date change, cost breakdown,
+ * Detail sheet of a saved project: photo, rename, date change, cost breakdown,
  * move to trash and edit/duplicate.
  */
 class DetalleProyectoDialog(
@@ -45,7 +48,16 @@ class DetalleProyectoDialog(
     private val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", LOCALE_MX)
 
     fun mostrar(proyecto: ProyectoCrochet) {
-        val (dialog, dialogView) = DialogUtils.crearDialogBase(fragment.requireContext(), R.layout.dialog_detalle_proyecto)
+        val contexto = fragment.requireContext()
+        val dialog = BottomSheetDialog(contexto)
+        val dialogView = LayoutInflater.from(contexto).inflate(R.layout.dialog_detalle_proyecto, null)
+        dialog.setContentView(dialogView)
+        dialog.behavior.apply {
+            state = BottomSheetBehavior.STATE_EXPANDED
+            skipCollapsed = true
+            // Never the whole screen: the rounded top and a strip of the dashboard stay visible
+            maxHeight = (contexto.resources.displayMetrics.heightPixels * 0.92f).toInt()
+        }
 
         configurarFoto(dialogView, proyecto)
         configurarNombre(dialogView, proyecto)
@@ -64,13 +76,21 @@ class DetalleProyectoDialog(
         fun refrescarImagenLocal() {
             cvFotoContenedor.visibility = View.VISIBLE
             if (proyecto.tieneFoto) {
+                ivFoto.setPadding(0, 0, 0, 0)
                 ivFoto.scaleType = ImageView.ScaleType.CENTER_CROP
                 ivFoto.imageTintList = null
                 ivFoto.cargarFotoProyecto(proyecto.fotoUri, proyecto.fotoMiniaturaUri)
+                btnEditarFoto?.visibility = View.VISIBLE
+                cvFotoContenedor.contentDescription = "Ver la foto en grande"
             } else {
-                ivFoto.setImageResource(R.drawable.ic_photo)
-                ivFoto.scaleType = ImageView.ScaleType.CENTER_INSIDE
-                ivFoto.imageTintList = ColorStateList.valueOf(Color.GRAY)
+                // The whole slot is the button to add one
+                val relleno = (80 * ivFoto.resources.displayMetrics.density).toInt()
+                ivFoto.setPadding(relleno, relleno, relleno, relleno)
+                ivFoto.setImageResource(R.drawable.ic_agregar_foto)
+                ivFoto.scaleType = ImageView.ScaleType.FIT_CENTER
+                ivFoto.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(ivFoto.context, R.color.morado))
+                btnEditarFoto?.visibility = View.GONE
+                cvFotoContenedor.contentDescription = "Añadir foto"
             }
         }
         refrescarImagenLocal()
@@ -86,7 +106,9 @@ class DetalleProyectoDialog(
                 context = fragment.requireContext(),
                 titulo = "Opciones de foto",
                 textoOpcion1 = "Cambiar foto",
-                textoOpcion2 = "Eliminar foto",
+                iconoOpcion1 = R.drawable.ic_agregar_foto,
+                textoOpcion2 = "Quitar foto",
+                iconoOpcion2 = R.drawable.ic_eliminar,
                 accionOpcion1 = { onSolicitarFoto(proyecto, ivFoto) },
                 accionOpcion2 = {
                     viewModel.eliminarFotoProyecto(proyecto) { eliminada ->
@@ -146,7 +168,7 @@ class DetalleProyectoDialog(
     }
 
     private fun configurarDesglose(dialogView: View, proyecto: ProyectoCrochet) {
-        dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = "Total: ${proyecto.precioFinal.comoDinero()}"
+        dialogView.findViewById<TextView>(R.id.tvDetalleTotal).text = proyecto.precioFinal.comoDinero()
         dialogView.findViewById<TextView>(R.id.tvDetallePatron).text = proyecto.costoDiseno.comoDinero()
         dialogView.findViewById<TextView>(R.id.tvDetalleEmpaque).text = proyecto.costoEmpaque.comoDinero()
 
@@ -157,15 +179,16 @@ class DetalleProyectoDialog(
             proyecto.costoEmpaque,
             proyecto.margenGanancia
         )
-        dialogView.findViewById<TextView>(R.id.tvDetalleGanancia).text =
-            "+ Ganancia Extra (${proyecto.margenGanancia.toInt()}%): ${desglose.ganancia.comoDinero()}"
+        dialogView.findViewById<TextView>(R.id.tvEtiquetaGanancia).text =
+            "Ganancia extra (${proyecto.margenGanancia.toInt()}%)"
+        dialogView.findViewById<TextView>(R.id.tvDetalleGanancia).text = "+${desglose.ganancia.comoDinero()}"
 
-        val tvDetalleRedondeo = dialogView.findViewById<TextView>(R.id.tvDetalleRedondeo)
+        val filaRedondeo = dialogView.findViewById<View>(R.id.llFilaRedondeoDetalle)
         if (proyecto.ajusteRedondeo > 0.0) {
-            tvDetalleRedondeo?.visibility = View.VISIBLE
-            tvDetalleRedondeo?.text = "+ Redondeo a favor: ${proyecto.ajusteRedondeo.comoDinero()}"
+            filaRedondeo.visibility = View.VISIBLE
+            dialogView.findViewById<TextView>(R.id.tvDetalleRedondeo).text = "+${proyecto.ajusteRedondeo.comoDinero()}"
         } else {
-            tvDetalleRedondeo?.visibility = View.GONE
+            filaRedondeo.visibility = View.GONE
         }
 
         dialogView.findViewById<TextView>(R.id.tvCostoMaterialesResumen).text = proyecto.costoMateriales.comoDinero()
@@ -176,16 +199,18 @@ class DetalleProyectoDialog(
             vineta = "• ",
             textoVacio = "Sin detalles guardados"
         )
-        dialogView.findViewById<View>(R.id.llToggleMateriales).hacerDesplegable(tvDesgloseMat)
+        dialogView.findViewById<View>(R.id.llToggleMateriales)
+            .hacerDesplegable(tvDesgloseMat, dialogView.findViewById(R.id.ivFlechaMateriales))
 
         dialogView.findViewById<TextView>(R.id.tvCostoManoObraResumen).text = proyecto.costoManoObra.comoDinero()
         val tvDesgloseMano = dialogView.findViewById<TextView>(R.id.tvDesgloseManoObra)
-        tvDesgloseMano.text = String.format(LOCALE_MX, "• Horas invertidas: %.2f hrs", proyecto.horasTrabajadas) +
+        tvDesgloseMano.text = "• Tiempo invertido: ${duracionLegible(proyecto.horasTrabajadas)}" +
             "\n• Cobro por hora: ${proyecto.pagoPorHora.comoDinero()}"
-        dialogView.findViewById<View>(R.id.llToggleManoObra).hacerDesplegable(tvDesgloseMano)
+        dialogView.findViewById<View>(R.id.llToggleManoObra)
+            .hacerDesplegable(tvDesgloseMano, dialogView.findViewById(R.id.ivFlechaManoObra))
     }
 
-    private fun configurarAcciones(dialogView: View, dialog: AlertDialog, proyecto: ProyectoCrochet) {
+    private fun configurarAcciones(dialogView: View, dialog: BottomSheetDialog, proyecto: ProyectoCrochet) {
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener {
             it.hapticClickPrincipal()
             dialog.dismiss()

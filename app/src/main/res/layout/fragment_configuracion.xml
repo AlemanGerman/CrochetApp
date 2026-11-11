@@ -1,446 +1,449 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_dashboard">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="wrap_content">
 
-        <!-- Barra superior / Header -->
-        <com.google.android.material.card.MaterialCardView
+        <com.example.calculadoracrochet.ui.comun.FondoPatronView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:patron="@drawable/encabezado_dashboard" />
+
+        <LinearLayout
+            android:id="@+id/contenidoEncabezado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="4dp"
-            android:backgroundTint="@color/purple_primary">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="10dp"
+            android:paddingBottom="@dimen/relleno_inferior_encabezado">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <include layout="@layout/fila_marca" />
+
+            <TextView
+                style="@style/Texto.Encabezado.Titulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:accessibilityHeading="true"
+                android:text="Ajustes" />
+
+            <TextView
+                style="@style/Texto.Encabezado.Subtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Personaliza tu grandiosa app" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/hojaAjustes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="@dimen/espacio_lista_sin_boton"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="4dp">
+
+            <TextView
+                style="@style/Texto.Etiqueta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="26dp"
+                android:accessibilityHeading="true"
+                android:text="Precios" />
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="14dp">
-
-                <ImageButton
-                    android:id="@+id/btnVolverConfiguracion"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_flecha_abajo"
-                    android:rotation="90"
-                    app:tint="@color/white"
-                    android:contentDescription="Regresar"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+                android:layout_marginTop="10dp">
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginStart="12dp"
-                    app:layout_constraintStart_toEndOf="@id/btnVolverConfiguracion"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Configuración"
-                        android:textSize="21sp"
-                        android:textColor="@color/white"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Personaliza tu grandiosa app"
-                        android:textSize="12sp"
-                        android:textColor="#F3E8FF" />
-                </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="20dp"
-                android:paddingBottom="32dp">
-
-                <!-- CARD 1: REDONDEO DE PRECIOS -->
-                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="3dp"
-                    app:strokeColor="@color/purple_light"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@color/white">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Encabezado con Switch -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                            <com.google.android.material.card.MaterialCardView
+                            <FrameLayout
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                app:cardCornerRadius="10dp"
-                                app:cardElevation="0dp"
-                                android:backgroundTint="#F3E8FF">
+                                android:background="@drawable/bg_circulo_lavanda"
+                                android:backgroundTint="@color/lavanda">
 
                                 <ImageView
                                     android:layout_width="22dp"
                                     android:layout_height="22dp"
                                     android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
                                     android:src="@drawable/ic_dinero"
-                                    app:tint="@color/purple_primary" />
-                            </com.google.android.material.card.MaterialCardView>
+                                    app:tint="@color/morado_fuerte" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="14dp"
                                 android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp"
-                                android:layout_marginEnd="8dp">
+                                android:orientation="vertical">
 
                                 <TextView
+                                    style="@style/Texto.Cuerpo.Fuerte"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Redondeo de precios"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/gray_text"
-                                    android:textStyle="bold" />
+                                    android:text="Redondeo de precios" />
 
                                 <TextView
                                     android:id="@+id/tvEstadoRedondeo"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Activo"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/purple_primary" />
+                                    android:fontFamily="@font/nunito_semibold"
+                                    android:textSize="13sp" />
                             </LinearLayout>
 
-                            <com.google.android.material.switchmaterial.SwitchMaterial
+                            <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchRedondeo"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                app:useMaterialThemeColors="false"
-                                app:thumbTint="@color/purple_primary"
-                                app:trackTint="@color/purple_light" />
+                                android:contentDescription="Redondeo de precios" />
                         </LinearLayout>
-
                         <TextView
+                            style="@style/Texto.Suave"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Redondea automáticamente el precio sugerido para que no te dé ansiedad ver numeros inexactos."
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint" />
+                            android:layout_marginTop="10dp"
+                            android:text="Redondea el precio sugerido hacia arriba para que no te dé ansiedad ver números inexactos." />
 
-                        <!-- Contenedor desplegable de Múltiplo -->
                         <LinearLayout
                             android:id="@+id/llContenedorMultiplo"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="16dp">
-
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="#F0F0F0"
-                                android:layout_marginBottom="14dp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Múltiplo de redondeo deseado:"
-                                android:textSize="14sp"
-                                android:textColor="@color/gray_text"
-                                android:textStyle="bold" />
+                            android:layout_marginTop="14dp"
+                            android:orientation="vertical">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
                                 android:gravity="center_vertical"
-                                android:layout_marginBottom="14dp">
+                                android:orientation="horizontal">
 
                                 <com.google.android.material.textfield.TextInputLayout
                                     android:id="@+id/tilMultiploPersonalizado"
-                                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:hint="Múltiplo exacto ($)"
-                                    android:textColorHint="@color/gray_text"
-                                    app:hintTextColor="@color/purple_primary"
-                                    app:boxStrokeColor="@color/purple_primary"
-                                    app:startIconDrawable="@drawable/ic_dinero"
-                                    app:startIconTint="@color/purple_primary">
+                                    android:hint="Redondear al múltiplo de"
+                                    app:prefixText="$">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etMultiploPersonalizado"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
+                                        android:imeOptions="actionDone"
                                         android:inputType="numberDecimal"
-                                        android:maxLines="1"
-                                        android:text="5"
-                                        android:textColor="@color/gray_text"
-                                        android:textColorHint="@color/gray_hint"
-                                        android:textSize="15sp" />
+                                        android:maxLines="1" />
                                 </com.google.android.material.textfield.TextInputLayout>
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/btnAplicarMultiplo"
-                                    style="@style/Widget.MaterialComponents.Button"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="56dp"
-                                    android:layout_marginStart="8dp"
-                                    android:text="Aplicar"
-                                    android:textColor="@color/white"
-                                    android:backgroundTint="@color/purple_primary"
-                                    app:cornerRadius="10dp" />
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:text="Aplicar" />
                             </LinearLayout>
 
-                            <!-- Tarjeta de Simulación en Vivo -->
-                            <com.google.android.material.card.MaterialCardView
+                            <!-- Preview of the rounding with an example price -->
+                            <LinearLayout
                                 android:id="@+id/cardSimulacionRedondeo"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp"
-                                app:strokeColor="#DDD6FE"
-                                app:strokeWidth="1dp"
-                                android:backgroundTint="#F5F3FF">
+                                android:layout_marginTop="12dp"
+                                android:background="@drawable/bg_bloque_lavanda"
+                                android:orientation="vertical"
+                                android:padding="14dp">
 
-                                <LinearLayout
+                                <TextView
+                                    style="@style/Texto.Etiqueta"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Vista previa" />
+
+                                <TextView
+                                    android:id="@+id/tvSimulacionBase"
+                                    style="@style/Texto.Suave"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:orientation="vertical"
-                                    android:padding="12dp">
+                                    android:layout_marginTop="6dp" />
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="✨ Vista previa"
-                                        android:textSize="12sp"
-                                        android:textColor="@color/purple_primary"
-                                        android:textStyle="bold"
-                                        android:layout_marginBottom="4dp" />
-
-                                    <TextView
-                                        android:id="@+id/tvSimulacionBase"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Ejemplo sin redondeo: $143.20"
-                                        android:textSize="12sp"
-                                        android:textColor="@color/gray_text" />
-
-                                    <TextView
-                                        android:id="@+id/tvSimulacionResultado"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Con redondeo: $145.00\n(+$1.80 a tu favor)"
-                                        android:textSize="13sp"
-                                        android:textColor="@color/purple_primary"
-                                        android:textStyle="bold"
-                                        android:layout_marginTop="2dp" />
-                                </LinearLayout>
-                            </com.google.android.material.card.MaterialCardView>
-
+                                <TextView
+                                    android:id="@+id/tvSimulacionResultado"
+                                    style="@style/Texto.Cuerpo.Fuerte"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:textColor="@color/morado_fuerte" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <!-- CARD 2: VIBRACIÓN Y RESPUESTA HÁPTICA -->
-                <com.google.android.material.card.MaterialCardView
+            <TextView
+                style="@style/Texto.Etiqueta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="26dp"
+                android:accessibilityHeading="true"
+                android:text="Experiencia" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="3dp"
-                    app:strokeColor="@color/purple_light"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@color/white">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Encabezado con Switch -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                            <com.google.android.material.card.MaterialCardView
+                            <FrameLayout
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                app:cardCornerRadius="10dp"
-                                app:cardElevation="0dp"
-                                android:backgroundTint="#EDE9FE">
+                                android:background="@drawable/bg_circulo_lavanda"
+                                android:backgroundTint="@color/lavanda">
 
                                 <ImageView
                                     android:layout_width="22dp"
                                     android:layout_height="22dp"
                                     android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
                                     android:src="@drawable/ic_vibracion"
-                                    app:tint="@color/purple_primary" />
-                            </com.google.android.material.card.MaterialCardView>
+                                    app:tint="@color/morado_fuerte" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="14dp"
                                 android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp"
-                                android:layout_marginEnd="8dp">
+                                android:orientation="vertical">
 
                                 <TextView
+                                    style="@style/Texto.Cuerpo.Fuerte"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Vibración"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/gray_text"
-                                    android:textStyle="bold" />
+                                    android:text="Vibración" />
 
                                 <TextView
                                     android:id="@+id/tvEstadoVibracion"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Activada en toda la app"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/purple_primary" />
+                                    android:fontFamily="@font/nunito_semibold"
+                                    android:textSize="13sp" />
                             </LinearLayout>
 
-                            <com.google.android.material.switchmaterial.SwitchMaterial
+                            <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchVibracion"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                app:useMaterialThemeColors="false"
-                                app:thumbTint="@color/purple_primary"
-                                app:trackTint="@color/purple_light" />
+                                android:contentDescription="Vibración" />
                         </LinearLayout>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <!-- CARD 3: COLOR DINÁMICO EN TARJETAS -->
-                <com.google.android.material.card.MaterialCardView
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="3dp"
-                    app:strokeColor="@color/purple_light"
-                    app:strokeWidth="1dp"
-                    android:backgroundTint="@color/white">
+                    android:orientation="vertical">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="16dp">
 
-                        <!-- Encabezado con Switch -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                            <com.google.android.material.card.MaterialCardView
+                            <FrameLayout
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                app:cardCornerRadius="10dp"
-                                app:cardElevation="0dp"
-                                android:backgroundTint="#F3E8FF">
+                                android:background="@drawable/bg_circulo_lavanda"
+                                android:backgroundTint="@color/lavanda">
 
                                 <ImageView
                                     android:layout_width="22dp"
                                     android:layout_height="22dp"
                                     android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
                                     android:src="@drawable/ic_photo"
-                                    app:tint="@color/purple_primary" />
-                            </com.google.android.material.card.MaterialCardView>
+                                    app:tint="@color/morado_fuerte" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="14dp"
                                 android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="12dp"
-                                android:layout_marginEnd="8dp">
+                                android:orientation="vertical">
 
                                 <TextView
+                                    style="@style/Texto.Cuerpo.Fuerte"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Color dinámico en tarjetas"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/gray_text"
-                                    android:textStyle="bold" />
+                                    android:text="Color de la foto en las tarjetas" />
 
                                 <TextView
                                     android:id="@+id/tvEstadoColorDinamico"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Activo"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/purple_primary" />
+                                    android:fontFamily="@font/nunito_semibold"
+                                    android:textSize="13sp" />
                             </LinearLayout>
 
-                            <com.google.android.material.switchmaterial.SwitchMaterial
+                            <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchColorDinamico"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                app:useMaterialThemeColors="false"
-                                app:thumbTint="@color/purple_primary"
-                                app:trackTint="@color/purple_light" />
+                                android:contentDescription="Color de la foto en las tarjetas" />
                         </LinearLayout>
-
                         <TextView
+                            style="@style/Texto.Suave"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Hace que el color de la tarjeta del proyecto cambie al color de la foto del mismo."
-                            android:textSize="12sp"
-                            android:textColor="@color/gray_hint" />
+                            android:layout_marginTop="10dp"
+                            android:text="La tarjeta de cada proyecto toma el color de su foto." />
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                style="@style/Texto.Etiqueta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="26dp"
+                android:accessibilityHeading="true"
+                android:text="Tus datos" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/itemAbrirPapelera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_circulo_lavanda">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_papelera"
+                            app:tint="@color/morado_fuerte" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Texto.Cuerpo.Fuerte"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Papelera" />
+
+                        <TextView
+                            android:id="@+id/tvConteoPapelera"
+                            style="@style/Texto.Suave"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Restaura o borra lo que eliminaste"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_chevron_derecha"
+                        app:tint="@color/tinta_suave" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:gravity="center"
+                android:text="Mina Crochet · Hecho a mano, hecho con amor 💜"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

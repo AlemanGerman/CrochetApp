@@ -1,30 +1,107 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.CalculadoraCrochet" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
+    <!-- Light only: every screen is drawn on the white and purple palette of the brand -->
+    <style name="Theme.CalculadoraCrochet" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/morado_fuerte</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/lavanda</item>
+        <item name="colorOnPrimaryContainer">@color/morado_oscuro</item>
+        <item name="colorPrimaryInverse">@color/morado_claro</item>
+
+        <item name="colorSecondary">@color/verde</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Active indicator of the bottom bar, tonal buttons and selected chips -->
+        <item name="colorSecondaryContainer">@color/lavanda</item>
+        <item name="colorOnSecondaryContainer">@color/morado_oscuro</item>
+
+        <item name="colorTertiary">@color/amarillo</item>
+        <item name="colorOnTertiary">@color/tinta</item>
+        <item name="colorTertiaryContainer">@color/amarillo_claro</item>
+        <item name="colorOnTertiaryContainer">@color/tinta</item>
+
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/error_claro</item>
+        <item name="colorOnErrorContainer">@color/error</item>
+
+        <item name="android:colorBackground">@color/fondo</item>
+        <item name="colorOnBackground">@color/tinta</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/tinta</item>
+        <item name="colorSurfaceVariant">@color/lavanda</item>
+        <item name="colorOnSurfaceVariant">@color/tinta_suave</item>
+        <item name="colorOutline">@color/tinta_tenue</item>
+        <item name="colorOutlineVariant">@color/lavanda_borde</item>
+        <item name="colorSurfaceContainerLowest">@color/white</item>
+        <item name="colorSurfaceContainerLow">@color/white</item>
+        <item name="colorSurfaceContainer">@color/white</item>
+        <item name="colorSurfaceContainerHigh">@color/white</item>
+        <item name="colorSurfaceContainerHighest">@color/lavanda</item>
+        <item name="android:colorAccent">@color/morado_fuerte</item>
+        <item name="colorControlActivated">@color/morado_fuerte</item>
+        <item name="colorControlHighlight">#1F8A55A3</item>
+        <item name="android:textColorPrimary">@color/tinta</item>
+        <item name="android:textColorSecondary">@color/tinta_suave</item>
+        <item name="android:textColorHint">@color/tinta_suave</item>
+        <item name="android:textColorLink">@color/morado_fuerte</item>
+        <item name="android:windowBackground">@color/fondo</item>
+        <!-- Flat white surfaces: no purple tint on raised sheets and cards -->
+        <item name="elevationOverlayEnabled">false</item>
+
+        <!-- Nunito everywhere -->
+        <!-- Only the android: attribute: AppCompat prefers app:fontFamily, which would override the
+             weights (semibold, extrabold) that the text styles set -->
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Mina.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Mina.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Mina.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Mina.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Mina.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Mina.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Mina.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Mina.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Mina.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Mina.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Mina.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Mina.LabelSmall</item>
+
+        <!-- Components -->
+        <item name="materialButtonStyle">@style/Widget.Mina.Boton</item>
+        <item name="textInputStyle">@style/Widget.Mina.Campo</item>
+        <item name="materialCardViewStyle">@style/Widget.Mina.Tarjeta</item>
+        <item name="chipStyle">@style/Widget.Mina.Chip</item>
+        <item name="materialSwitchStyle">@style/Widget.Mina.Interruptor</item>
+        <item name="checkboxStyle">@style/Widget.Mina.Casilla</item>
+        <item name="sliderStyle">@style/Widget.Mina.Deslizador</item>
+        <item name="bottomNavigationStyle">@style/Widget.Mina.BarraNavegacion</item>
+        <item name="extendedFloatingActionButtonStyle">@style/Widget.Mina.BotonFlotante</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Mina.HojaInferior</item>
+        <item name="snackbarStyle">@style/Widget.Mina.Aviso</item>
+        <item name="android:datePickerStyle">@style/Widget.Mina.Calendario</item>
+        <item name="shapeAppearanceCornerSmall">@style/Forma.Mina.Pequena</item>
+        <item name="shapeAppearanceCornerMedium">@style/Forma.Mina.Mediana</item>
+        <item name="shapeAppearanceCornerLarge">@style/Forma.Mina.Grande</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/Forma.Mina.ExtraGrande</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_screen</item>
-
         <item name="windowSplashScreenAnimatedIcon">@drawable/img_splash</item>
-
         <item name="postSplashScreenTheme">@style/Theme.CalculadoraCrochet</item>
     </style>
 
-    <style name="RelojMinaCrochett" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="colorPrimary">@color/purple_primary</item>
-        <item name="colorAccent">@color/purple_primary</item>
-        <item name="colorControlActivated">@color/purple_primary</item>
+    <!-- Project detail sheet: rounded top, drawn under the navigation bar -->
+    <style name="ThemeOverlay.Mina.HojaInferior" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Mina.HojaInferior</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="enableEdgeToEdge">true</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
-    <style name="RoundedSquare">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">16dp</item>
+    <style name="Widget.Mina.HojaInferior" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/white</item>
+        <item name="shapeAppearance">@style/Forma.Mina.HojaInferior</item>
+        <item name="android:maxWidth">640dp</item>
     </style>
 </resources>
