@@ -1,178 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_materiales">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <include layout="@layout/encabezado_paso" />
+
+    <ScrollView
+        android:id="@+id/hojaPaso"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
 
-            <ScrollView
+            <TextView
+                style="@style/Texto.Seccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:text="Estambres" />
+
+            <TextView
+                style="@style/Texto.Suave"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true"
-                android:scrollbars="none">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Lo que costó cada madeja y cuántos gramos usaste." />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        android:backgroundTint="@color/purple_primary"
-                        android:layout_marginBottom="24dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="24dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="Materiales"
-                                android:textColor="@color/white"
-                                android:textSize="32sp"
-                                android:textStyle="bold"
-                                android:gravity="center"
-                                android:drawableStart="@drawable/ic_heart"
-                                android:drawablePadding="12dp"
-                                app:drawableTint="@color/white" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="¿Qué materiales vas a usar?"
-                                android:textColor="@color/white"
-                                android:gravity="center"
-                                android:textSize="16sp" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        app:strokeColor="@color/purple_light"
-                        app:strokeWidth="1dp"
-                        android:backgroundTint="@color/white"
-                        android:layout_marginBottom="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Estambres Base"
-                                android:textSize="18sp"
-                                android:textColor="@color/purple_primary"
-                                android:textStyle="bold"
-                                android:layout_marginBottom="16dp"/>
-
-                            <LinearLayout
-                                android:id="@+id/llContenedorEstambres"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:animateLayoutChanges="true"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnAnadirEstambre"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Añadir otro estambre"
-                                android:textColor="@color/purple_primary"
-                                app:icon="@android:drawable/ic_input_add"
-                                app:iconTint="@color/purple_primary"
-                                app:rippleColor="@color/purple_light"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        app:strokeColor="@color/purple_light"
-                        app:strokeWidth="1dp"
-                        android:backgroundTint="@color/white"
-                        android:layout_marginBottom="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Accesorios Extra (Ojos, Relleno…)"
-                                android:textSize="18sp"
-                                android:textColor="@color/purple_primary"
-                                android:textStyle="bold"
-                                android:layout_marginBottom="16dp"/>
-
-                            <LinearLayout
-                                android:id="@+id/llContenedorMaterialesExtra"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:animateLayoutChanges="true"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnAnadirMaterial"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Añadir accesorio extra"
-                                android:textColor="@color/purple_primary"
-                                app:icon="@android:drawable/ic_input_add"
-                                app:iconTint="@color/purple_primary"
-                                app:rippleColor="@color/purple_light"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-            </ScrollView>
+            <LinearLayout
+                android:id="@+id/llContenedorEstambres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSiguienteMateriales"
+                android:id="@+id/btnAnadirEstambre"
+                style="@style/Widget.Mina.Boton.Tonal"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="10dp"
-                android:text="Continuar"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/purple_primary"
-                app:cornerRadius="32dp"
-                android:elevation="8dp"/>
+                android:layout_height="wrap_content"
+                android:text="Añadir estambre"
+                app:icon="@drawable/ic_agregar" />
+
+            <TextView
+                style="@style/Texto.Seccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:accessibilityHeading="true"
+                android:text="Accesorios" />
+
+            <TextView
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Ojos, relleno, alambre… todo lo que no sea estambre." />
+
+            <LinearLayout
+                android:id="@+id/llContenedorMaterialesExtra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAnadirMaterial"
+                style="@style/Widget.Mina.Boton.Tonal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Añadir accesorio"
+                app:icon="@drawable/ic_agregar" />
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <include layout="@layout/barra_accion_paso" />
+</LinearLayout>

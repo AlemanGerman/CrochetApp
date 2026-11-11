@@ -1,15 +1,29 @@
 package com.example.calculadoracrochet.utils
 
+import android.animation.LayoutTransition
 import android.view.View
+import android.view.ViewGroup
 import com.google.android.material.textfield.TextInputLayout
 
-/** Tapping this view shows/hides [contenido]. Starts collapsed. */
-fun View.hacerDesplegable(contenido: View) {
+/** Tapping this view shows/hides [contenido], turning [flecha] upside down while open. Starts collapsed. */
+fun View.hacerDesplegable(contenido: View, flecha: View? = null) {
     var expandido = false
     setOnClickListener {
         it.hapticSeleccion()
         expandido = !expandido
+        (contenido.parent as? ViewGroup)?.animarCambiosDeLayout()
         contenido.visibility = if (expandido) View.VISIBLE else View.GONE
+        flecha?.animate()?.rotation(if (expandido) 180f else 0f)?.setDuration(200L)?.start()
+    }
+}
+
+/** The next change of children or visibility in this container animates (rows appearing, errors showing). */
+fun ViewGroup.animarCambiosDeLayout() {
+    if (layoutTransition == null) {
+        layoutTransition = LayoutTransition().apply {
+            enableTransitionType(LayoutTransition.CHANGING)
+            setDuration(200L)
+        }
     }
 }
 

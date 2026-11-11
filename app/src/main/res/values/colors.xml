@@ -1,23 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_primary">#bf82ce</color>
-    <color name="purple_light">#E1BEE7</color>
+    <!-- Mina Crochet palette: purple and white lead, green, yellow, cream and the cat's gray are accents -->
+
+    <!-- Purples -->
+    <color name="morado">#B686CB</color>               <!-- brand purple of the logo and the folder icons -->
+    <color name="morado_encabezado">#A970BF</color>    <!-- headers with a pattern: white large text passes AA -->
+    <color name="morado_fuerte">#8A55A3</color>        <!-- buttons, links, active items: white text passes AA -->
+    <color name="morado_oscuro">#5E3473</color>
+    <color name="morado_claro">#D9C0E4</color>
+    <color name="lavanda">#F3EAF7</color>              <!-- filled fields, chips, nav indicator -->
+    <color name="lavanda_borde">#E6D8EC</color>        <!-- card strokes and dividers -->
+
+    <!-- Neutrals -->
     <color name="white">#FFFFFF</color>
-    <color name="gray_background">#F8F9FA</color>
-    <color name="gray_text">#495057</color>
-    <color name="gray_light">#919191</color>
-    <color name="gray_hint">#ADB5BD</color>
-
-    <color name="purple_200">#BB86FC</color>
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
     <color name="black">#000000</color>
+    <color name="fondo">#FBF8FC</color>                <!-- page behind the cards -->
+    <color name="tinta">#3A2F40</color>                <!-- main text -->
+    <color name="tinta_suave">#6F6476</color>          <!-- secondary text, passes AA on white -->
+    <color name="tinta_tenue">#A69CAB</color>          <!-- hints and disabled -->
+    <color name="gris_gato">#4D4D4D</color>
 
-    <color name="green_mina">#56842b</color>
-    <color name="yellow_mina">#e0b54c</color>
-    <color name="white_mina">#f3ecda</color>
-    <color name="purple_mina">#bd81cd</color>
+    <!-- Accents -->
+    <color name="verde">#56842B</color>
+    <color name="verde_texto">#4E7A26</color>
+    <color name="verde_claro">#E8F0DE</color>
+    <color name="amarillo">#E0B54C</color>
+    <color name="amarillo_claro">#FBF1D6</color>
+    <color name="crema">#F3ECDA</color>
+    <color name="crema_borde">#E4D8BA</color>
+    <color name="error">#C6423C</color>
+    <color name="error_claro">#FBE9E8</color>
 
-    <color name="splash_screen">#ba7cc9</color>
+    <!-- Folder tags of the project cards (CarpetasConfig): soft background, dark text that passes AA -->
+    <color name="etiqueta_morado_fondo">#F3EAF7</color>
+    <color name="etiqueta_morado_texto">#8A55A3</color>
+    <color name="etiqueta_verde_fondo">#E8F0DE</color>
+    <color name="etiqueta_verde_texto">#446B21</color>
+    <color name="etiqueta_crema_fondo">#F3ECDA</color>
+    <color name="etiqueta_crema_texto">#5C4A26</color>
+    <color name="etiqueta_amarillo_fondo">#FBF1D6</color>
+    <color name="etiqueta_amarillo_texto">#7A5A12</color>
+
+    <!-- Folder colors and the splash -->
+    <color name="green_mina">#56842B</color>
+    <color name="yellow_mina">#E0B54C</color>
+    <color name="white_mina">#F3ECDA</color>
+    <color name="purple_mina">#B686CB</color>
+    <color name="splash_screen">#BA7CC9</color>
+
+    <!-- Extra slices of the folder chart -->
+    <color name="grafica_verde_claro">#9DBF6E</color>
+    <color name="grafica_arena">#C9B27C</color>
+
+    <!-- Scrims -->
+    <color name="velo_blanco">#33FFFFFF</color>        <!-- round icon buttons on the headers -->
+    <color name="velo_blanco_borde">#4DFFFFFF</color>
 </resources>

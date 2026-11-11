@@ -4,7 +4,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageButton
+import androidx.activity.OnBackPressedCallback
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -12,25 +12,46 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import coil.load
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.PestanaPrincipal
+import com.example.calculadoracrochet.utils.duracionLegible
+import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
+import com.example.calculadoracrochet.utils.rellenarSobreBarraDeNavegacion
+import androidx.core.content.ContextCompat
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import com.example.calculadoracrochet.utils.comoDinero
-import com.example.calculadoracrochet.utils.LOCALE_MX
 
-class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
+class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPrincipal {
+
+    override val idPestana = R.id.nav_estadisticas
 
     private val viewModel: ProyectosViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ImageButton>(R.id.btnVolverEstadisticas)?.setOnClickListener {
-            parentFragmentManager.popBackStack()
+        view.findViewById<View>(R.id.contenidoEncabezado).rellenarBajoBarraDeEstado()
+        view.findViewById<View>(R.id.hojaEstadisticas).apply {
+            rellenarSobreBarraDeNavegacion()
+            clipToOutline = true
         }
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (requireActivity() as MainActivity).volverAProyectos()
+            }
+        })
+
+        // Live: the numbers follow any project saved, edited or trashed meanwhile
+        viewModel.proyectosEnVivo.observe(viewLifecycleOwner) { calcularYMostrarMetricas(view) }
         calcularYMostrarMetricas(view)
+    }
+
+    override fun alVolverAPulsar() {
+        view?.findViewById<android.widget.ScrollView>(R.id.hojaEstadisticas)?.smoothScrollTo(0, 0)
     }
 
     private fun calcularYMostrarMetricas(rootView: View) {
@@ -45,6 +66,8 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             if (totalProyectos == 1) "1 creación" else "$totalProyectos creaciones"
         rootView.findViewById<TextView>(R.id.tvTotalVentas)?.text =
             resumen.totalVentas.comoDinero()
+        rootView.findViewById<TextView>(R.id.tvPrecioPromedio)?.text =
+            if (totalProyectos > 0) (resumen.totalVentas / totalProyectos).comoDinero() else "—"
 
         val masCostoso = resumen.masCostoso
         val masHoras = resumen.masHoras
@@ -62,7 +85,7 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
             iv = rootView.findViewById(R.id.ivImgMasHoras),
             tvNombre = rootView.findViewById(R.id.tvNombreMasHoras),
             tvValor = rootView.findViewById(R.id.tvValorMasHoras),
-            textoValor = masHoras?.let { String.format(LOCALE_MX, "%.1f hrs", it.horasTrabajadas) } ?: "0.0 hrs"
+            textoValor = masHoras?.let { duracionLegible(it.horasTrabajadas) } ?: "—"
         )
 
         val llCarpetas = rootView.findViewById<LinearLayout>(R.id.llContenedorCarpetasStats)
@@ -70,18 +93,10 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
 
         val listaSlices = mutableListOf<PieChartView.Slice>()
 
-        val coloresGrafica = listOf(
-            0xFF8A4FB8.toInt(),
-            0xFF10B981.toInt(),
-            0xFFF59E0B.toInt(),
-            0xFFEC4899.toInt(),
-            0xFF3B82F6.toInt(),
-            0xFF8B5CF6.toInt(),
-            0xFF64748B.toInt()
-        )
 
-        carpetasSinTodos.zip(resumen.carpetas).forEachIndexed { index, (carpeta, estadistica) ->
-            val colorAsignado = coloresGrafica[index % coloresGrafica.size]
+        carpetasSinTodos.zip(resumen.carpetas).forEach { (carpeta, estadistica) ->
+            // Each folder keeps the color of its icon, so the chart and the list read at a glance
+            val colorAsignado = ContextCompat.getColor(requireContext(), carpeta.colorGraficaRes)
             val conteo = estadistica.conteo
             val porcentaje = estadistica.porcentaje
 
@@ -98,26 +113,23 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas) {
                 val tvNombre = rowView.findViewById<TextView>(R.id.tvNombreCarpetaStat)
                 val tvConteo = rowView.findViewById<TextView>(R.id.tvConteoCarpetaStat)
 
-                val colorFinal = if (conteo > 0) colorAsignado else 0xFFE2E8F0.toInt()
+                val colorFinal = if (conteo > 0) colorAsignado else ContextCompat.getColor(requireContext(), R.color.lavanda_borde)
                 val colorStateList = ColorStateList.valueOf(colorFinal)
                 cardColor?.setCardBackgroundColor(colorStateList)
                 cardColor?.backgroundTintList = colorStateList
 
                 ivIcono?.setImageResource(carpeta.iconoRes)
-                ivIcono?.scaleType = ImageView.ScaleType.CENTER_CROP
-                ivIcono?.setPadding(0, 0, 0, 0)
-                ivIcono?.imageTintList = null
 
                 val textoProyectos = if (conteo == 1) "1 proyecto" else "$conteo proyectos"
                 tvNombre?.text = carpeta.nombre
-                tvConteo?.text = if (conteo > 0) "$textoProyectos ($porcentaje%)" else "0 proyectos"
+                tvConteo?.text = if (conteo > 0) "$textoProyectos · $porcentaje%" else "Sin proyectos"
 
                 llCarpetas.addView(rowView)
             }
         }
 
         val pieChart = rootView.findViewById<PieChartView>(R.id.pieChartCarpetas)
-        pieChart?.setData(listaSlices)
+        pieChart?.setData(listaSlices, totalProyectos)
     }
 
     private fun configurarDestacado(

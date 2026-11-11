@@ -1,153 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_empaque">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <include layout="@layout/encabezado_paso" />
+
+    <ScrollView
+        android:id="@+id/hojaPaso"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
 
-            <ScrollView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true"
-                android:scrollbars="none">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="18dp">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="Empaque" />
+
+                    <TextView
+                        style="@style/Texto.Suave"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        android:backgroundTint="@color/purple_primary"
-                        android:layout_marginBottom="24dp">
+                        android:layout_marginTop="4dp"
+                        android:text="Caja, bolsa, etiquetas, moño… Déjalo vacío si no lleva." />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="24dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="Empaque y Ganancia"
-                                android:textColor="@color/white"
-                                android:textSize="28sp"
-                                android:textStyle="bold"
-                                android:gravity="center"
-                                android:drawableStart="@drawable/ic_empaque"
-                                android:drawablePadding="12dp"
-                                app:drawableTint="@color/white" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Ahora sí lo bueno jejeje"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilCostoCaja"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        app:strokeColor="@color/purple_light"
-                        app:strokeWidth="1dp"
-                        android:backgroundTint="@color/white"
-                        android:layout_marginBottom="10dp">
+                        android:layout_marginTop="14dp"
+                        android:hint="Costo del empaque"
+                        app:prefixText="$">
 
-                        <LinearLayout
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etCostoCaja"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp">
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:id="@+id/tilCostoCaja"
-                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="Costo de caja, etiquetas, etc. ($)"
-                                android:textColorHint="@color/gray_text"
-                                app:hintTextColor="@color/purple_primary"
-                                app:boxStrokeColor="@color/purple_primary"
-                                app:startIconDrawable="@drawable/ic_dinero"
-                                app:startIconTint="@color/purple_primary"
-                                android:layout_marginBottom="16dp">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etCostoCaja"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:textColor="@color/gray_text"
-                                    android:textColorHint="@color/gray_hint"
-                                    android:inputType="numberDecimal"/>
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <TextView
-                                android:id="@+id/tvMargenLabel"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Margen de ganancia extra: 0%"
-                                android:textColor="@color/purple_primary"
-                                android:textStyle="bold"
-                                android:textSize="16sp"
-                                android:layout_marginTop="8dp"
-                                android:layout_marginBottom="4dp"/>
-
-                            <com.google.android.material.slider.Slider
-                                android:id="@+id/sliderMargen"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:valueFrom="0.0"
-                                android:valueTo="100.0"
-                                android:stepSize="1.0"
-                                android:value="0.0"
-                                app:tickVisible="false"
-                                app:labelBehavior="floating"
-                                app:thumbColor="@color/purple_primary"
-                                app:trackColorActive="@color/purple_primary"
-                                app:trackColorInactive="@color/purple_light" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
+                            android:imeOptions="actionDone"
+                            android:inputType="numberDecimal" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
-            </ScrollView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSiguienteEmpaque"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="10dp"
-                android:text="Calcular Precio :D"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/purple_primary"
-                app:cornerRadius="32dp"
-                android:elevation="8dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Texto.Seccion"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:accessibilityHeading="true"
+                            android:text="Ganancia extra" />
+
+                        <TextView
+                            android:id="@+id/tvMargenLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_bloque_lavanda"
+                            android:fontFamily="@font/nunito_extrabold"
+                            android:paddingHorizontal="14dp"
+                            android:paddingVertical="4dp"
+                            android:textColor="@color/morado_fuerte"
+                            android:textSize="22sp"
+                            tools:text="30%" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Texto.Suave"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Un porcentaje sobre el costo total, para que tu trabajo deje ganancia." />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderMargen"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:contentDescription="Ganancia extra"
+                        android:stepSize="1"
+                        android:valueFrom="0"
+                        android:valueTo="100" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp">
+
+                        <TextView
+                            style="@style/Texto.Suave"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="0%"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            style="@style/Texto.Suave"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="100%"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <include layout="@layout/barra_accion_paso" />
+</LinearLayout>

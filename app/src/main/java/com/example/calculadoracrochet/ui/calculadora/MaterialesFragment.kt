@@ -6,13 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.widget.doAfterTextChanged
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.PantallaConGanchillo
 import com.example.calculadoracrochet.utils.DialogUtils
 import com.example.calculadoracrochet.data.model.AccesorioGuardado
 import com.example.calculadoracrochet.data.model.EstambreGuardado
@@ -27,11 +29,17 @@ import com.example.calculadoracrochet.utils.errorSiNoPositivo
 import com.example.calculadoracrochet.utils.errorCantidadUsada
 import com.example.calculadoracrochet.utils.aNumeroOInvalido
 import com.example.calculadoracrochet.utils.comoTextoEditable
+import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.animarCambiosDeLayout
 
-class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
+class MaterialesFragment : Fragment(R.layout.fragment_materiales), PantallaConGanchillo {
 
     private val viewModel: CalculadoraViewModel by activityViewModels()
     private var ultimoClicTiempo: Long = 0L
+
+    private var raiz: View? = null
+    private var llEstambres: LinearLayout? = null
+    private var llExtras: LinearLayout? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,44 +47,51 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         val llContenedorEstambres = view.findViewById<LinearLayout>(R.id.llContenedorEstambres)
         val llContenedorExtra = view.findViewById<LinearLayout>(R.id.llContenedorMaterialesExtra)
 
-        view.post {
-            if (viewModel.calculo.estambres.isEmpty()) {
-                agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
+        llEstambres = llContenedorEstambres
+        llExtras = llContenedorExtra
+        raiz = view
+
+        EncabezadoPaso.configurar(
+            raiz = view,
+            paso = 1,
+            titulo = "Materiales",
+            subtitulo = "¿Qué materiales vas a usar?",
+            patron = R.drawable.encabezado_materiales,
+            patronSiguiente = R.drawable.encabezado_patron,
+            alVolver = { requireActivity().onBackPressedDispatcher.onBackPressed() }
+        )
+
+        // Built right away (not posted) so the rows are already there while the screen comes in
+        if (viewModel.calculo.estambres.isEmpty()) {
+            agregarFilaEstambre(llContenedorEstambres, "", "", "", "", animar = false)
+        } else {
+            viewModel.calculo.estambres.forEach {
+                agregarFilaEstambre(
+                    llContenedorEstambres,
+                    it.nombre,
+                    it.costoMadeja.comoTextoEditable(),
+                    it.gramosTotales.comoTextoEditable(),
+                    it.gramosUsados.comoTextoEditable(),
+                    animar = false
+                )
+            }
+        }
+
+        viewModel.calculo.accesorios.forEach {
+            if (it.esCalculado) {
+                agregarFilaAccesorioCalculado(
+                    llContenedorExtra,
+                    it.nombre,
+                    it.costoPaquete.comoTextoEditable(),
+                    it.cantidadTotal.comoTextoEditable(),
+                    it.cantidadUsada.comoTextoEditable(),
+                    animar = false
+                )
             } else {
-                viewModel.calculo.estambres.forEach {
-                    agregarFilaEstambre(
-                        llContenedorEstambres,
-                        it.nombre,
-                        it.costoMadeja.comoTextoEditable(),
-                        it.gramosTotales.comoTextoEditable(),
-                        it.gramosUsados.comoTextoEditable()
-                    )
-                }
-            }
-
-            if (viewModel.calculo.accesorios.isNotEmpty()) {
-                viewModel.calculo.accesorios.forEach {
-                    if (it.esCalculado) {
-                        agregarFilaAccesorioCalculado(
-                            llContenedorExtra,
-                            it.nombre,
-                            it.costoPaquete.comoTextoEditable(),
-                            it.cantidadTotal.comoTextoEditable(),
-                            it.cantidadUsada.comoTextoEditable()
-                        )
-                    } else {
-                        agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo.comoTextoEditable())
-                    }
-                }
+                agregarFilaMaterial(llContenedorExtra, it.nombre, it.costo.comoTextoEditable(), animar = false)
             }
         }
-
-        val lottieGanchillo = requireActivity().findViewById<com.airbnb.lottie.LottieAnimationView>(R.id.lottieGanchillo)
-        if (lottieGanchillo != null && !lottieGanchillo.isAnimating) {
-            lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
-            lottieGanchillo.progress = 0f
-            lottieGanchillo.visibility = View.VISIBLE
-        }
+        actualizarTotal()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -97,15 +112,17 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             it.hapticClickPrincipal()
             DialogUtils.mostrarOpciones(
                 context = requireContext(),
-                titulo = "Añadir accesorio",
-                textoOpcion1 = "Precio Directo",
-                textoOpcion2 = "Calcular por cantidad",
+                titulo = "¿Cómo lo calculamos?",
+                textoOpcion1 = "Precio directo",
+                iconoOpcion1 = R.drawable.ic_dinero,
+                textoOpcion2 = "Por cantidad usada",
+                iconoOpcion2 = R.drawable.ic_numbers,
                 accionOpcion1 = { agregarFilaMaterial(llContenedorExtra, "", "") },
                 accionOpcion2 = { agregarFilaAccesorioCalculado(llContenedorExtra, "") }
             )
         }
 
-        view.findViewById<View>(R.id.btnSiguienteMateriales).setOnClickListener {
+        view.findViewById<View>(R.id.btnContinuarPaso).setOnClickListener {
             val tiempoActual = SystemClock.elapsedRealtime()
             if (tiempoActual - ultimoClicTiempo < 500L) return@setOnClickListener
             ultimoClicTiempo = tiempoActual
@@ -220,18 +237,7 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
                 viewModel.calculo.accesorios.addAll(accesoriosTemp)
                 viewModel.guardarBorrador()
 
-                requireActivity().findViewById<View>(R.id.lottieGanchillo)?.visibility = View.GONE
-
-                parentFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_left,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_right
-                    )
-                    .replace(R.id.fragmentContainer, PatronFragment())
-                    .addToBackStack(null)
-                    .commit()
+                (requireActivity() as MainActivity).navegarDeslizando(PatronFragment())
             } else {
                 view.hapticError()
             }
@@ -243,9 +249,11 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
         nombreSugerido: String = "",
         costoPaquete: String = "",
         cantidadTotal: String = "",
-        cantidadUsada: String = ""
+        cantidadUsada: String = "",
+        animar: Boolean = true
     ) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_accesorio_calculado, contenedor, false)
+        vistaFila.isSaveFromParentEnabled = false
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreAccCalc)
         val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoTotalAcc)
         val etTotales = vistaFila.findViewById<EditText>(R.id.etCantidadTotalAcc)
@@ -263,18 +271,28 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             } else false
         }
 
-        vistaFila.findViewById<ImageButton>(R.id.btnEliminarAccCalc).setOnClickListener {
+        vistaFila.findViewById<View>(R.id.btnEliminarAccCalc).setOnClickListener {
             it.hapticEliminar()
             val nombre = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
-            DialogUtils.mostrarAlerta(requireContext(), "Eliminar Accesorio", "¿Estás segura de que quieres eliminar '$nombre'?", "Sí, eliminar") {
-                contenedor.removeView(vistaFila)
+            DialogUtils.mostrarAlerta(requireContext(), "Eliminar accesorio", "¿Estás segura de que quieres eliminar '$nombre'?", "Sí, eliminar") {
+                quitarFila(contenedor, vistaFila)
             }
         }
-        contenedor.addView(vistaFila)
+        seguirCosto(vistaFila, etCosto, etTotales, etUsados)
+        ponerFila(contenedor, vistaFila, animar)
     }
 
-    private fun agregarFilaEstambre(contenedor: LinearLayout, nombre: String, costo: String, totales: String, usados: String) {
+    private fun agregarFilaEstambre(
+        contenedor: LinearLayout,
+        nombre: String,
+        costo: String,
+        totales: String,
+        usados: String,
+        animar: Boolean = true
+    ) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_estambre, contenedor, false)
+        // The rows share view ids: they never save their own state, the draft restores them
+        vistaFila.isSaveFromParentEnabled = false
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreEstambre)
         val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoMadeja)
         val etTotales = vistaFila.findViewById<EditText>(R.id.etGramosTotales)
@@ -292,29 +310,107 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales) {
             } else false
         }
 
-        vistaFila.findViewById<ImageButton>(R.id.btnEliminarEstambre).setOnClickListener {
+        vistaFila.findViewById<View>(R.id.btnEliminarEstambre).setOnClickListener {
             it.hapticEliminar()
             val nombreActual = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
             DialogUtils.mostrarAlerta(requireContext(), "Eliminar estambre", "¿Estás segura de que quieres eliminar el estambre '$nombreActual'?", "Sí, eliminar") {
-                contenedor.removeView(vistaFila)
+                quitarFila(contenedor, vistaFila)
             }
         }
-        contenedor.addView(vistaFila)
+        seguirCosto(vistaFila, etCosto, etTotales, etUsados)
+        ponerFila(contenedor, vistaFila, animar)
     }
 
-    private fun agregarFilaMaterial(contenedor: LinearLayout, nombre: String, costo: String) {
+    private fun agregarFilaMaterial(contenedor: LinearLayout, nombre: String, costo: String, animar: Boolean = true) {
         val vistaFila = LayoutInflater.from(requireContext()).inflate(R.layout.item_material_extra, contenedor, false)
+        vistaFila.isSaveFromParentEnabled = false
         val etNombre = vistaFila.findViewById<EditText>(R.id.etNombreMaterial)
         etNombre.setText(nombre)
-        vistaFila.findViewById<EditText>(R.id.etCostoMaterialExtra).setText(costo)
+        val etCosto = vistaFila.findViewById<EditText>(R.id.etCostoMaterialExtra)
+        etCosto.setText(costo)
+        etCosto.doAfterTextChanged { actualizarTotal() }
 
-        vistaFila.findViewById<ImageButton>(R.id.btnEliminarMaterial).setOnClickListener {
+        vistaFila.findViewById<View>(R.id.btnEliminarMaterial).setOnClickListener {
             it.hapticEliminar()
             val nombreActual = etNombre.text.toString().trim().ifEmpty { "sin nombre" }
             DialogUtils.mostrarAlerta(requireContext(), "Eliminar accesorio", "¿Estás segura de que quieres eliminar '$nombreActual'?", "Sí, eliminar") {
-                contenedor.removeView(vistaFila)
+                quitarFila(contenedor, vistaFila)
             }
         }
-        contenedor.addView(vistaFila)
+        ponerFila(contenedor, vistaFila, animar)
+    }
+
+    /** Rows added by the user push the rest down smoothly; the initial ones just appear. */
+    private fun ponerFila(contenedor: LinearLayout, fila: View, animar: Boolean) {
+        if (animar) contenedor.animarCambiosDeLayout()
+        contenedor.addView(fila)
+        actualizarTotal()
+    }
+
+    private fun quitarFila(contenedor: LinearLayout, fila: View) {
+        if (fila.parent !== contenedor) return
+        contenedor.animarCambiosDeLayout()
+        contenedor.removeView(fila)
+        actualizarTotal()
+    }
+
+    /** The row shows the cost of the used part as its three numbers are typed. */
+    private fun seguirCosto(fila: View, etCosto: EditText, etTotal: EditText, etUsada: EditText) {
+        val tvCosto = fila.findViewById<TextView>(R.id.tvCostoFila)
+        fun refrescar() {
+            val costo = costoDeFila(etCosto, etTotal, etUsada)
+            tvCosto.text = costo?.comoDinero() ?: "—"
+            actualizarTotal()
+        }
+        etCosto.doAfterTextChanged { refrescar() }
+        etTotal.doAfterTextChanged { refrescar() }
+        etUsada.doAfterTextChanged { refrescar() }
+        tvCosto.text = costoDeFila(etCosto, etTotal, etUsada)?.comoDinero() ?: "—"
+    }
+
+    private fun costoDeFila(etCosto: EditText, etTotal: EditText, etUsada: EditText): Double? =
+        CostoEnVivo.porcionUsada(
+            etCosto.text.toString().trim().toDoubleOrNull(),
+            etTotal.text.toString().trim().toDoubleOrNull(),
+            etUsada.text.toString().trim().toDoubleOrNull()
+        )
+
+    /** Sum of every row that already has valid numbers, in the bottom bar. */
+    private fun actualizarTotal() {
+        val vista = raiz ?: return
+        var total = 0.0
+        llEstambres?.let { contenedor ->
+            for (i in 0 until contenedor.childCount) {
+                val fila = contenedor.getChildAt(i)
+                total += costoDeFila(
+                    fila.findViewById(R.id.etCostoMadeja),
+                    fila.findViewById(R.id.etGramosTotales),
+                    fila.findViewById(R.id.etGramosUsados)
+                ) ?: 0.0
+            }
+        }
+        llExtras?.let { contenedor ->
+            for (i in 0 until contenedor.childCount) {
+                val fila = contenedor.getChildAt(i)
+                val directo = fila.findViewById<EditText>(R.id.etCostoMaterialExtra)
+                total += if (directo != null) {
+                    directo.text.toString().trim().toDoubleOrNull()?.takeIf { it > 0.0 } ?: 0.0
+                } else {
+                    costoDeFila(
+                        fila.findViewById(R.id.etCostoTotalAcc),
+                        fila.findViewById(R.id.etCantidadTotalAcc),
+                        fila.findViewById(R.id.etCantidadUsadaAcc)
+                    ) ?: 0.0
+                }
+            }
+        }
+        EncabezadoPaso.mostrarMonto(vista, "Materiales", total.comoDinero())
+    }
+
+    override fun onDestroyView() {
+        raiz = null
+        llEstambres = null
+        llExtras = null
+        super.onDestroyView()
     }
 }

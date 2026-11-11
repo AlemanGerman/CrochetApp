@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -53,8 +52,8 @@ class PapeleraAdapter(
         private val ivFoto: ImageView = itemView.findViewById(R.id.ivFotoPapelera)
         private val tvNombre: TextView = itemView.findViewById(R.id.tvNombrePapelera)
         private val tvDiasRestantes: TextView = itemView.findViewById(R.id.tvDiasRestantes)
-        private val btnRestaurar: ImageButton = itemView.findViewById(R.id.btnRestaurarIndividual)
-        private val btnEliminar: ImageButton = itemView.findViewById(R.id.btnEliminarIndividual)
+        private val btnRestaurar: View = itemView.findViewById(R.id.btnRestaurarIndividual)
+        private val btnEliminar: View = itemView.findViewById(R.id.btnEliminarIndividual)
 
         fun bind(item: ProyectoCrochet) {
             tvNombre.text = item.nombre
@@ -77,8 +76,8 @@ class PapeleraAdapter(
                             ivFoto.scaleType = ImageView.ScaleType.FIT_CENTER
                             val paddingPx = (10 * itemView.context.resources.displayMetrics.density).toInt()
                             ivFoto.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-                            ivFoto.setBackgroundColor(Color.parseColor("#F3E8FF"))
-                            ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.purple_primary)
+                            ivFoto.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.lavanda))
+                            ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.morado)
                             ivFoto.setImageResource(R.drawable.ic_sad)
                         }
                     )
@@ -87,9 +86,9 @@ class PapeleraAdapter(
                 ivFoto.scaleType = ImageView.ScaleType.FIT_CENTER
                 val paddingPx = (10 * itemView.context.resources.displayMetrics.density).toInt()
                 ivFoto.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-                ivFoto.setBackgroundColor(Color.parseColor("#F3E8FF"))
-                ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.purple_primary)
-                ivFoto.setImageResource(R.drawable.ic_sad)
+                ivFoto.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.lavanda))
+                ivFoto.imageTintList = ContextCompat.getColorStateList(itemView.context, R.color.morado)
+                ivFoto.setImageResource(R.drawable.ic_papelera)
             }
 
             val fechaEliminado = item.fechaEliminado ?: System.currentTimeMillis()

@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- region Text appearances of the Material components, in Nunito -->
+
+    <style name="TextAppearance.Mina.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="fontFamily">@font/nunito_extrabold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="fontFamily">@font/nunito_extrabold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="fontFamily">@font/nunito_extrabold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="fontFamily">@font/nunito_extrabold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="fontFamily">@font/nunito_extrabold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Mina.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Mina.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+        <item name="fontFamily">@font/nunito_semibold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextAppearance.Mina.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="TextAppearance.Mina.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+        <item name="fontFamily">@font/nunito_semibold</item>
+    </style>
+
+    <!-- endregion -->
+
+    <!-- region Text styles of the screens -->
+
+    <!-- Big amounts: the suggested price, the income total -->
+    <style name="Texto.Monto.Grande" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">40sp</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Texto.Monto" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+    </style>
+
+    <!-- Title of a screen, on the purple header -->
+    <style name="Texto.Encabezado.Titulo" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Texto.Encabezado.Subtitulo" parent="">
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Texto.Titulo" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <!-- Heading of a card or a group -->
+    <style name="Texto.Seccion" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <style name="Texto.Cuerpo" parent="">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <style name="Texto.Cuerpo.Fuerte" parent="Texto.Cuerpo">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="Texto.Suave" parent="">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/tinta_suave</item>
+    </style>
+
+    <!-- Small caps label above a value -->
+    <style name="Texto.Etiqueta" parent="">
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/tinta_suave</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- The printed receipt of the result screen -->
+    <style name="Texto.Ticket" parent="">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <style name="Texto.Ticket.Fuerte" parent="Texto.Ticket">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Rows of a cost breakdown (detail sheet): concept, amount and an optional arrow -->
+    <style name="Fila.Desglose" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:background">@drawable/ripple_fila</item>
+    </style>
+
+    <style name="Fila.Desglose.Concepto" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <style name="Fila.Desglose.Monto" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/nunito_extrabold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/tinta</item>
+    </style>
+
+    <style name="Fila.Desglose.Flecha" parent="">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:src">@drawable/ic_expandir</item>
+        <item name="tint">@color/tinta_suave</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="Fila.Desglose.Detalle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">12dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:background">@drawable/bg_bloque_lavanda</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+        <item name="android:textColor">@color/tinta</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- endregion -->
+
+    <!-- A segment of the step progress on the calculator header -->
+    <style name="Segmento.Progreso" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginHorizontal">3dp</item>
+        <item name="android:background">@drawable/bg_progreso_pendiente</item>
+    </style>
+
+    <!-- region Buttons -->
+
+    <style name="Widget.Mina.Boton" parent="Widget.Material3.Button">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">22dp</item>
+        <item name="backgroundTint">@color/selector_boton_principal</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconTint">@color/white</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconPadding">8dp</item>
+    </style>
+
+    <!-- Main action at the bottom of a screen -->
+    <style name="Widget.Mina.Boton.Grande">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="Widget.Mina.Boton.Peligro">
+        <item name="backgroundTint">@color/error</item>
+    </style>
+
+    <style name="Widget.Mina.Boton.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="backgroundTint">@color/lavanda</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconTint">@color/morado_fuerte</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconPadding">8dp</item>
+        <item name="rippleColor">@color/morado_claro</item>
+    </style>
+
+    <style name="Widget.Mina.Boton.Contorno" parent="Widget.Material3.Button.OutlinedButton">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+        <item name="strokeColor">@color/morado_claro</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconTint">@color/morado_fuerte</item>
+        <item name="iconSize">20dp</item>
+        <item name="rippleColor">@color/lavanda</item>
+    </style>
+
+    <style name="Widget.Mina.Boton.Texto" parent="Widget.Material3.Button.TextButton">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconTint">@color/morado_fuerte</item>
+        <item name="iconSize">20dp</item>
+        <item name="rippleColor">@color/lavanda</item>
+    </style>
+
+    <style name="Widget.Mina.Boton.Texto.Peligro">
+        <item name="android:textColor">@color/error</item>
+        <item name="iconTint">@color/error</item>
+        <item name="rippleColor">@color/error_claro</item>
+    </style>
+
+    <!-- Round icon button: plain on white surfaces -->
+    <style name="Widget.Mina.BotonIcono" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">44dp</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:padding">10dp</item>
+        <item name="iconSize">22dp</item>
+        <item name="iconTint">@color/morado_fuerte</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="rippleColor">@color/lavanda</item>
+    </style>
+
+    <style name="Widget.Mina.BotonIcono.Tonal">
+        <item name="backgroundTint">@color/lavanda</item>
+        <item name="rippleColor">@color/morado_claro</item>
+    </style>
+
+    <!-- Round icon button on the purple pattern headers -->
+    <style name="Widget.Mina.BotonIcono.Encabezado">
+        <item name="backgroundTint">@color/velo_blanco</item>
+        <item name="strokeColor">@color/velo_blanco_borde</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="iconTint">@color/white</item>
+        <item name="rippleColor">@color/velo_blanco_borde</item>
+    </style>
+
+    <!-- Small white pill on the purple headers (e.g. "Vaciar" in the trash) -->
+    <style name="Widget.Mina.Boton.Encabezado" parent="Widget.Material3.Button">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/morado_fuerte</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="iconTint">@color/morado_fuerte</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">6dp</item>
+        <item name="rippleColor">@color/lavanda</item>
+    </style>
+
+    <style name="Widget.Mina.BotonFlotante" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="backgroundTint">@color/morado_fuerte</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="iconTint">@color/white</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="shapeAppearanceOverlay">@style/Forma.Mina.Pildora</item>
+        <item name="rippleColor">@color/morado_claro</item>
+    </style>
+
+    <!-- Segmented control (MaterialButtonToggleGroup) -->
+    <style name="Widget.Mina.Segmento" parent="Widget.Material3.Button.OutlinedButton">
+        <!-- Set here: the theme font (regular) would otherwise win over the text appearance -->
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="iconGravity">textStart</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="backgroundTint">@color/selector_segmento_fondo</item>
+        <item name="android:textColor">@color/selector_segmento_texto</item>
+        <item name="strokeColor">@color/morado_claro</item>
+        <item name="strokeWidth">1.5dp</item>
+        <item name="iconTint">@color/selector_segmento_texto</item>
+        <item name="iconSize">18dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="rippleColor">@color/lavanda</item>
+    </style>
+
+    <!-- endregion -->
+
+    <!-- region Inputs and controls -->
+
+    <!-- Soft lavender fields; the purple outline only appears when focused -->
+    <style name="Widget.Mina.Campo" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/lavanda</item>
+        <item name="boxStrokeColor">@color/selector_campo_borde</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeErrorColor">@color/error</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="hintTextColor">@color/morado_fuerte</item>
+        <item name="android:textColorHint">@color/tinta_suave</item>
+        <item name="prefixTextColor">@color/tinta_suave</item>
+        <item name="suffixTextColor">@color/tinta_suave</item>
+        <item name="errorTextColor">@color/error</item>
+        <item name="errorIconDrawable">@null</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Mina.BodySmall</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Mina.BodySmall</item>
+        <item name="helperTextTextAppearance">@style/TextAppearance.Mina.BodySmall</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Mina.Campo</item>
+    </style>
+
+    <style name="ThemeOverlay.Mina.Campo" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/Widget.Mina.Campo.Texto</item>
+    </style>
+
+    <style name="Widget.Mina.Campo.Texto" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">@color/tinta</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+    </style>
+
+    <style name="Widget.Mina.Tarjeta" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="strokeColor">@color/lavanda_borde</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="shapeAppearance">@style/Forma.Mina.Tarjeta</item>
+    </style>
+
+    <!-- Folder chips: purple when checked -->
+    <style name="Widget.Mina.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/selector_chip_fondo</item>
+        <item name="android:textColor">@color/selector_chip_texto</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipMinHeight">38dp</item>
+        <item name="chipCornerRadius">19dp</item>
+        <item name="checkedIconTint">@color/white</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.Chip</item>
+        <item name="rippleColor">@color/morado_claro</item>
+    </style>
+
+    <!-- Small read-only tag with the folder color (project cards) -->
+    <style name="Widget.Mina.Chip.Etiqueta" parent="Widget.Material3.Chip.Assist">
+        <item name="chipMinHeight">26dp</item>
+        <item name="chipCornerRadius">13dp</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipStartPadding">2dp</item>
+        <item name="chipEndPadding">2dp</item>
+        <item name="textStartPadding">8dp</item>
+        <item name="textEndPadding">8dp</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.Chip.Etiqueta</item>
+    </style>
+
+    <style name="TextAppearance.Mina.Chip" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.Mina.Chip.Etiqueta">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Widget.Mina.Interruptor" parent="Widget.Material3.CompoundButton.MaterialSwitch" />
+
+    <style name="Widget.Mina.Casilla" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/selector_casilla</item>
+        <item name="android:textColor">@color/tinta</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+    </style>
+
+    <style name="Widget.Mina.Deslizador" parent="Widget.Material3.Slider">
+        <item name="trackHeight">8dp</item>
+        <!-- 101 steps would paint a row of dots along the track -->
+        <item name="tickVisible">false</item>
+        <item name="labelStyle">@style/Widget.Mina.Deslizador.Etiqueta</item>
+    </style>
+
+    <style name="Widget.Mina.Deslizador.Etiqueta" parent="Widget.Material3.Tooltip">
+        <item name="backgroundTint">@color/morado_fuerte</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAppearance">@style/TextAppearance.Mina.LabelLarge</item>
+    </style>
+
+    <style name="Widget.Mina.BarraNavegacion" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">@color/white</item>
+        <item name="itemIconTint">@color/selector_navegacion</item>
+        <item name="itemTextColor">@color/selector_navegacion</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Mina.Navegacion</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Mina.Navegacion</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Mina.BarraNavegacion.Indicador</item>
+        <item name="itemRippleColor">@color/lavanda</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Widget.Mina.BarraNavegacion.Indicador" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/lavanda</item>
+    </style>
+
+    <style name="TextAppearance.Mina.Navegacion" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Widget.Mina.Aviso" parent="Widget.Material3.Snackbar">
+        <item name="backgroundTint">@color/tinta</item>
+    </style>
+
+    <style name="Widget.Mina.Calendario" parent="android:Widget.Material.Light.DatePicker">
+        <item name="android:headerBackground">@color/morado_fuerte</item>
+    </style>
+
+    <!-- Date spinners: purple dividers and Nunito numbers -->
+    <style name="ThemeOverlay.Mina.Calendario" parent="">
+        <item name="android:colorControlNormal">@color/morado_claro</item>
+        <item name="android:textColorPrimary">@color/tinta</item>
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <!-- endregion -->
+
+    <!-- region Shapes -->
+
+    <style name="Forma.Mina.Pequena" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="Forma.Mina.Mediana" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="Forma.Mina.Grande" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="Forma.Mina.ExtraGrande" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="Forma.Mina.Tarjeta" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="Forma.Mina.Pildora" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Photos and folder icons -->
+    <style name="Forma.Mina.Foto" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="Forma.Mina.Icono" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="Forma.Mina.Circulo" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Forma.Mina.HojaInferior" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">28dp</item>
+        <item name="cornerSizeTopRight">28dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- endregion -->
+
+    <!-- Sort menu of the dashboard (PopupWindow.animationStyle) -->
+    <style name="AnimacionMenuOrden">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+</resources>

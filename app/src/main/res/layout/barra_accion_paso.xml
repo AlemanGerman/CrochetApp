@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom bar of the calculator: the amount of this step as it is typed, and the main action -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/barraAccionPaso"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_barra_accion"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/margen_pantalla"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <LinearLayout
+        android:id="@+id/llMontoAcumulado"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_weight="1"
+        android:accessibilityLiveRegion="polite"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvEtiquetaAcumulado"
+            style="@style/Texto.Etiqueta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            tools:text="Materiales" />
+
+        <TextView
+            android:id="@+id/tvMontoAcumulado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/nunito_extrabold"
+            android:maxLines="1"
+            android:textColor="@color/tinta"
+            android:textSize="22sp"
+            tools:text="$120.00" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnContinuarPaso"
+        style="@style/Widget.Mina.Boton.Grande"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continuar"
+        app:icon="@drawable/ic_chevron_derecha"
+        app:iconGravity="textEnd" />
+</LinearLayout>

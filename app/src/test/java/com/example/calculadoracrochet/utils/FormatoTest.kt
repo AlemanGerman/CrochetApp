@@ -46,4 +46,14 @@ class FormatoTest {
     fun `materials breakdown without materials shows the empty text`() {
         assertEquals("Sin materiales", desgloseMateriales(emptyList(), emptyList(), "- ", "Sin materiales"))
     }
+
+    @Test
+    fun `durations read as hours and minutes, leaving out the part that is zero`() {
+        assertEquals("45 min", duracionLegible(0.75))
+        assertEquals("2 h", duracionLegible(2.0))
+        assertEquals("5 h 30 min", duracionLegible(5.5))
+        assertEquals("1 h 5 min", duracionLegible(1 + 5 / 60.0))
+        assertEquals("30 h 15 min", duracionLegible(30.25))
+        assertEquals("0 min", duracionLegible(0.0))
+    }
 }

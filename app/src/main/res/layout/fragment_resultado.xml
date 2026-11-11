@@ -1,310 +1,331 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_resultado"
-    android:fitsSystemWindows="true">
+    android:background="@color/fondo"
+    android:orientation="vertical">
+
+    <include layout="@layout/encabezado_paso" />
 
     <ScrollView
+        android:id="@+id/hojaPaso"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
         android:fillViewport="true"
-        android:scrollbars="none"
-        android:paddingBottom="100dp">
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="16dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="28dp">
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- The suggested price, first and big -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
-                android:backgroundTint="@color/purple_primary"
-                android:layout_marginBottom="24dp">
+                android:background="@drawable/bg_bloque_lavanda"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingHorizontal="18dp"
+                android:paddingVertical="22dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    style="@style/Texto.Etiqueta"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:text="Precio sugerido" />
+
+                <TextView
+                    android:id="@+id/tvPrecioHero"
+                    style="@style/Texto.Monto.Grande"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textSize="44sp"
+                    tools:text="$675.00" />
+
+                <TextView
+                    android:id="@+id/tvInfoPrecio"
+                    style="@style/Texto.Suave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:gravity="center"
-                    android:padding="24dp">
+                    android:textColor="@color/tinta"
+                    tools:text="Incluye 30% de ganancia · +$1.80 de redondeo" />
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Cotización"
-                        android:textSize="32sp"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:gravity="center"
-                        android:layout_marginBottom="8dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCambiarFecha"
+                style="@style/Widget.Mina.Boton.Texto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="Cambiar la fecha"
+                android:visibility="gone"
+                app:icon="@drawable/ic_calendario" />
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Esto es lo que te deben de pagar por tu gran trabajo :]"
-                        android:textColor="@color/white"
-                        android:textSize="16sp"
-                        android:gravity="center"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
+            <!-- The printed receipt: tap MATERIALES or MANO DE OBRA to unfold their detail -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="0dp"
-                app:cardElevation="5dp"
-                android:layout_marginHorizontal="8dp"
-                android:layout_marginVertical="16dp">
+                android:layout_marginHorizontal="6dp"
+                android:layout_marginTop="18dp"
+                app:cardElevation="3dp"
+                app:shapeAppearance="@style/Forma.Mina.Pequena"
+                app:strokeWidth="0dp"
+                style="@style/Widget.Material3.CardView.Elevated">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:background="@drawable/img_papel_arrugado"
-                    android:padding="24dp">
+                    android:orientation="vertical"
+                    android:padding="22dp">
 
                     <TextView
+                        style="@style/Texto.Ticket.Fuerte"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="M I N A   C R O C H E T"
                         android:textAlignment="center"
-                        android:fontFamily="monospace"
-                        android:textStyle="bold"
-                        android:textSize="20sp"
-                        android:textColor="@color/black"/>
+                        android:textSize="19sp" />
 
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="COTIZACIÓN DE PROYECTO"
-                        android:textAlignment="center"
-                        android:fontFamily="monospace"
-                        android:textSize="14sp"
                         android:layout_marginBottom="16dp"
-                        android:textColor="@color/black"/>
+                        android:text="COTIZACIÓN DE PROYECTO"
+                        android:textAlignment="center" />
 
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="ORDEN #0001 PARA CAMILITA"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
-                        android:textColor="@color/black"/>
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tvFechaTicket"
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="JUEVES, 27 AGOSTO, 2026"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
                         android:layout_marginBottom="12dp"
-                        android:textColor="@color/black"/>
+                        android:textSize="12sp" />
 
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="--------------------------------"
-                        android:fontFamily="monospace"
-                        android:textAlignment="center"
+                        android:layout_marginTop="0dp"
                         android:layout_marginBottom="8dp"
-                        android:textColor="@color/black"/>
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:text="--------------------------------"
+                        android:textAlignment="center" />
 
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="ID" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="CONCEPTO" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="MONTO" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        <TextView style="@style/Texto.Ticket.Fuerte" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.15" android:text="ID" />
+                        <TextView style="@style/Texto.Ticket.Fuerte" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.6" android:text="CONCEPTO" />
+                        <TextView style="@style/Texto.Ticket.Fuerte" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.25" android:gravity="end" android:text="MONTO" />
                     </LinearLayout>
 
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="--------------------------------"
-                        android:fontFamily="monospace"
-                        android:textAlignment="center"
                         android:layout_marginTop="4dp"
                         android:layout_marginBottom="8dp"
-                        android:textColor="@color/black"/>
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:text="--------------------------------"
+                        android:textAlignment="center" />
 
                     <LinearLayout
                         android:id="@+id/llFilaMateriales"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:layout_marginBottom="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:background="@drawable/ripple_fila"
                         android:clickable="true"
-                        android:focusable="true">
-                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="01" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MATERIALES ▼" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseMaterial" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        android:focusable="true"
+                        android:minHeight="32dp"
+                        android:gravity="center_vertical">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.15" android:text="01" />
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.6" android:text="MATERIALES ▼" />
+                        <TextView style="@style/Texto.Ticket" android:id="@+id/tvDesgloseMaterial" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.25" android:gravity="end" android:text="$0.00" />
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvDetalleMaterialesDesc"
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
-                        android:textColor="#555555"
+                        android:layout_marginBottom="8dp"
                         android:paddingStart="40dp"
-                        android:visibility="gone"
-                        android:layout_marginBottom="8dp"/>
+                        android:textColor="@color/tinta_suave"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="4dp">
-                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="02" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="PATRÓN" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesglosePatron" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:orientation="horizontal">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.15" android:text="02" />
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.6" android:text="PATRÓN" />
+                        <TextView style="@style/Texto.Ticket" android:id="@+id/tvDesglosePatron" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.25" android:gravity="end" android:text="$0.00" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/llFilaManoObra"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:layout_marginBottom="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:background="@drawable/ripple_fila"
                         android:clickable="true"
-                        android:focusable="true">
-                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="03" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="MANO DE OBRA ▼" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseManoObra" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
+                        android:focusable="true"
+                        android:minHeight="32dp"
+                        android:gravity="center_vertical">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.15" android:text="03" />
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.6" android:text="MANO DE OBRA ▼" />
+                        <TextView style="@style/Texto.Ticket" android:id="@+id/tvDesgloseManoObra" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.25" android:gravity="end" android:text="$0.00" />
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvDetalleManoObraDesc"
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
-                        android:textColor="#555555"
-                        android:paddingStart="40dp"
-                        android:visibility="gone"
-                        android:layout_marginBottom="8dp"/>
-
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
-                        <TextView android:layout_width="0dp" android:layout_weight="0.15" android:layout_height="wrap_content" android:text="04" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:layout_width="0dp" android:layout_weight="0.6" android:layout_height="wrap_content" android:text="EMPAQUE" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseEmpaque" android:layout_width="0dp" android:layout_weight="0.25" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="--------------------------------"
-                        android:fontFamily="monospace"
-                        android:textAlignment="center"
                         android:layout_marginBottom="8dp"
-                        android:textColor="@color/black"/>
+                        android:paddingStart="40dp"
+                        android:textColor="@color/tinta_suave"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
 
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="SUBTOTAL COSTO:" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseSubtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    </LinearLayout>
-
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp">
-                        <TextView android:id="@+id/tvLabelGanancia" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="GANANCIA EXTRA:" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseGanancia" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    </LinearLayout>
-
-                    <LinearLayout android:id="@+id/llFilaRedondeo" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="12dp" android:visibility="gone">
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="REDONDEO (+):" android:fontFamily="monospace" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvDesgloseRedondeo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    </LinearLayout>
-
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="================================"
-                        android:fontFamily="monospace"
-                        android:textAlignment="center"
                         android:layout_marginBottom="12dp"
-                        android:textColor="@color/black"/>
-
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
-                        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="TOTAL:" android:fontFamily="monospace" android:textStyle="bold" android:textSize="20sp" android:textColor="@color/black"/>
-                        <TextView android:id="@+id/tvPrecioFinal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" android:gravity="end" android:fontFamily="monospace" android:textStyle="bold" android:textSize="28sp" android:textColor="@color/black"/>
+                        android:orientation="horizontal">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.15" android:text="04" />
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.6" android:text="EMPAQUE" />
+                        <TextView style="@style/Texto.Ticket" android:id="@+id/tvDesgloseEmpaque" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="0.25" android:gravity="end" android:text="$0.00" />
                     </LinearLayout>
 
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="CLIENTE: QUIÉN SABE" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="METODO: CON MUCHO ESFUERZO" android:fontFamily="monospace" android:textColor="@color/black"/>
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="VALOR: INVALUABLE" android:fontFamily="monospace" android:textColor="@color/black" android:layout_marginBottom="24dp"/>
-
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginBottom="8dp"
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:text="--------------------------------"
+                        android:textAlignment="center" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:orientation="horizontal">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="SUBTOTAL COSTO:" />
+                        <TextView android:id="@+id/tvDesgloseSubtotal" style="@style/Texto.Ticket" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:orientation="horizontal">
+                        <TextView android:id="@+id/tvLabelGanancia" style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="GANANCIA EXTRA:" />
+                        <TextView android:id="@+id/tvDesgloseGanancia" style="@style/Texto.Ticket" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/llFilaRedondeo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+                        <TextView style="@style/Texto.Ticket" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="REDONDEO (+):" />
+                        <TextView android:id="@+id/tvDesgloseRedondeo" style="@style/Texto.Ticket" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="$0.00" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Texto.Ticket"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginBottom="12dp"
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:text="================================"
+                        android:textAlignment="center" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView style="@style/Texto.Ticket.Fuerte" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="TOTAL:" android:textSize="19sp" />
+
+                        <TextView
+                            android:id="@+id/tvPrecioFinal"
+                            style="@style/Texto.Ticket.Fuerte"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="$0.00"
+                            android:textSize="24sp" />
+                    </LinearLayout>
+
+                    <TextView style="@style/Texto.Ticket" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="CLIENTE: QUIÉN SABE" />
+                    <TextView style="@style/Texto.Ticket" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="MÉTODO: CON MUCHO ESFUERZO" />
+                    <TextView style="@style/Texto.Ticket" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="22dp" android:text="VALOR: INVALUABLE" />
+
+                    <TextView
+                        style="@style/Texto.Ticket.Fuerte"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="¡Haz que tu tiempo valga!"
-                        android:textAlignment="center"
-                        android:fontFamily="monospace"
-                        android:textStyle="bold"
-                        android:textSize="14sp"
-                        android:textColor="@color/black"
-                        android:layout_marginBottom="12dp"/>
+                        android:textAlignment="center" />
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="80dp"
+                        android:layout_height="72dp"
                         android:layout_marginHorizontal="40dp"
-                        android:src="@drawable/codigo_barras"
+                        android:layout_marginBottom="8dp"
+                        android:importantForAccessibility="no"
                         android:scaleType="fitXY"
-                        android:layout_marginBottom="8dp"/>
+                        android:src="@drawable/codigo_barras" />
 
                     <TextView
+                        style="@style/Texto.Ticket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="www.instagram.com/mina_crochett/"
                         android:textAlignment="center"
-                        android:fontFamily="monospace"
-                        android:textSize="12sp"
-                        android:textColor="@color/black"/>
-
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCambiarFecha"
-        android:layout_width="wrap_content"
-        android:layout_height="56dp"
-        android:paddingHorizontal="24dp"
-        android:text="Modificar fecha"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:backgroundTint="@color/purple_primary"
-        app:cornerRadius="32dp"
-        android:elevation="8dp"
-        app:icon="@drawable/ic_editar"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@id/btnGuardar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGuardar"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_margin="24dp"
-        android:text="Guardar Proyecto"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:backgroundTint="@color/purple_primary"
-        app:cornerRadius="32dp"
-        android:elevation="8dp"
-        app:iconGravity="textStart"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <include layout="@layout/barra_accion_paso" />
+</LinearLayout>

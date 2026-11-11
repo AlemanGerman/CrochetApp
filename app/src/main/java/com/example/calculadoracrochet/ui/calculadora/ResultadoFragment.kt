@@ -21,6 +21,9 @@ import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.ui.MainActivity
+import com.example.calculadoracrochet.ui.PantallaConGanchillo
+import com.example.calculadoracrochet.utils.CarpetasUi
+import com.example.calculadoracrochet.utils.duracionLegible
 import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.DialogUtils
@@ -32,8 +35,6 @@ import com.example.calculadoracrochet.data.CalculadoraPrecio
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticError
-import com.example.calculadoracrochet.utils.hapticExito
-import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -44,7 +45,7 @@ import com.google.android.material.textfield.TextInputLayout
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
+class ResultadoFragment : Fragment(R.layout.fragment_resultado), PantallaConGanchillo {
     private val viewModel: CalculadoraViewModel by activityViewModels()
     private val proyectosViewModel: ProyectosViewModel by activityViewModels()
 
@@ -57,9 +58,10 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             DialogUtils.mostrarModalEncuadre(requireContext(), viewLifecycleOwner.lifecycleScope, uri) { uriEncuadrada ->
                 uriFotoSeleccionada = uriEncuadrada.toString()
                 try {
+                    ivPreviewModal?.scaleType = ImageView.ScaleType.CENTER_CROP
                     ivPreviewModal?.setImageURI(uriEncuadrada)
                     ivPreviewModal?.imageTintList = null
-                    btnSeleccionarFotoModal?.text = "Cambiar o eliminar foto"
+                    btnSeleccionarFotoModal?.text = "Cambiar o quitar foto"
                 } catch (e: Exception) { e.printStackTrace() }
             }
         }
@@ -67,6 +69,15 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        EncabezadoPaso.configurar(
+            raiz = view,
+            paso = PasosCalculadora.RESULTADO,
+            titulo = "Cotización",
+            subtitulo = "Esto es lo que te deben pagar por tu gran trabajo :]",
+            patron = R.drawable.encabezado_resultado,
+            alVolver = { requireActivity().onBackPressedDispatcher.onBackPressed() }
+        )
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -108,7 +119,16 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
             btnCambiarFecha.visibility = View.GONE
         }
 
-        view.findViewById<TextView>(R.id.tvPrecioFinal).text = viewModel.calculo.precioFinalSugerido.comoDinero()
+        val precio = viewModel.calculo.precioFinalSugerido.comoDinero()
+        view.findViewById<TextView>(R.id.tvPrecioFinal).text = precio
+        view.findViewById<TextView>(R.id.tvPrecioHero).text = precio
+        EncabezadoPaso.mostrarMonto(view, "Total", precio)
+        view.findViewById<TextView>(R.id.tvInfoPrecio).text = buildString {
+            append("Incluye ${viewModel.calculo.margenGanancia.toInt()}% de ganancia")
+            if (viewModel.calculo.ajusteRedondeo > 0.0) {
+                append(" · +${viewModel.calculo.ajusteRedondeo.comoDinero()} de redondeo")
+            }
+        }
         view.findViewById<TextView>(R.id.tvDesgloseMaterial).text = viewModel.calculo.costoMateriales.comoDinero()
         view.findViewById<TextView>(R.id.tvDesglosePatron).text = viewModel.calculo.costoDiseno.comoDinero()
         view.findViewById<TextView>(R.id.tvDesgloseManoObra).text = viewModel.calculo.costoManoObra.comoDinero()
@@ -140,11 +160,14 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         val llFilaManoObra = view.findViewById<LinearLayout>(R.id.llFilaManoObra)
         val tvDetalleManoObraDesc = view.findViewById<TextView>(R.id.tvDetalleManoObraDesc)
-        tvDetalleManoObraDesc.text = String.format(LOCALE_MX, "- Tiempo: %.2f hrs", viewModel.calculo.horasTrabajadas) +
+        tvDetalleManoObraDesc.text = "- Tiempo: ${duracionLegible(viewModel.calculo.horasTrabajadas)}" +
             "\n- Pago: ${viewModel.calculo.pagoPorHora.comoDinero()}/hr"
         llFilaManoObra.hacerDesplegable(tvDetalleManoObraDesc)
 
-        view.findViewById<View>(R.id.btnGuardar).setOnClickListener {
+        val btnGuardar = view.findViewById<MaterialButton>(R.id.btnContinuarPaso)
+        btnGuardar.text = "Guardar"
+        btnGuardar.setIconResource(R.drawable.ic_check)
+        btnGuardar.setOnClickListener {
             it.hapticClickPrincipal()
             mostrarModalGuardar()
         }
@@ -167,25 +190,13 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         val mapChips = mutableMapOf<String, Chip>()
 
-        CarpetasConfig.obtenerNombresSinTodos().forEach { nombreCarpeta ->
-            val info = CarpetasConfig.listaCarpetas.find { it.nombre == nombreCarpeta }
-            val chip = Chip(requireContext()).apply {
-                text = nombreCarpeta
-                isCheckable = true
-                info?.let {
-                    setChipBackgroundColorResource(it.colorRes)
-                    setTextColor(ContextCompat.getColor(context, it.textColorRes))
-                    setChipStrokeColorResource(it.colorRes)
-                    chipStrokeWidth = 1f * resources.displayMetrics.density
-                }
-                setOnClickListener {
-                    hapticSeleccion()
-                }
+        CarpetasConfig.listaCarpetas
+            .filter { it.nombre != CarpetasConfig.CARPETA_TODOS }
+            .forEach { carpeta ->
+                val chip = CarpetasUi.crearChipSeleccionable(cgCarpetas, carpeta, viewModel.calculo.carpetas.contains(carpeta.nombre))
+                mapChips[carpeta.nombre] = chip
+                cgCarpetas.addView(chip)
             }
-            if (viewModel.calculo.carpetas.contains(nombreCarpeta)) chip.isChecked = true
-            mapChips[nombreCarpeta] = chip
-            cgCarpetas.addView(chip)
-        }
 
         if (viewModel.calculo.nombre.isNotEmpty()) etNombre?.setText(viewModel.calculo.nombre)
 
@@ -193,13 +204,15 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
 
         fun refrescarFotoModal() {
             if (!uriFotoSeleccionada.isNullOrEmpty()) {
+                ivPreviewModal?.scaleType = ImageView.ScaleType.CENTER_CROP
                 ivPreviewModal?.load(uriFotoSeleccionada) { crossfade(true) }
                 ivPreviewModal?.imageTintList = null
-                btnElegirFoto?.text = "Cambiar o eliminar foto"
+                btnElegirFoto?.text = "Cambiar o quitar foto"
             } else {
-                ivPreviewModal?.setImageResource(R.drawable.ic_photo)
-                ivPreviewModal?.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.gray_hint))
-                btnElegirFoto?.text = "Añadir Foto (Opcional)"
+                ivPreviewModal?.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                ivPreviewModal?.setImageResource(R.drawable.ic_agregar_foto)
+                ivPreviewModal?.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.morado))
+                btnElegirFoto?.text = "Añadir foto (opcional)"
             }
         }
 
@@ -216,7 +229,9 @@ class ResultadoFragment : Fragment(R.layout.fragment_resultado) {
                     context = requireContext(),
                     titulo = "Opciones de foto",
                     textoOpcion1 = "Cambiar foto",
-                    textoOpcion2 = "Eliminar foto",
+                    iconoOpcion1 = R.drawable.ic_agregar_foto,
+                    textoOpcion2 = "Quitar foto",
+                    iconoOpcion2 = R.drawable.ic_eliminar,
                     accionOpcion1 = {
                         pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
                     },

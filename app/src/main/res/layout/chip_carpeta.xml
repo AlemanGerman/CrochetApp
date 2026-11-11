@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selectable folder with its icon (CarpetasUi.crearChipSeleccionable) -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Mina.Chip"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checkable="true"
+    app:checkedIconVisible="false"
+    app:chipIconSize="26dp"
+    app:chipIconVisible="true"
+    app:chipStartPadding="6dp"
+    app:iconStartPadding="0dp" />

@@ -1,188 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_dashboard">
+    android:background="@color/fondo">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Header with the daisy pattern -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="24dp">
+            android:layout_height="wrap_content">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTituloDashboard"
+            <com.example.calculadoracrochet.ui.comun.FondoPatronView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:patron="@drawable/encabezado_dashboard" />
+
+            <LinearLayout
+                android:id="@+id/contenidoEncabezado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                android:backgroundTint="@color/purple_primary"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="20dp"
-                    android:paddingVertical="16dp">
-
-                    <TextView
-                        android:id="@+id/tvTituloDashboard"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tus Proyectos"
-                        android:textSize="32sp"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent" />
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cvBotonOpciones"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="0dp"
-                        android:backgroundTint="#26FFFFFF"
-                        app:strokeWidth="0dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent">
-
-                        <ImageButton
-                            android:id="@+id/btnOpciones"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_more_vert"
-                            android:padding="8dp"
-                            app:tint="@color/white"
-                            android:contentDescription="Opciones" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardControlesBuscador"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
-                app:strokeWidth="0dp"
-                app:layout_constraintTop_toBottomOf="@id/cardTituloDashboard"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/margen_pantalla"
+                android:paddingTop="10dp"
+                android:paddingBottom="@dimen/relleno_inferior_encabezado">
 
                 <LinearLayout
-                    android:id="@+id/llControlesBuscador"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="6dp"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="@color/purple_primary" />
-
-                    <EditText
-                        android:id="@+id/etBuscarProyecto"
+                    <include
+                        layout="@layout/fila_marca"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="6dp"
-                        android:background="@null"
-                        android:minHeight="44dp"
-                        android:hint="Buscar proyecto…"
-                        android:textColor="@color/gray_text"
-                        android:textColorHint="@color/gray_hint"
-                        android:inputType="textNoSuggestions"
-                        android:maxLines="1"
-                        android:textSize="15sp" />
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="24dp"
-                        android:background="#E8E8E8"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_height="48dp"
+                        android:layout_weight="1" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDireccionOrden"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="2dp"
-                        app:icon="@drawable/ic_flecha_abajo"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconSize="22dp"
-                        app:iconTint="@color/purple_primary"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTipoOrden"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:icon="@drawable/ic_ordenar"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconSize="22dp"
-                        app:iconTint="@color/purple_primary"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:insetLeft="0dp"
-                        android:insetRight="0dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp" />
-
-
+                        android:id="@+id/btnPapelera"
+                        style="@style/Widget.Mina.BotonIcono.Encabezado"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="Papelera"
+                        app:icon="@drawable/ic_papelera" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Texto.Encabezado.Titulo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:accessibilityHeading="true"
+                    android:text="Tus proyectos" />
+
+                <TextView
+                    android:id="@+id/tvResumenProyectos"
+                    style="@style/Texto.Encabezado.Subtitulo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Cargando proyectos…" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- White sheet over the header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="-24dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_hoja"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/llControlesBuscador"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginHorizontal="@dimen/margen_pantalla"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_buscador"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="2dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/tinta_suave" />
+
+                <EditText
+                    android:id="@+id/etBuscarProyecto"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:fontFamily="@font/nunito_semibold"
+                    android:hint="Buscar proyecto"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:inputType="textNoSuggestions"
+                    android:maxLines="1"
+                    android:textColor="@color/tinta"
+                    android:textColorHint="@color/tinta_suave"
+                    android:textSize="15sp" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="24dp"
+                    android:layout_marginHorizontal="4dp"
+                    android:background="@color/lavanda_borde" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDireccionOrden"
+                    style="@style/Widget.Mina.BotonIcono"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:contentDescription="Invertir el orden"
+                    app:icon="@drawable/ic_flecha_abajo" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTipoOrden"
+                    style="@style/Widget.Mina.BotonIcono"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:contentDescription="Ordenar por"
+                    app:icon="@drawable/ic_ordenar" />
+            </LinearLayout>
+
+            <!-- Folder filter: the purple pill slides behind the selected folder -->
             <FrameLayout
                 android:id="@+id/dockCarpetas"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_dock_carpetas"
-                android:paddingVertical="4dp"
-                android:clipToOutline="true"
-                app:layout_constraintTop_toBottomOf="@id/cardControlesBuscador"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:layout_marginTop="12dp">
 
                 <HorizontalScrollView
                     android:id="@+id/hsvCarpetas"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:scrollbars="none"
-                    android:paddingHorizontal="16dp"
-                    android:clipToPadding="false">
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="14dp"
+                    android:scrollbars="none">
 
                     <FrameLayout
                         android:layout_width="wrap_content"
@@ -193,46 +162,87 @@
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             android:background="@drawable/bg_selector_pildora"
-                            android:elevation="0dp"
                             android:visibility="invisible" />
 
                         <LinearLayout
                             android:id="@+id/llCarpetasDashboard"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:elevation="2dp" />
+                            android:orientation="horizontal" />
                     </FrameLayout>
                 </HorizontalScrollView>
             </FrameLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvProyectos"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"
-                android:clipToPadding="false"
-                app:layout_constraintTop_toBottomOf="@id/dockCarpetas"
-                app:layout_constraintBottom_toTopOf="@id/btnNuevoProyecto"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                tools:listitem="@layout/item_proyecto" />
+                android:layout_marginTop="6dp"
+                android:layout_weight="1">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnNuevoProyecto"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:text="Nuevo Proyecto"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:cornerRadius="32dp"
-                android:backgroundTint="@color/purple_primary"
-                android:elevation="8dp"
-                android:textColor="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvProyectos"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="@dimen/margen_pantalla"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="@dimen/espacio_lista_con_boton"
+                    tools:listitem="@layout/item_proyecto" />
+
+                <!-- No projects yet, or none match the search/folder -->
+                <LinearLayout
+                    android:id="@+id/llEstadoVacio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="40dp"
+                    android:paddingTop="40dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:background="@drawable/bg_circulo_lavanda">
+
+                        <ImageView
+                            android:id="@+id/ivEstadoVacio"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/img_todos" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvTituloVacio"
+                        style="@style/Texto.Titulo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:gravity="center"
+                        android:text="Aún no tienes proyectos" />
+
+                    <TextView
+                        android:id="@+id/tvMensajeVacio"
+                        style="@style/Texto.Suave"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="Toca «Nuevo proyecto» para hacer tu primera cotización." />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnNuevoProyecto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/margen_pantalla"
+        android:text="Nuevo proyecto"
+        app:icon="@drawable/ic_agregar" />
+
+</FrameLayout>

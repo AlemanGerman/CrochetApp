@@ -7,6 +7,9 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import com.example.calculadoracrochet.R
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -38,9 +41,30 @@ class PieChartView @JvmOverloads constructor(
 
     private val rectF = RectF()
 
-    fun setData(nuevosDatos: List<Slice>) {
+    private val pinturaTotal = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.tinta)
+        textAlign = Paint.Align.CENTER
+        typeface = ResourcesCompat.getFont(context, R.font.nunito_extrabold)
+    }
+    private val pinturaLeyenda = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.tinta_suave)
+        textAlign = Paint.Align.CENTER
+        typeface = ResourcesCompat.getFont(context, R.font.nunito_semibold)
+    }
+
+    /** Number written in the hole of the ring: the projects counted. */
+    private var totalCentro = 0
+
+    fun setData(nuevosDatos: List<Slice>, totalProyectos: Int = nuevosDatos.sumOf { it.cantidad }) {
+        totalCentro = totalProyectos
         slices.clear()
         slices.addAll(nuevosDatos.filter { it.cantidad > 0 })
+        val total = slices.sumOf { it.cantidad }
+        contentDescription = if (total == 0) {
+            "Sin proyectos en carpetas"
+        } else {
+            slices.joinToString(prefix = "Proyectos por carpeta: ") { "${it.nombre} ${it.porcentaje}%" }
+        }
         invalidate()
     }
 
@@ -68,13 +92,16 @@ class PieChartView @JvmOverloads constructor(
         val cy = h / 2f
 
         if (total == 0) {
-            arcPaint.color = Color.parseColor("#ECE6F0")
+            arcPaint.color = ContextCompat.getColor(context, R.color.lavanda)
             canvas.drawArc(rectF, 0f, 360f, false, arcPaint)
+            dibujarTotal(canvas, cx, cy, size, totalCentro)
             return
         }
 
         var startAngle = -90f
         slicePercentPaint.textSize = strokeWidth * 0.38f
+        slicePercentPaint.typeface = pinturaTotal.typeface
+        dibujarTotal(canvas, cx, cy, size, totalCentro)
         val arcRadius = (rectF.width() / 2f)
 
         slices.forEach { slice ->
@@ -97,5 +124,13 @@ class PieChartView @JvmOverloads constructor(
 
             startAngle += sweepAngle
         }
+    }
+
+    /** Projects counted, in the hole of the ring. */
+    private fun dibujarTotal(canvas: Canvas, cx: Float, cy: Float, size: Float, total: Int) {
+        pinturaTotal.textSize = size * 0.15f
+        pinturaLeyenda.textSize = size * 0.065f
+        canvas.drawText(total.toString(), cx, cy + pinturaTotal.textSize * 0.2f, pinturaTotal)
+        canvas.drawText(if (total == 1) "proyecto" else "proyectos", cx, cy + pinturaTotal.textSize * 0.2f + pinturaLeyenda.textSize * 1.5f, pinturaLeyenda)
     }
 }

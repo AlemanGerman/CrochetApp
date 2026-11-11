@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Switching main tabs: the new tab fades in while rising a little -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:duration="220">
+    <alpha android:fromAlpha="0" android:toAlpha="1" />
+    <translate android:fromYDelta="2%" android:toYDelta="0%" />
+</set>

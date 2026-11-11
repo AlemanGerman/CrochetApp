@@ -1,194 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_patron">
+    android:background="@color/fondo"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <include layout="@layout/encabezado_paso" />
+
+    <ScrollView
+        android:id="@+id/hojaPaso"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
 
-            <ScrollView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true"
-                android:scrollbars="none">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <TextView
+                        style="@style/Texto.Seccion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityHeading="true"
+                        android:text="¿De dónde salió el patrón?" />
+
+                    <TextView
+                        style="@style/Texto.Suave"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
-                        android:backgroundTint="@color/purple_primary"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginTop="4dp"
+                        android:text="Si lo compraste, su costo se reparte entre las piezas que tejas con él." />
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/tgComproPatron"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        app:checkedButton="@id/btnPatronNo"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPatronNo"
+                            style="@style/Widget.Mina.Segmento"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="24dp">
+                            android:layout_weight="1"
+                            android:text="Propio o gratis" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="El Patrón"
-                                android:textColor="@color/white"
-                                android:textSize="32sp"
-                                android:textStyle="bold"
-                                android:gravity="center"
-                                android:drawableStart="@drawable/ic_patron"
-                                android:drawablePadding="12dp"
-                                app:drawableTint="@color/white" />
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="¿Tú hiciste el patron o lo compraste? 🤨"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPatronSi"
+                            style="@style/Widget.Mina.Segmento"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Lo compré" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
                     <LinearLayout
+                        android:id="@+id/llCamposPatronComprado"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
                         android:orientation="vertical"
-                        android:gravity="center_vertical">
+                        android:visibility="gone">
 
-                        <com.google.android.material.card.MaterialCardView
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilCostoPatron"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="3dp"
-                            app:strokeColor="@color/purple_light"
-                            app:strokeWidth="1dp"
-                            android:backgroundTint="@color/white">
+                            android:hint="Costo del patrón"
+                            app:prefixText="$">
 
-                            <LinearLayout
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCostoPatron"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="20dp">
+                                android:imeOptions="actionNext"
+                                android:inputType="numberDecimal" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                                <com.google.android.material.button.MaterialButtonToggleGroup
-                                    android:id="@+id/tgComproPatron"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    app:singleSelection="true"
-                                    app:selectionRequired="true"
-                                    app:checkedButton="@+id/btnPatronNo"
-                                    android:layout_marginBottom="24dp">
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilNumeroMunecos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:hint="Piezas que tejerás con él"
+                            app:helperText="Por ejemplo: 3 si vas a tejer 3 muñecos iguales.">
 
-                                    <com.google.android.material.button.MaterialButton
-                                        android:id="@+id/btnPatronNo"
-                                        style="?attr/materialButtonOutlinedStyle"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="20"
-                                        android:text="Gratis/Propio"
-                                        android:textColor="@color/purple_primary"
-                                        app:strokeColor="@color/purple_primary"/>
-
-                                    <com.google.android.material.button.MaterialButton
-                                        android:id="@+id/btnPatronSi"
-                                        style="?attr/materialButtonOutlinedStyle"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="14"
-                                        android:text="Comprado"
-                                        android:textColor="@color/purple_primary"
-                                        app:strokeColor="@color/purple_primary"/>
-                                </com.google.android.material.button.MaterialButtonToggleGroup>
-
-                                <LinearLayout
-                                    android:id="@+id/llCamposPatronComprado"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="vertical"
-                                    android:visibility="gone">
-
-                                    <com.google.android.material.textfield.TextInputLayout
-                                        android:id="@+id/tilCostoPatron"
-                                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:hint="Costo del patrón ($)"
-                                        android:textColorHint="@color/gray_text"
-                                        app:hintTextColor="@color/purple_primary"
-                                        app:boxStrokeColor="@color/purple_primary"
-                                        app:startIconDrawable="@drawable/ic_dinero"
-                                        app:startIconTint="@color/purple_primary"
-                                        android:layout_marginBottom="16dp">
-
-                                        <com.google.android.material.textfield.TextInputEditText
-                                            android:id="@+id/etCostoPatron"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            android:textColor="@color/gray_text"
-                                            android:textColorHint="@color/gray_hint"
-                                            android:inputType="numberDecimal"/>
-                                    </com.google.android.material.textfield.TextInputLayout>
-
-                                    <com.google.android.material.textfield.TextInputLayout
-                                        android:id="@+id/tilNumeroMunecos"
-                                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:hint="Muñecos a tejer"
-                                        android:textColorHint="@color/gray_text"
-                                        app:hintTextColor="@color/purple_primary"
-                                        app:helperText="Divide el costo entre tus ventas estimadas."
-                                        app:boxStrokeColor="@color/purple_primary"
-                                        app:startIconDrawable="@drawable/ic_numbers"
-                                        app:startIconTint="@color/purple_primary">
-
-                                        <com.google.android.material.textfield.TextInputEditText
-                                            android:id="@+id/etNumeroMunecos"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            android:textColor="@color/gray_text"
-                                            android:textColorHint="@color/gray_hint"
-                                            android:inputType="numberDecimal"/>
-                                    </com.google.android.material.textfield.TextInputLayout>
-                                </LinearLayout>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etNumeroMunecos"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:imeOptions="actionDone"
+                                android:inputType="number" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
-
                 </LinearLayout>
-            </ScrollView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSiguientePatron"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="10dp"
-                android:text="Continuar"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/purple_primary"
-                app:cornerRadius="32dp"
-                android:elevation="8dp"/>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <include layout="@layout/barra_accion_paso" />
+</LinearLayout>

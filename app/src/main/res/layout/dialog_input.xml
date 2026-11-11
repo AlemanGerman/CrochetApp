@@ -1,76 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="24dp"
-    app:cardCornerRadius="28dp"
-    android:backgroundTint="@color/white">
+    android:background="@drawable/bg_dialogo"
+    android:gravity="start"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvTituloInput"
+        style="@style/Texto.Titulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:layout_marginTop="24dp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvTituloInput"
-            android:layout_width="match_parent"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelarInput"
+            style="@style/Widget.Mina.Boton.Texto"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
-            android:textColor="@color/purple_primary"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:text="Cancelar" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilInput"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarInput"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:textColorHint="@color/gray_text"
-            app:hintTextColor="@color/purple_primary"
-            app:boxStrokeColor="@color/purple_primary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/gray_text"
-                android:textColorHint="@color/gray_hint"
-                android:inputType="textCapSentences"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancelarInput"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Cancelar"
-                android:textColor="@color/purple_primary"
-                app:strokeColor="@color/purple_primary"
-                app:cornerRadius="28dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGuardarInput"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Guardar"
-                android:backgroundTint="@color/purple_primary"
-                android:textColor="@color/white"
-                app:cornerRadius="28dp"/>
-        </LinearLayout>
+            android:layout_marginStart="8dp"
+            android:text="Guardar" />
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</LinearLayout>

@@ -6,9 +6,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -16,13 +14,14 @@ import coil.load
 import coil.request.CachePolicy
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
+import com.example.calculadoracrochet.utils.CarpetasUi
 import com.example.calculadoracrochet.utils.ColorExtractorHelper
 import com.example.calculadoracrochet.utils.PreferenciasApp
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
@@ -43,41 +42,37 @@ class ProyectosAdapter(
         val tvPrecio: TextView = view.findViewById(R.id.tvPrecioProyecto)
         val tvFecha: TextView = view.findViewById(R.id.tvFecha)
         val ivImagen: ShapeableImageView = view.findViewById(R.id.ivImagenProyecto)
-        val llContenedorTags: LinearLayout = view.findViewById(R.id.llContenedorTags)
-        val btnAgregarCarpetaVacio: ImageButton = view.findViewById(R.id.btnAgregarCarpetaVacio)
-
         val cgCarpetasProyecto: ChipGroup = view.findViewById(R.id.cgCarpetasProyecto)
-        val btnEditarCarpeta: ImageButton = view.findViewById(R.id.btnEditarCarpeta)
+        val tvSinCarpeta: TextView = view.findViewById(R.id.tvSinCarpeta)
+        val btnEditarCarpeta: MaterialButton = view.findViewById(R.id.btnEditarCarpeta)
 
         var idProyectoActual: String? = null
     }
 
     private fun restablecerColorDefecto(holder: ProyectoViewHolder) {
         val context = holder.itemView.context
-        val purpleColor = ContextCompat.getColor(context, R.color.purple_primary)
-        val blanco = ContextCompat.getColor(context, R.color.white)
-        val colorStateBlanco = ColorStateList.valueOf(blanco)
-        holder.cardView.setCardBackgroundColor(colorStateBlanco)
-        holder.cardView.backgroundTintList = colorStateBlanco
-        holder.tvNombre.setTextColor(purpleColor)
-        holder.tvPrecio.setTextColor(ContextCompat.getColor(context, R.color.black))
-        holder.tvFecha.setTextColor(ContextCompat.getColor(context, R.color.gray_hint))
-        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(purpleColor)
-        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(purpleColor)
-        holder.cardView.invalidate()
+        val morado = ContextCompat.getColor(context, R.color.morado_fuerte)
+        val suave = ContextCompat.getColor(context, R.color.tinta_suave)
+        holder.cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+        holder.cardView.strokeColor = ContextCompat.getColor(context, R.color.lavanda_borde)
+        holder.tvNombre.setTextColor(ContextCompat.getColor(context, R.color.tinta))
+        holder.tvPrecio.setTextColor(morado)
+        holder.tvFecha.setTextColor(suave)
+        holder.tvSinCarpeta.setTextColor(suave)
+        holder.btnEditarCarpeta.iconTint = ColorStateList.valueOf(morado)
     }
 
     private fun aplicarColorDinamico(holder: ProyectoViewHolder, config: ColorExtractorHelper.ColorTarjetaConfig) {
-        val colorState = ColorStateList.valueOf(config.backgroundColor)
-        holder.cardView.setCardBackgroundColor(colorState)
-        holder.cardView.backgroundTintList = colorState
+        holder.cardView.setCardBackgroundColor(config.backgroundColor)
+        holder.cardView.strokeColor = Color.TRANSPARENT
         holder.tvNombre.setTextColor(config.textColorPrimario)
         holder.tvPrecio.setTextColor(config.textColorPrimario)
         holder.tvFecha.setTextColor(config.textColorSecundario)
-        holder.btnAgregarCarpetaVacio.imageTintList = ColorStateList.valueOf(config.iconTint)
-        holder.btnEditarCarpeta.imageTintList = ColorStateList.valueOf(config.iconTint)
-        holder.cardView.invalidate()
+        holder.tvSinCarpeta.setTextColor(config.textColorSecundario)
+        holder.btnEditarCarpeta.iconTint = ColorStateList.valueOf(config.iconTint)
     }
+
+    private val formatoFecha = SimpleDateFormat("dd MMM yyyy", LOCALE_MX)
 
     fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
         listaProyectos = nuevaLista
@@ -97,7 +92,6 @@ class ProyectosAdapter(
         holder.tvNombre.text = proyecto.nombre
         holder.tvPrecio.text = proyecto.precioFinal.comoDinero()
 
-        val formatoFecha = SimpleDateFormat("dd MMM yyyy", LOCALE_MX)
         holder.tvFecha.text = formatoFecha.format(Date(proyecto.fechaGuardado))
 
         val context = holder.itemView.context
@@ -164,9 +158,9 @@ class ProyectosAdapter(
             }
         } else {
             holder.ivImagen.scaleType = ImageView.ScaleType.FIT_CENTER
-            val paddingPx = (6 * holder.itemView.context.resources.displayMetrics.density).toInt()
+            val paddingPx = (12 * holder.itemView.context.resources.displayMetrics.density).toInt()
             holder.ivImagen.setPadding(paddingPx, paddingPx, paddingPx, paddingPx)
-            holder.ivImagen.setBackgroundColor(Color.parseColor("#F3E8FF"))
+            holder.ivImagen.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.lavanda))
             holder.ivImagen.imageTintList = null
 
             val iconoRes = if (proyecto.carpetas.size == 1) {
@@ -193,35 +187,15 @@ class ProyectosAdapter(
             onItemClick(proyecto)
         }
 
-        if (proyecto.carpetas.isEmpty()) {
-            holder.btnAgregarCarpetaVacio.visibility = View.VISIBLE
-            holder.llContenedorTags.visibility = View.GONE
-        } else {
-            holder.btnAgregarCarpetaVacio.visibility = View.GONE
-            holder.llContenedorTags.visibility = View.VISIBLE
-
-            holder.cgCarpetasProyecto.removeAllViews()
-
-            CarpetasConfig.listaCarpetas.forEach { info ->
-                if (info.nombre != "Todos" && proyecto.carpetas.contains(info.nombre)) {
-                    val chip = Chip(holder.itemView.context).apply {
-                        text = info.nombre
-                        isCheckable = false
-                        isClickable = false
-                        setChipBackgroundColorResource(info.colorRes)
-                        setTextColor(ContextCompat.getColor(context, info.textColorRes))
-                        setChipStrokeColorResource(info.colorRes)
-                        chipStrokeWidth = 1f * resources.displayMetrics.density
-                    }
-                    holder.cgCarpetasProyecto.addView(chip)
-                }
+        holder.cgCarpetasProyecto.removeAllViews()
+        CarpetasConfig.listaCarpetas.forEach { info ->
+            if (info.nombre != CarpetasConfig.CARPETA_TODOS && proyecto.carpetas.contains(info.nombre)) {
+                holder.cgCarpetasProyecto.addView(CarpetasUi.crearEtiqueta(holder.cgCarpetasProyecto, info))
             }
         }
-
-        holder.btnAgregarCarpetaVacio.setOnClickListener {
-            it.hapticSeleccion()
-            onEditCarpetaClick?.invoke(proyecto)
-        }
+        val sinCarpetas = holder.cgCarpetasProyecto.childCount == 0
+        holder.tvSinCarpeta.visibility = if (sinCarpetas) View.VISIBLE else View.GONE
+        (holder.cgCarpetasProyecto.parent as View).visibility = if (sinCarpetas) View.GONE else View.VISIBLE
 
         holder.btnEditarCarpeta.setOnClickListener {
             it.hapticSeleccion()
