@@ -12,8 +12,10 @@ import com.example.calculadoracrochet.data.ProyectosRepository
 import com.example.calculadoracrochet.data.esRemota
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.data.model.estaEnPapelera
+import com.example.calculadoracrochet.data.model.fotoParaLista
 import com.example.calculadoracrochet.ui.dashboard.CriterioOrden
 import com.example.calculadoracrochet.ui.dashboard.FiltroProyectos
+import com.example.calculadoracrochet.utils.ColorExtractorHelper
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
@@ -34,6 +36,7 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
     private val fotosRepo = FotosProyectoRepository(application)
 
     private var registroProyectos: ListenerRegistration? = null
+    private var coloresPodados = false
 
     val proyectosEnVivo = MutableLiveData<List<ProyectoCrochet>>()
     val historialProyectos = mutableListOf<ProyectoCrochet>()
@@ -92,6 +95,7 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
             historialProyectos.addAll(listaProcesada)
             publicarProyectos()
             precargarFotosFaltantes(listaProcesada)
+            podarColoresDeTarjetas(listaProcesada)
         }
     }
 
@@ -331,6 +335,13 @@ class ProyectosViewModel(application: Application) : AndroidViewModel(applicatio
         borrarFotosSiNoSeUsan(listOf(fotoAnterior), idsExcluidos = setOf(idProyecto))
 
         onComplete?.invoke(true)
+    }
+
+    /** Once per launch: forgets the card colors of photos no project shows anymore. */
+    private fun podarColoresDeTarjetas(proyectos: List<ProyectoCrochet>) {
+        if (coloresPodados || proyectos.isEmpty()) return
+        coloresPodados = true
+        ColorExtractorHelper.podarGuardados(proyectos.mapNotNull { it.fotoParaLista }.toSet())
     }
 
     private fun precargarFotosFaltantes(proyectos: List<ProyectoCrochet>) {

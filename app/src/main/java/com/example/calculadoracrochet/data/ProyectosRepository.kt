@@ -7,6 +7,8 @@ import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /** Single access point to the Firestore collection of projects. */
 class ProyectosRepository(
@@ -15,8 +17,15 @@ class ProyectosRepository(
 
     private val coleccion get() = db.collection(COLECCION)
 
-    fun escucharProyectos(onCambio: (List<ProyectoCrochet>) -> Unit): ListenerRegistration =
-        coleccion.addSnapshotListener { documentos, error ->
+    /**
+     * Documents are read and converted on a background thread (every change, even a folder edit,
+     * delivers the whole collection); [onCambio] still runs on the main thread, in order.
+     */
+    fun escucharProyectos(onCambio: (List<ProyectoCrochet>) -> Unit): ListenerRegistration {
+        val hiloPrincipal = Handler(Looper.getMainLooper())
+        var activo = true
+
+        val registro = coleccion.addSnapshotListener(EJECUTOR_LECTURA) { documentos, error ->
             if (error != null) {
                 Log.e(TAG, "Error al escuchar $COLECCION", error)
                 return@addSnapshotListener
@@ -32,8 +41,17 @@ class ProyectosRepository(
                 }
             }.sortedByDescending { it.fechaGuardado }
 
-            onCambio(listaProcesada)
+            hiloPrincipal.post {
+                if (activo) onCambio(listaProcesada)
+            }
         }
+
+        // Main thread only, like the delivery above: nothing is delivered once removed
+        return ListenerRegistration {
+            activo = false
+            registro.remove()
+        }
+    }
 
     fun guardar(proyecto: ProyectoCrochet, onResultado: (Boolean) -> Unit) {
         coleccion.document(proyecto.id).set(proyecto)
@@ -106,5 +124,10 @@ class ProyectosRepository(
         const val COLECCION = "proyectos_mina"
         private const val TAG = "Firebase"
         private const val ESPERA_CONFIRMACION_MS = 3_000L
+
+        /** One thread, so snapshots are processed in the order they arrive. */
+        private val EJECUTOR_LECTURA: Executor = Executors.newSingleThreadExecutor { tarea ->
+            Thread(tarea, "lectura-proyectos").apply { isDaemon = true }
+        }
     }
 }

@@ -8,6 +8,8 @@ import androidx.activity.OnBackPressedCallback
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import coil.load
@@ -23,12 +25,21 @@ import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.google.android.material.card.MaterialCardView
 import com.example.calculadoracrochet.utils.comoDinero
+import com.example.calculadoracrochet.utils.RevelarAlDesplazar
+import com.example.calculadoracrochet.utils.contarHasta
+import kotlin.math.roundToInt
 
 class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPrincipal {
 
     override val idPestana = R.id.nav_estadisticas
 
     private val viewModel: ProyectosViewModel by activityViewModels()
+
+    /** The folder rows come in only the first time they are built, not on every live update. */
+    private var filasAnimadas = false
+
+    /** Cards, chart and folder rows wait hidden until they scroll into sight. */
+    private var revelador: RevelarAlDesplazar? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,9 +56,39 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPr
             }
         })
 
+        filasAnimadas = false
+        prepararEntradaAlDesplazar(view)
+
         // Live: the numbers follow any project saved, edited or trashed meanwhile
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) { calcularYMostrarMetricas(view) }
-        calcularYMostrarMetricas(view)
+        // With a list already loaded the observer above delivers it as the screen starts; drawing it
+        // here too would build everything twice and cut the entrance animations short
+        if (viewModel.proyectosEnVivo.value == null) calcularYMostrarMetricas(view)
+    }
+
+    override fun onDestroyView() {
+        revelador = null
+        super.onDestroyView()
+    }
+
+    /**
+     * Each card of the sheet rises into place when it scrolls into sight (the ones on screen right
+     * away, as the tab opens), and the chart starts drawing itself when it is seen, not before.
+     */
+    private fun prepararEntradaAlDesplazar(view: View) {
+        val hoja = view.findViewById<ViewGroup>(R.id.hojaEstadisticas)
+        val contenido = hoja.getChildAt(0) as? ViewGroup ?: return
+        val revelar = RevelarAlDesplazar(hoja).also { revelador = it }
+
+        for (i in 0 until contenido.childCount) {
+            revelar.esperarSubiendo(contenido.getChildAt(i), retrasoExtra = RETRASO_INICIAL_MS)
+        }
+
+        val grafica = view.findViewById<PieChartView>(R.id.pieChartCarpetas)
+        grafica.esperarParaRevelar()
+        revelar.esperar(grafica, ocultar = {}, revelar = { v, retraso ->
+            v.postDelayed({ grafica.revelar() }, retraso + RETRASO_INICIAL_MS)
+        })
     }
 
     override fun alVolverAPulsar() {
@@ -62,12 +103,18 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPr
         )
 
         val totalProyectos = resumen.totalProyectos
-        rootView.findViewById<TextView>(R.id.tvNumeroProyectos)?.text =
-            if (totalProyectos == 1) "1 creación" else "$totalProyectos creaciones"
-        rootView.findViewById<TextView>(R.id.tvTotalVentas)?.text =
-            resumen.totalVentas.comoDinero()
-        rootView.findViewById<TextView>(R.id.tvPrecioPromedio)?.text =
-            if (totalProyectos > 0) (resumen.totalVentas / totalProyectos).comoDinero() else "—"
+        // The figures count up to their value (and from the old one to the new one when it changes)
+        rootView.findViewById<TextView>(R.id.tvNumeroProyectos)?.contarHasta(totalProyectos.toDouble()) {
+            val n = it.roundToInt()
+            if (n == 1) "1 creación" else "$n creaciones"
+        }
+        rootView.findViewById<TextView>(R.id.tvTotalVentas)?.contarHasta(resumen.totalVentas, duracion = 900L) {
+            it.comoDinero()
+        }
+        rootView.findViewById<TextView>(R.id.tvPrecioPromedio)?.let { tv ->
+            if (totalProyectos > 0) tv.contarHasta(resumen.totalVentas / totalProyectos, duracion = 900L) { it.comoDinero() }
+            else tv.text = "—"
+        }
 
         val masCostoso = resumen.masCostoso
         val masHoras = resumen.masHoras
@@ -125,8 +172,24 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPr
                 tvConteo?.text = if (conteo > 0) "$textoProyectos · $porcentaje%" else "Sin proyectos"
 
                 llCarpetas.addView(rowView)
+                if (!filasAnimadas) {
+                    // Slides in from the side when it scrolls into sight
+                    val desplazamiento = 28 * resources.displayMetrics.density
+                    revelador?.esperar(rowView, ocultar = {
+                        it.alpha = 0f
+                        it.translationX = desplazamiento
+                    }, revelar = { v, retraso ->
+                        v.animate().alpha(1f).translationX(0f)
+                            .setStartDelay(RETRASO_FILAS_MS + retraso)
+                            .setDuration(300L)
+                            .setInterpolator(DecelerateInterpolator(1.6f))
+                            .start()
+                    })
+                }
             }
         }
+
+        filasAnimadas = true
 
         val pieChart = rootView.findViewById<PieChartView>(R.id.pieChartCarpetas)
         pieChart?.setData(listaSlices, totalProyectos)
@@ -177,5 +240,13 @@ class EstadisticasFragment : Fragment(R.layout.fragment_estadisticas), PestanaPr
             iv.setPadding(0, 0, 0, 0)
             iv.imageTintList = null
         }
+    }
+
+    private companion object {
+        /** Lets the tab finish fading in before the first cards rise. */
+        const val RETRASO_INICIAL_MS = 60L
+
+        /** The rows follow their card, which rises first. */
+        const val RETRASO_FILAS_MS = 140L
     }
 }

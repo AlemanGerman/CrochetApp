@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TextView.contarHasta: last value counted to and the animator counting -->
+    <item name="tag_valor_contador" type="id" />
+    <item name="tag_animador_contador" type="id" />
+</resources>

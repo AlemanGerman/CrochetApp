@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.CachePolicy
@@ -26,13 +27,37 @@ class PapeleraAdapter(
     private val onEliminarIndividual: (ProyectoCrochet) -> Unit
 ) : RecyclerView.Adapter<PapeleraAdapter.PapeleraViewHolder>() {
 
-    val seleccionados = mutableSetOf<ProyectoCrochet>()
+    /** Selected by id: every update from Firestore brings new copies of the projects. */
+    private val idsSeleccionados = mutableSetOf<String>()
 
+    /** What each row showed, to tell which rows changed when the list is replaced. */
+    private var vistos: List<Fila> = lista.map(::Fila)
+
+    private data class Fila(val id: String, val nombre: String, val foto: String?, val fechaEliminado: Long?) {
+        constructor(p: ProyectoCrochet) : this(p.id, p.nombre, p.fotoMiniaturaUri ?: p.fotoUri, p.fechaEliminado)
+    }
+
+    val seleccionados: List<ProyectoCrochet>
+        get() = lista.filter { it.id in idsSeleccionados }
+
+    /**
+     * Rows restored or deleted slide away and the others close the gap, instead of the whole list
+     * redrawing. The selection keeps the projects still in the trash.
+     */
     fun actualizarLista(nuevaLista: List<ProyectoCrochet>) {
+        val nuevos = nuevaLista.map(::Fila)
+        val anteriores = vistos
+        val diferencias = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = anteriores.size
+            override fun getNewListSize() = nuevos.size
+            override fun areItemsTheSame(viejo: Int, nuevo: Int) = anteriores[viejo].id == nuevos[nuevo].id
+            override fun areContentsTheSame(viejo: Int, nuevo: Int) = anteriores[viejo] == nuevos[nuevo]
+        })
         lista = nuevaLista
-        seleccionados.clear()
-        notifyDataSetChanged()
-        onSeleccionCambiada(0)
+        vistos = nuevos
+        idsSeleccionados.retainAll(nuevos.map { it.id }.toSet())
+        diferencias.dispatchUpdatesTo(this)
+        onSeleccionCambiada(idsSeleccionados.size)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PapeleraViewHolder {
@@ -67,7 +92,7 @@ class PapeleraAdapter(
                 ivFoto.imageTintList = null
                 ivFoto.setBackgroundColor(Color.TRANSPARENT)
                 ivFoto.load(fotoParaPapelera) {
-                    crossfade(false)
+                    crossfade(160)
                     memoryCachePolicy(CachePolicy.ENABLED)
                     diskCachePolicy(CachePolicy.ENABLED)
                     networkCachePolicy(CachePolicy.ENABLED)
@@ -103,12 +128,12 @@ class PapeleraAdapter(
             }
 
             cbSeleccion.setOnCheckedChangeListener(null)
-            cbSeleccion.isChecked = seleccionados.contains(item)
+            cbSeleccion.isChecked = item.id in idsSeleccionados
 
             cbSeleccion.setOnCheckedChangeListener { _, isChecked ->
                 cbSeleccion.hapticSeleccion()
-                if (isChecked) seleccionados.add(item) else seleccionados.remove(item)
-                onSeleccionCambiada(seleccionados.size)
+                if (isChecked) idsSeleccionados.add(item.id) else idsSeleccionados.remove(item.id)
+                onSeleccionCambiada(idsSeleccionados.size)
             }
 
             itemView.setOnClickListener {

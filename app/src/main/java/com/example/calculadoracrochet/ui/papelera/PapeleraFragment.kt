@@ -2,6 +2,7 @@ package com.example.calculadoracrochet.ui.papelera
 
 import android.os.Bundle
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -14,6 +15,7 @@ import com.example.calculadoracrochet.utils.margenSobreBarraDeNavegacion
 import com.example.calculadoracrochet.utils.rellenarBajoBarraDeEstado
 import com.example.calculadoracrochet.utils.rellenarSobreBarraDeNavegacion
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.fundirVisibilidad
 import com.example.calculadoracrochet.utils.HapticHelper
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticEliminar
@@ -25,9 +27,11 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
 
     private val viewModel: ProyectosViewModel by activityViewModels()
     private lateinit var adapter: PapeleraAdapter
+    private var barraAccionesVisible = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        barraAccionesVisible = false
 
         val cardAcciones = view.findViewById<MaterialCardView>(R.id.cardAccionesSeleccion)
         val tvConteo = view.findViewById<TextView>(R.id.tvConteoSeleccionados)
@@ -45,16 +49,26 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
             lista = viewModel.papeleraProyectos,
             onSeleccionCambiada = { totalSeleccionados ->
                 if (totalSeleccionados > 0) {
-                    if (cardAcciones.visibility != View.VISIBLE) {
+                    if (!barraAccionesVisible) {
+                        barraAccionesVisible = true
+                        cardAcciones.animate().cancel()
                         cardAcciones.visibility = View.VISIBLE
                         cardAcciones.translationY = 40f * resources.displayMetrics.density
                         cardAcciones.alpha = 0f
-                        cardAcciones.animate().translationY(0f).alpha(1f).setDuration(200L).start()
+                        cardAcciones.animate().translationY(0f).alpha(1f).setDuration(240L)
+                            .setInterpolator(OvershootInterpolator(1.2f)).start()
                     }
                     tvConteo.text = if (totalSeleccionados == 1) "1 seleccionado" else "$totalSeleccionados seleccionados"
-                } else {
+                } else if (barraAccionesVisible) {
+                    // Slides back down instead of vanishing
+                    barraAccionesVisible = false
                     cardAcciones.animate().cancel()
-                    cardAcciones.visibility = View.GONE
+                    cardAcciones.animate()
+                        .translationY(40f * resources.displayMetrics.density)
+                        .alpha(0f)
+                        .setDuration(160L)
+                        .withEndAction { cardAcciones.visibility = View.GONE }
+                        .start()
                 }
             },
             onRestaurarIndividual = { proyecto ->
@@ -180,7 +194,10 @@ class PapeleraFragment : Fragment(R.layout.fragment_papelera) {
     private fun actualizarVista(llVacio: View) {
         val lista = viewModel.papeleraProyectos
         adapter.actualizarLista(lista)
-        llVacio.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
-        view?.findViewById<View>(R.id.btnVaciarPapelera)?.visibility = if (lista.isEmpty()) View.INVISIBLE else View.VISIBLE
+        llVacio.fundirVisibilidad(lista.isEmpty())
+        view?.findViewById<View>(R.id.btnVaciarPapelera)?.apply {
+            isEnabled = lista.isNotEmpty()
+            animate().alpha(if (lista.isEmpty()) 0f else 1f).setDuration(180L).start()
+        }
     }
 }

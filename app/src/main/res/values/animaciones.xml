@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Crochet hook transition: the hook animation lasts 1000 ms / VELOCIDAD_GANCHILLO (1.4) = 714 ms
+         and starts together with the screen animations (MainActivity.animarGanchillo). The screen starts
+         moving when the hook grabs the yarn and arrives when the yarn leaves the screen. -->
+    <integer name="retraso_tironeo">430</integer>
+    <integer name="duracion_tironeo">290</integer>
+
+    <!-- Every dialog built by DialogUtils.crearDialogBase -->
+    <style name="AnimacionDialogo">
+        <item name="android:windowEnterAnimation">@anim/dialogo_entrada</item>
+        <item name="android:windowExitAnimation">@anim/dialogo_salida</item>
+    </style>
+</resources>

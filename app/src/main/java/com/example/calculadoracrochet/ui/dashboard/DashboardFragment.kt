@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.OvershootInterpolator
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.PopupWindow
@@ -22,6 +23,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.data.model.ProyectoCrochet
@@ -34,6 +36,10 @@ import com.example.calculadoracrochet.ui.comun.FondoPatronView
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.CarpetasUi
 import com.example.calculadoracrochet.utils.DialogUtils
+import com.example.calculadoracrochet.utils.PreferenciasApp
+import com.example.calculadoracrochet.utils.animarEntradaEnCascada
+import com.example.calculadoracrochet.utils.fundirVisibilidad
+import com.example.calculadoracrochet.utils.rebotar
 import com.example.calculadoracrochet.utils.comoDinero
 import com.example.calculadoracrochet.utils.hapticClickPrincipal
 import com.example.calculadoracrochet.utils.hapticSeleccion
@@ -56,6 +62,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
     private lateinit var adapter: ProyectosAdapter
     private lateinit var detalleDialog: DetalleProyectoDialog
     private var dockCarpetas: DockCarpetasController? = null
+
+    private var animadorLista: RecyclerView.ItemAnimator? = null
+    private val busquedaPendiente = Runnable { filtrarYOrdenarLista() }
 
     private var proyectoEditando: ProyectoCrochet? = null
     private var vistaFotoEnEdicion: WeakReference<ImageView>? = null
@@ -104,7 +113,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
     override fun onResume() {
         super.onResume()
         if (::adapter.isInitialized) {
-            adapter.notifyDataSetChanged()
+            // Only repaints when the setting was changed in Ajustes meanwhile
+            adapter.cambiarColorDinamico(PreferenciasApp.isColorDinamicoTarjetasActivo(requireContext()))
         }
     }
 
@@ -125,11 +135,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvProyectos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ProyectosAdapter(
-            listaProyectos = emptyList(),
             onItemClick = { proyecto -> detalleDialog.mostrar(proyecto) },
             onEditCarpetaClick = { proyecto -> mostrarModalCarpetas(proyecto) }
         )
+        adapter.cambiarColorDinamico(PreferenciasApp.isColorDinamicoTarjetasActivo(requireContext()))
         recyclerView.adapter = adapter
+        // A card whose content changed repaints in place (its color glides) instead of cross-fading with a copy
+        (recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+        animadorLista = recyclerView.itemAnimator
 
         // The floating button tucks its label away while the list scrolls down
         val btnNuevo = view.findViewById<ExtendedFloatingActionButton>(R.id.btnNuevoProyecto)
@@ -140,15 +153,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
             }
         })
 
+        // The first list (opening the app, coming back from another tab) cascades in; later changes animate row by row
+        var primeraLista = true
         viewModel.proyectosEnVivo.observe(viewLifecycleOwner) {
-            filtrarYOrdenarLista()
+            filtrarYOrdenarLista(cascada = primeraLista)
+            primeraLista = false
         }
 
         val etBuscar = view.findViewById<EditText>(R.id.etBuscarProyecto)
         etBuscar.setText(viewModel.filtroDashboard.textoBusqueda)
         etBuscar.doAfterTextChanged {
             viewModel.filtroDashboard = viewModel.filtroDashboard.copy(textoBusqueda = it?.toString().orEmpty())
-            filtrarYOrdenarLista()
+            // Waits for a pause in typing instead of filtering on every letter
+            etBuscar.removeCallbacks(busquedaPendiente)
+            etBuscar.postDelayed(busquedaPendiente, ESPERA_BUSQUEDA_MS)
         }
 
         view.findViewById<MaterialButton>(R.id.btnTipoOrden).setOnClickListener { vistaBoton ->
@@ -195,10 +213,22 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
             }
         }
 
-        filtrarYOrdenarLista()
+        if (viewModel.proyectosEnVivo.value == null) filtrarYOrdenarLista()
+
+        if (savedInstanceState == null) {
+            // The button pops in once the screen is there
+            btnNuevo.scaleX = 0.6f
+            btnNuevo.scaleY = 0.6f
+            btnNuevo.alpha = 0f
+            btnNuevo.animate().scaleX(1f).scaleY(1f).alpha(1f)
+                .setStartDelay(160L).setDuration(320L)
+                .setInterpolator(OvershootInterpolator(1.6f))
+                .start()
+        }
     }
 
     override fun onDestroyView() {
+        view?.findViewById<View>(R.id.etBuscarProyecto)?.removeCallbacks(busquedaPendiente)
         dockCarpetas?.cancelarAnimaciones()
         dockCarpetas = null
         super.onDestroyView()
@@ -239,7 +269,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
         pickMedia.launch(PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly).build())
     }
 
-    private fun filtrarYOrdenarLista() {
+    /** [cascada]: the whole list was replaced (folder, order), so the rows come in one after the other. */
+    private fun filtrarYOrdenarLista(cascada: Boolean = false) {
         val vista = view ?: return
         val filtro = viewModel.filtroDashboard
         val lista = FiltroProyectos.aplicar(
@@ -249,7 +280,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
             criterio = filtro.criterio,
             descendente = filtro.descendente
         )
-        adapter.actualizarLista(lista)
+        val recyclerView = vista.findViewById<RecyclerView>(R.id.rvProyectos)
+        if (cascada && lista.isNotEmpty()) {
+            // Row by row animations would fight with the cascade
+            recyclerView.itemAnimator = null
+            adapter.enviarProyectos(lista) {
+                if (view == null) return@enviarProyectos
+                recyclerView.scrollToPosition(0)
+                recyclerView.animarEntradaEnCascada {
+                    if (view != null) recyclerView.itemAnimator = animadorLista
+                }
+            }
+        } else {
+            adapter.enviarProyectos(lista)
+        }
 
         val cargado = viewModel.proyectosEnVivo.value != null
         val activos = viewModel.proyectosActivos
@@ -263,7 +307,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
         }
 
         val llVacio = vista.findViewById<View>(R.id.llEstadoVacio)
-        llVacio.visibility = if (cargado && lista.isEmpty()) View.VISIBLE else View.GONE
+        val mostrarVacio = cargado && lista.isEmpty()
+        if (mostrarVacio && llVacio.visibility != View.VISIBLE) {
+            vista.findViewById<View>(R.id.ivEstadoVacio).rebotar(1.18f)
+        }
+        llVacio.fundirVisibilidad(mostrarVacio)
         if (lista.isEmpty()) {
             val sinProyectos = activos.isEmpty()
             vista.findViewById<TextView>(R.id.tvTituloVacio).text =
@@ -275,8 +323,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
     }
 
     private fun refrescarYSubir() {
-        filtrarYOrdenarLista()
-        view?.findViewById<RecyclerView>(R.id.rvProyectos)?.smoothScrollToPosition(0)
+        filtrarYOrdenarLista(cascada = true)
     }
 
     private fun actualizarRotacionFlecha(animar: Boolean = true) {
@@ -371,5 +418,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), PestanaPrincipa
         }
 
         dialog.show()
+    }
+
+    private companion object {
+        const val ESPERA_BUSQUEDA_MS = 220L
     }
 }
