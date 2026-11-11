@@ -55,6 +55,33 @@
                 android:text="Añadir estambre"
                 app:icon="@drawable/ic_agregar" />
 
+            <!-- Saved yarns (Ajustes › Mis materiales): one tap fills a row; a hint when there are none -->
+            <TextView
+                android:id="@+id/tvRapidoEstambres"
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Añadir rápido" />
+
+            <HorizontalScrollView
+                android:id="@+id/hsvRapidoEstambres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="-20dp"
+                android:layout_marginTop="4dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="20dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cgRapidoEstambres"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
             <TextView
                 style="@style/Texto.Seccion"
                 android:layout_width="wrap_content"
@@ -84,6 +111,33 @@
                 android:layout_height="wrap_content"
                 android:text="Añadir accesorio"
                 app:icon="@drawable/ic_agregar" />
+
+            <!-- Saved accessories: one tap adds the row -->
+            <TextView
+                android:id="@+id/tvRapidoAccesorios"
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Añadir rápido" />
+
+            <HorizontalScrollView
+                android:id="@+id/hsvRapidoAccesorios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="-20dp"
+                android:layout_marginTop="4dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="20dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cgRapidoAccesorios"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
         </LinearLayout>
     </ScrollView>
 

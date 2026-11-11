@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.example.calculadoracrochet.ui.comun.FondoPatronView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:patron="@drawable/encabezado_materiales" />
+
+        <LinearLayout
+            android:id="@+id/contenidoEncabezado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="10dp"
+            android:paddingBottom="@dimen/relleno_inferior_encabezado">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVolverMisMateriales"
+                style="@style/Widget.Mina.BotonIcono.Encabezado"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="2dp"
+                android:contentDescription="Volver"
+                app:icon="@drawable/ic_flecha_atras" />
+
+            <TextView
+                style="@style/Texto.Encabezado.Titulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:accessibilityHeading="true"
+                android:text="Mis materiales" />
+
+            <TextView
+                style="@style/Texto.Encabezado.Subtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Añádelos a un proyecto con un toque" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/hojaMisMateriales"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="-24dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_hoja"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/margen_pantalla"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                style="@style/Texto.Seccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:text="Estambres" />
+
+            <TextView
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Los que compras seguido: solo tendrás que poner los gramos usados." />
+
+            <LinearLayout
+                android:id="@+id/llEstambresFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvSinEstambres"
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_bloque_lavanda"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="Aún no guardas estambres."
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNuevoEstambreFavorito"
+                style="@style/Widget.Mina.Boton.Tonal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Añadir estambre"
+                app:icon="@drawable/ic_agregar" />
+
+            <TextView
+                style="@style/Texto.Seccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:accessibilityHeading="true"
+                android:text="Accesorios" />
+
+            <TextView
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Relleno, ojos, argollas… por pieza o por la parte que uses del paquete." />
+
+            <LinearLayout
+                android:id="@+id/llAccesoriosFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvSinAccesorios"
+                style="@style/Texto.Suave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_bloque_lavanda"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="Aún no guardas accesorios."
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNuevoAccesorioFavorito"
+                style="@style/Widget.Mina.Boton.Tonal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Añadir accesorio"
+                app:icon="@drawable/ic_agregar" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

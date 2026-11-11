@@ -8,11 +8,20 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.example.calculadoracrochet.utils.rebotar
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.data.AccesorioFavorito
+import com.example.calculadoracrochet.data.EstambreFavorito
+import com.example.calculadoracrochet.data.MaterialesFavoritosRepository
 import com.example.calculadoracrochet.ui.MainActivity
 import com.example.calculadoracrochet.ui.PantallaConGanchillo
 import com.example.calculadoracrochet.utils.DialogUtils
@@ -107,6 +116,20 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales), PantallaConGa
             it.hapticClickPrincipal()
             agregarFilaEstambre(llContenedorEstambres, "", "", "", "")
         }
+
+        val estambresFavoritos = MaterialesFavoritosRepository.estambres(requireContext())
+        ponerChipsRapidos(
+            view, R.id.tvRapidoEstambres, R.id.hsvRapidoEstambres, R.id.cgRapidoEstambres,
+            etiquetas = estambresFavoritos.map { it.etiqueta },
+            pista = "Guarda tus estambres en Ajustes › Mis materiales para añadirlos con un toque."
+        ) { i -> agregarEstambreRapido(llContenedorEstambres, estambresFavoritos[i]) }
+
+        val accesoriosFavoritos = MaterialesFavoritosRepository.accesorios(requireContext())
+        ponerChipsRapidos(
+            view, R.id.tvRapidoAccesorios, R.id.hsvRapidoAccesorios, R.id.cgRapidoAccesorios,
+            etiquetas = accesoriosFavoritos.map { it.etiqueta },
+            pista = "Guarda relleno, ojos y más en Ajustes › Mis materiales para añadirlos con un toque."
+        ) { i -> agregarAccesorioRapido(llContenedorExtra, accesoriosFavoritos[i]) }
 
         view.findViewById<View>(R.id.btnAnadirMaterial).setOnClickListener {
             it.hapticClickPrincipal()
@@ -319,6 +342,99 @@ class MaterialesFragment : Fragment(R.layout.fragment_materiales), PantallaConGa
         }
         seguirCosto(vistaFila, etCosto, etTotales, etUsados)
         ponerFila(contenedor, vistaFila, animar)
+    }
+
+    /**
+     * One chip per saved yarn/accessory under its section; [alTocar] gets the chip's index. Without
+     * saved ones the row is hidden and the label becomes a hint pointing to Ajustes.
+     */
+    private fun ponerChipsRapidos(
+        vista: View,
+        idEtiqueta: Int,
+        idDesplazable: Int,
+        idGrupo: Int,
+        etiquetas: List<String>,
+        pista: String,
+        alTocar: (Int) -> Unit
+    ) {
+        val tvEtiqueta = vista.findViewById<TextView>(idEtiqueta)
+        val desplazable = vista.findViewById<View>(idDesplazable)
+        val grupo = vista.findViewById<ChipGroup>(idGrupo)
+        if (etiquetas.isEmpty()) {
+            tvEtiqueta.text = pista
+            tvEtiqueta.textSize = 13f
+            desplazable.visibility = View.GONE
+            return
+        }
+        val inflater = LayoutInflater.from(requireContext())
+        etiquetas.forEachIndexed { i, etiqueta ->
+            val chip = inflater.inflate(R.layout.chip_carpeta, grupo, false) as Chip
+            chip.text = etiqueta
+            chip.isCheckable = false
+            chip.setChipIconResource(R.drawable.ic_agregar)
+            chip.chipIconSize = 18 * resources.displayMetrics.density
+            chip.chipIconTint = ContextCompat.getColorStateList(requireContext(), R.color.morado_fuerte)
+            chip.contentDescription = "Añadir $etiqueta"
+            chip.setOnClickListener {
+                it.hapticClickPrincipal()
+                it.rebotar(1.06f)
+                alTocar(i)
+            }
+            grupo.addView(chip)
+        }
+    }
+
+    /**
+     * Fills the first empty yarn row with [estambre] (or adds a row when none is empty) and puts the
+     * cursor in its grams used, the only field left.
+     */
+    private fun agregarEstambreRapido(contenedor: LinearLayout, estambre: EstambreFavorito) {
+        val campos = listOf(R.id.etNombreEstambre, R.id.etCostoMadeja, R.id.etGramosTotales, R.id.etGramosUsados)
+        val vacia = (0 until contenedor.childCount).map { contenedor.getChildAt(it) }
+            .firstOrNull { fila -> campos.all { fila.findViewById<EditText>(it).text.isNullOrBlank() } }
+
+        val fila = if (vacia != null) {
+            vacia.findViewById<EditText>(R.id.etNombreEstambre).setText(estambre.nombre)
+            vacia.findViewById<EditText>(R.id.etCostoMadeja).setText(estambre.costoMadeja.comoTextoEditable())
+            vacia.findViewById<EditText>(R.id.etGramosTotales).setText(estambre.gramosMadeja.comoTextoEditable())
+            vacia.rebotar(1.03f)
+            vacia
+        } else {
+            agregarFilaEstambre(
+                contenedor,
+                estambre.nombre,
+                estambre.costoMadeja.comoTextoEditable(),
+                estambre.gramosMadeja.comoTextoEditable(),
+                ""
+            )
+            contenedor.getChildAt(contenedor.childCount - 1)
+        }
+        enfocar(fila.findViewById(R.id.etGramosUsados))
+    }
+
+    /**
+     * A per-piece accessory is added complete; one charged by package is added with the package
+     * filled in and the cursor in the amount used.
+     */
+    private fun agregarAccesorioRapido(contenedor: LinearLayout, accesorio: AccesorioFavorito) {
+        if (accesorio.porCantidad) {
+            agregarFilaAccesorioCalculado(
+                contenedor,
+                accesorio.nombre,
+                accesorio.costo.comoTextoEditable(),
+                accesorio.cantidadPaquete!!.comoTextoEditable()
+            )
+            enfocar(contenedor.getChildAt(contenedor.childCount - 1).findViewById(R.id.etCantidadUsadaAcc))
+        } else {
+            agregarFilaMaterial(contenedor, accesorio.nombre, accesorio.costo.comoTextoEditable())
+        }
+    }
+
+    private fun enfocar(campo: EditText) {
+        campo.post {
+            campo.requestFocus()
+            ViewCompat.getWindowInsetsController(campo)?.show(WindowInsetsCompat.Type.ime())
+        }
     }
 
     private fun agregarFilaMaterial(contenedor: LinearLayout, nombre: String, costo: String, animar: Boolean = true) {

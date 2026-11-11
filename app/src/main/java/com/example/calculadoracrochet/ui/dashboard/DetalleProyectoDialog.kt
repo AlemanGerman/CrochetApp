@@ -47,7 +47,8 @@ class DetalleProyectoDialog(
 
     private val formatoFecha = SimpleDateFormat("dd 'de' MMMM, yyyy", LOCALE_MX)
 
-    fun mostrar(proyecto: ProyectoCrochet) {
+    /** [fotoTarjeta]: the photo of the card that was tapped, which flies into the sheet. */
+    fun mostrar(proyecto: ProyectoCrochet, fotoTarjeta: ImageView? = null) {
         val contexto = fragment.requireContext()
         val dialog = BottomSheetDialog(contexto)
         val dialogView = LayoutInflater.from(contexto).inflate(R.layout.dialog_detalle_proyecto, null)
@@ -65,6 +66,12 @@ class DetalleProyectoDialog(
         configurarDesglose(dialogView, proyecto)
         configurarAcciones(dialogView, dialog, proyecto)
 
+        EntradaHojaConFoto(
+            dialog = dialog,
+            origen = fotoTarjeta?.takeIf { proyecto.tieneFoto },
+            destino = dialogView.findViewById(R.id.cvDetalleFotoContenedor),
+            apareceAlFinal = dialogView.findViewById(R.id.btnEditarFotoDetalle)
+        ).preparar()
         dialog.show()
     }
 
@@ -211,9 +218,10 @@ class DetalleProyectoDialog(
     }
 
     private fun configurarAcciones(dialogView: View, dialog: BottomSheetDialog, proyecto: ProyectoCrochet) {
+        // cancel(), not dismiss(): only cancel() slides the sheet down (dismissWithAnimation)
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleCerrar).setOnClickListener {
             it.hapticClickPrincipal()
-            dialog.dismiss()
+            dialog.cancel()
         }
 
         dialogView.findViewById<MaterialButton>(R.id.btnDetalleEliminar).setOnClickListener {
@@ -228,7 +236,7 @@ class DetalleProyectoDialog(
                 viewModel.moverAPapelera(proyecto) { movido ->
                     if (!fragment.isAdded) return@moverAPapelera
                     if (movido) {
-                        dialog.dismiss()
+                        dialog.cancel()
                         onProyectoModificado()
                         Toast.makeText(fragment.requireContext(), "Proyecto enviado a la papelera", Toast.LENGTH_SHORT).show()
                     } else {
@@ -240,7 +248,7 @@ class DetalleProyectoDialog(
 
         fun abrirEnCalculadora(esDuplicado: Boolean) {
             calculadoraViewModel.cargarProyectoParaEdicion(proyecto, esDuplicado)
-            dialog.dismiss()
+            dialog.cancel()
             (fragment.requireActivity() as MainActivity).navegarConGanchillo(MaterialesFragment())
         }
 
