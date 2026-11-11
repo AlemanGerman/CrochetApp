@@ -1,0 +1,4 @@
+# Startup profile: the app's own code is compiled ahead of time when it is installed, instead of
+# being interpreted and JIT-compiled the first times each screen opens. Libraries ship their own.
+HSPLcom/example/calculadoracrochet/**;->**(**)**
+Lcom/example/calculadoracrochet/**;

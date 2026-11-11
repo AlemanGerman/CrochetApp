@@ -5,9 +5,17 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import com.example.calculadoracrochet.utils.ColorExtractorHelper
 import java.io.File
 
 class CrochetApplication : Application(), ImageLoaderFactory {
+
+    override fun onCreate() {
+        super.onCreate()
+        // Loads the saved card colors while the splash is showing
+        ColorExtractorHelper.inicializar(this)
+    }
+
     override fun newImageLoader(): ImageLoader {
         val cacheFolder = File(filesDir, "coil_fotos")
         val oldCacheFolder = File(cacheDir, "coil_fotos")

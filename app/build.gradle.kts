@@ -23,9 +23,15 @@ android {
 
     buildTypes {
         release {
+            // R8 shrinks and optimizes the code: the release build starts and scrolls noticeably
+            // faster than the debug one Android Studio installs by default
             optimization {
-                enable = false
+                enable = true
             }
+            // The app is installed straight on the phone (it is not on Play): signing with the debug
+            // key lets the release build install over the debug one and keep its data.
+            // Replace it with a real key before publishing anywhere.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -52,6 +58,10 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.9.1")
     implementation("androidx.palette:palette-ktx:1.0.0")
     implementation("io.coil-kt:coil:2.7.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("androidx.transition:transition:1.5.0")
+    // Applies the startup profile (src/main/baseline-prof.txt) when the APK is installed directly
+    implementation("androidx.profileinstaller:profileinstaller:1.4.0")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)

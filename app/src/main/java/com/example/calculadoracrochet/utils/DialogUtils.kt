@@ -39,6 +39,7 @@ object DialogUtils {
         val view = LayoutInflater.from(context).inflate(layoutResId, null)
         val dialog = AlertDialog.Builder(context).setView(view).create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setWindowAnimations(R.style.AnimacionDialogo)
         return Pair(dialog, view)
     }
 

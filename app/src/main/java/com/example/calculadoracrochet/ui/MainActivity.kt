@@ -1,28 +1,37 @@
 package com.example.calculadoracrochet.ui
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
+import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
 import com.airbnb.lottie.LottieAnimationView
 import com.example.calculadoracrochet.R
+import com.example.calculadoracrochet.data.model.ProyectoCrochet
 import com.example.calculadoracrochet.ui.configuracion.ConfiguracionFragment
 import com.example.calculadoracrochet.ui.dashboard.DashboardFragment
 import com.example.calculadoracrochet.ui.estadisticas.EstadisticasFragment
 import com.example.calculadoracrochet.ui.papelera.PapeleraFragment
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.rebotar
+import com.example.calculadoracrochet.viewmodel.ProyectosViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /** A main tab (Proyectos, Estadísticas, Ajustes): the bottom bar shows while it is on screen. */
@@ -38,10 +47,14 @@ interface PantallaConGanchillo
 
 class MainActivity : AppCompatActivity() {
 
+    private val proyectosViewModel: ProyectosViewModel by viewModels()
+
     private var estaListo = false
     private lateinit var lottieGanchillo: LottieAnimationView
     private lateinit var barraNavegacion: BottomNavigationView
     private var estaNavegando = false
+    private var navegacionPendiente: (() -> Unit)? = null
+    private val manejador = Handler(Looper.getMainLooper())
 
     /** Set while the bar is checked by code, so it does not navigate again. */
     private var sincronizandoBarra = false
@@ -58,29 +71,85 @@ class MainActivity : AppCompatActivity() {
 
         lottieGanchillo = findViewById(R.id.lottieGanchillo)
         lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+        lottieGanchillo.speed = VELOCIDAD_GANCHILLO
         lottieGanchillo.progress = 0f
         lottieGanchillo.visibility = View.VISIBLE
 
-        configurarSplash(splashScreen)
+        configurarSplash(splashScreen, recreada = savedInstanceState != null)
         configurarBarraNavegacion()
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
+                .setReorderingAllowed(true)
                 .replace(R.id.fragmentContainer, DashboardFragment())
                 .commit()
         }
     }
 
-    private fun configurarSplash(splashScreen: androidx.core.splashscreen.SplashScreen) {
+    /**
+     * The splash stays until the first list of projects arrives, so the dashboard is not revealed
+     * empty, but never less than [SPLASH_MINIMO_MS] (no flash) nor more than [SPLASH_MAXIMO_MS] (offline).
+     * A recreated activity (rotation) shows no splash, and waiting would only freeze its first frame.
+     */
+    private fun configurarSplash(splashScreen: SplashScreen, recreada: Boolean) {
+        splashScreen.setOnExitAnimationListener { proveedor -> animarSalidaSplash(proveedor) }
         splashScreen.setKeepOnScreenCondition { !estaListo }
-        Handler(Looper.getMainLooper()).postDelayed({ estaListo = true }, 750)
-
-        splashScreen.setOnExitAnimationListener { splashScreenView ->
-            val fadeOut = ObjectAnimator.ofFloat(splashScreenView.view, View.ALPHA, 1f, 0f)
-            fadeOut.duration = 300L
-            fadeOut.doOnEnd { splashScreenView.remove() }
-            fadeOut.start()
+        if (recreada) {
+            estaListo = true
+            return
         }
+
+        val inicio = SystemClock.uptimeMillis()
+        val liberar = Runnable { estaListo = true }
+        manejador.postDelayed(liberar, SPLASH_MAXIMO_MS)
+
+        proyectosViewModel.proyectosEnVivo.observe(this, object : Observer<List<ProyectoCrochet>> {
+            override fun onChanged(value: List<ProyectoCrochet>) {
+                proyectosViewModel.proyectosEnVivo.removeObserver(this)
+                if (estaListo) return
+                manejador.removeCallbacks(liberar)
+                val transcurrido = SystemClock.uptimeMillis() - inicio
+                manejador.postDelayed(liberar, (SPLASH_MINIMO_MS - transcurrido).coerceAtLeast(0L))
+            }
+        })
+    }
+
+    /** The splash fades while its icon grows a little, as if the app came forward. */
+    private fun animarSalidaSplash(proveedor: SplashScreenViewProvider) {
+        val animaciones = mutableListOf<Animator>(ObjectAnimator.ofFloat(proveedor.view, View.ALPHA, 1f, 0f))
+        // Some launches (adb, some launchers) show the splash without an icon
+        runCatching { proveedor.iconView }.getOrNull()?.let { icono ->
+            animaciones += ObjectAnimator.ofFloat(icono, View.SCALE_X, 1f, 1.1f)
+            animaciones += ObjectAnimator.ofFloat(icono, View.SCALE_Y, 1f, 1.1f)
+        }
+        AnimatorSet().apply {
+            playTogether(animaciones)
+            duration = 280L
+            interpolator = DecelerateInterpolator(1.5f)
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) = proveedor.remove()
+            })
+            start()
+        }
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        navegacionPendiente?.let { navegar ->
+            navegacionPendiente = null
+            navegar()
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        // While the hook pulls the screen nothing underneath may react to touches
+        if (estaNavegando) return true
+        return super.dispatchTouchEvent(ev)
+    }
+
+    override fun onDestroy() {
+        manejador.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 
     // region Main tabs
@@ -91,6 +160,10 @@ class MainActivity : AppCompatActivity() {
         barraNavegacion.setOnItemSelectedListener { item ->
             if (!sincronizandoBarra) {
                 barraNavegacion.hapticSeleccion()
+                // The icon of the tab just picked gives a small hop
+                barraNavegacion.findViewById<View>(item.itemId)
+                    ?.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_icon_view)
+                    ?.rebotar(1.15f)
                 mostrarPestana(item.itemId)
             }
             true
@@ -224,48 +297,63 @@ class MainActivity : AppCompatActivity() {
 
     // region Crochet hook
 
-    /** Plays the crochet hook animation with touches blocked and runs [alLlegarAl25] once at 25 %. */
-    private fun animarGanchillo(alLlegarAl25: () -> Unit) {
+    /**
+     * The new screen is built before the hook starts moving: building it takes a few frames, and
+     * doing it mid-animation made the hook stutter. Both animations then start on the same frame
+     * (anim/slide_in_top and slide_out_bottom wait for the hook to grab the yarn).
+     */
+    private fun animarGanchillo(cambiarPantalla: () -> Unit) {
         if (estaNavegando) return
+        if (supportFragmentManager.isStateSaved) {
+            // The app went to the background (e.g. during the "saved" animation): navigate when it comes back
+            navegacionPendiente = { animarGanchillo(cambiarPantalla) }
+            return
+        }
         estaNavegando = true
-        bloquearToques(true)
+        cancelarToquesEnCurso()
 
+        lottieGanchillo.animate().cancel()
         lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
-
-        lottieGanchillo.setAnimation(R.raw.animacion_ganchillo)
+        lottieGanchillo.cancelAnimation()
+        lottieGanchillo.alpha = 1f
         lottieGanchillo.progress = 0f
         lottieGanchillo.visibility = View.VISIBLE
 
-        var accionEjecutada = false
-        lottieGanchillo.addAnimatorUpdateListener { animation ->
-            if (animation.animatedFraction >= 0.25f && !accionEjecutada) {
-                accionEjecutada = true
-                alLlegarAl25()
-            }
-        }
+        cambiarPantalla()
+        supportFragmentManager.executePendingTransactions()
 
-        lottieGanchillo.addAnimatorListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {}
+        lottieGanchillo.addAnimatorListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) = terminarAnimacion()
             override fun onAnimationCancel(animation: Animator) = terminarAnimacion()
-            override fun onAnimationRepeat(animation: Animator) {}
         })
-
         lottieGanchillo.playAnimation()
     }
 
     private fun terminarAnimacion() {
-        lottieGanchillo.removeAllUpdateListeners()
         lottieGanchillo.removeAllAnimatorListeners()
         estaNavegando = false
-        bloquearToques(false)
 
         lottieGanchillo.post {
-            lottieGanchillo.pauseAnimation()
+            if (estaNavegando) return@post
             val actual = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
-            ponerGanchilloEnReposo(actual is PantallaConGanchillo)
+            if (actual is PantallaConGanchillo) {
+                // The yarn comes back at the top of the new screen fading in instead of popping up
+                lottieGanchillo.progress = 0f
+                lottieGanchillo.alpha = 0f
+                lottieGanchillo.visibility = View.VISIBLE
+                lottieGanchillo.animate().alpha(1f).setDuration(220L).start()
+            } else {
+                ponerGanchilloEnReposo(false)
+            }
         }
+    }
+
+    private fun cancelarToquesEnCurso() {
+        val ahora = SystemClock.uptimeMillis()
+        val cancelar = MotionEvent.obtain(ahora, ahora, MotionEvent.ACTION_CANCEL, 0f, 0f, 0)
+        super.dispatchTouchEvent(cancelar)
+        cancelar.recycle()
     }
 
     /** The hook waits at the first frame on the screens that leave with it; elsewhere it is hidden. */
@@ -275,20 +363,15 @@ class MainActivity : AppCompatActivity() {
         lottieGanchillo.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
-    private fun bloquearToques(bloquear: Boolean) {
-        if (bloquear) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            )
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        }
-    }
-
     // endregion
 
     private companion object {
         const val DURACION_BARRA_MS = 220L
+
+        /** The hook animation is 1 s long at normal speed; anim/slide_in_top and slide_out_bottom are timed to this speed. */
+        const val VELOCIDAD_GANCHILLO = 1.4f
+
+        const val SPLASH_MINIMO_MS = 350L
+        const val SPLASH_MAXIMO_MS = 1_200L
     }
 }

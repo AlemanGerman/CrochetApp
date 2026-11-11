@@ -57,3 +57,7 @@ fun String?.esRutaFotoValida(): Boolean =
 
 val ProyectoCrochet.tieneFoto: Boolean
     get() = fotoUri.esRutaFotoValida()
+
+/** Picture shown on lists: the thumbnail when there is one, otherwise the full photo; null without a photo. */
+val ProyectoCrochet.fotoParaLista: String?
+    get() = if (tieneFoto) fotoMiniaturaUri?.takeIf { it.esRutaFotoValida() } ?: fotoUri else null

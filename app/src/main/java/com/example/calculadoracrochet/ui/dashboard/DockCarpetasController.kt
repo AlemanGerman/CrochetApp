@@ -3,7 +3,7 @@ package com.example.calculadoracrochet.ui.dashboard
 import android.animation.ValueAnimator
 import android.view.LayoutInflater
 import android.view.View
-import android.view.animation.DecelerateInterpolator
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -13,6 +13,9 @@ import androidx.core.graphics.ColorUtils
 import com.example.calculadoracrochet.R
 import com.example.calculadoracrochet.utils.CarpetasConfig
 import com.example.calculadoracrochet.utils.hapticSeleccion
+import com.example.calculadoracrochet.utils.rebotar
+import kotlin.math.abs
+import kotlin.math.sin
 
 /** Folder filter row of the dashboard, with the purple pill that slides to the selected folder. */
 class DockCarpetasController(
@@ -27,7 +30,7 @@ class DockCarpetasController(
 
     private val contexto = raiz.context
     private val llContenedor = raiz.findViewById<LinearLayout>(R.id.llCarpetasDashboard)
-    private val indicador = raiz.findViewById<View>(R.id.indicadorSelector)
+    private val indicador = IndicadorPildora(contexto).also { llContenedor.background = it }
     private val hsvCarpetas = raiz.findViewById<HorizontalScrollView>(R.id.hsvCarpetas)
 
     private val vistasCarpetas = mutableListOf<View>()
@@ -59,6 +62,7 @@ class DockCarpetasController(
                     vista.isSelected = tv.text.toString() == carpetaSeleccionada
                 }
                 animarSelectorHacia(itemView)
+                itemView.findViewById<View>(R.id.ivIconoCarpeta).rebotar()
                 onCarpetaSeleccionada(carpetaSeleccionada)
             }
 
@@ -82,42 +86,30 @@ class DockCarpetasController(
             .coerceAtLeast(0)
         val vistaInicial = llContenedor.getChildAt(indiceInicial) ?: return
 
-        indicador.layoutParams = indicador.layoutParams.apply {
-            width = vistaInicial.width
-            height = vistaInicial.height
-        }
-        indicador.translationX = vistaInicial.x
-        indicador.translationY = vistaInicial.y
-        indicador.visibility = View.VISIBLE
+        indicador.colocar(vistaInicial.x, vistaInicial.y, vistaInicial.width.toFloat(), vistaInicial.height.toFloat())
+        indicador.visible = true
     }
 
     private fun animarSelectorHacia(vistaDestino: View) {
         animadorSelector?.cancel()
 
-        val inicioX = indicador.translationX
+        val inicioX = indicador.izquierda
+        val inicioAncho = indicador.ancho
         val finX = vistaDestino.x
-        val inicioAncho = indicador.width
-        val finAncho = vistaDestino.width
-        val inicioAlto = indicador.height
-        val finAlto = vistaDestino.height
+        val finAncho = vistaDestino.width.toFloat()
 
         animadorSelector = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 240L
-            interpolator = DecelerateInterpolator(1.5f)
+            duration = 320L
+            interpolator = FastOutSlowInInterpolator()
             addUpdateListener { animator ->
-                val fraction = animator.animatedFraction
-                indicador.translationX = inicioX + (finX - inicioX) * fraction
-
-                val anchoActual = (inicioAncho + (finAncho - inicioAncho) * fraction).toInt()
-                val altoActual = (inicioAlto + (finAlto - inicioAlto) * fraction).toInt()
-
-                val params = indicador.layoutParams
-                if (params.width != anchoActual || params.height != altoActual) {
-                    params.width = anchoActual
-                    params.height = altoActual
-                    indicador.layoutParams = params
-                }
-                pintarTextosSegunIndicador(indicador.translationX, indicador.translationX + anchoActual)
+                val f = animator.animatedFraction
+                // The pill stretches a little towards where it goes and catches up, like a drop of yarn
+                val estirar = (if (finX > inicioX) 1 else -1) * sin(f * Math.PI).toFloat() * ESTIRAMIENTO * finAncho
+                val x = inicioX + (finX - inicioX) * f
+                val ancho = inicioAncho + (finAncho - inicioAncho) * f + abs(estirar)
+                val izquierda = if (estirar < 0) x + estirar else x
+                indicador.colocar(izquierda, vistaDestino.y, ancho, vistaDestino.height.toFloat())
+                pintarTextosSegunIndicador(indicador.izquierda, indicador.derecha)
             }
             start()
         }
@@ -142,5 +134,10 @@ class DockCarpetasController(
             vista.findViewById<TextView>(R.id.tvNombreCarpeta)
                 .setTextColor(ColorUtils.blendARGB(colorNormal, colorSobrePildora, cobertura))
         }
+    }
+
+    private companion object {
+        /** How much longer than the folder the pill gets halfway through the slide. */
+        const val ESTIRAMIENTO = 0.18f
     }
 }
